@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="zyj.report.persistence.client.RptExpSchoolSubjectMapper" >
+  <resultMap id="BaseResultMap" type="zyj.report.persistence.model.RptExpSchoolSubject" >
+    <result column="EXAMBATCH_ID" property="exambatchId" jdbcType="VARCHAR" />
+    <result column="PAPER_ID" property="paperId" jdbcType="VARCHAR" />
+    <result column="SCH_ID" property="schId" jdbcType="VARCHAR" />
+    <result column="SCH_NAME" property="schName" jdbcType="VARCHAR" />
+    <result column="SUBJECT" property="subject" jdbcType="VARCHAR" />
+    <result column="FULL_SCORE" property="fullScore" jdbcType="DOUBLE" />
+    <result column="TAKE_EXAM_NUM" property="takeExamNum" jdbcType="DECIMAL" />
+    <result column="AVG_SCORE" property="avgScore" jdbcType="DOUBLE" />
+    <result column="TOP_SCORE" property="topScore" jdbcType="DOUBLE" />
+    <result column="UP_SCORE" property="upScore" jdbcType="DOUBLE" />
+    <result column="AVG_SCH_ORDER" property="avgSchOrder" jdbcType="DECIMAL" />
+    <result column="PASS_RATE" property="passRate" jdbcType="VARCHAR" />
+    <result column="BEST_RATE" property="bestRate" jdbcType="VARCHAR" />
+    <result column="AVG_RATE" property="avgRate" jdbcType="VARCHAR" />
+    <result column="ALL_RATE" property="allRate" jdbcType="VARCHAR" />
+    <result column="CITY_CODE" property="cityCode" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    EXAMBATCH_ID,PAPER_ID,SCH_ID,SCH_NAME,SUBJECT,FULL_SCORE,TAKE_EXAM_NUM,AVG_SCORE,TOP_SCORE,UP_SCORE,FULL_SCORE_RATE,LEVEL_A_NUM,LEVEL_B_NUM,LEVEL_C_NUM,LEVEL_D_NUM,LEVEL_E_NUM,LEVEL_GD_NUM,LEVEL_FN_NUM,LEVEL_PS_NUM,LEVEL_FL_NUM,AVG_SCORE_RANK,PASS_RATE,BEST_RATE,AVG_RATE,ALL_RATE,CITY_CODE
+  </sql>
+  <select id="findRptExpSchoolSubject" resultMap="BaseResultMap" >
+    select 
+    <include refid="Base_Column_List" />
+    from RPT_EXP_SCHOOL_SUBJECT
+    where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
+    <if test = "stuType!=null">
+        	and student_type = #{stuType}        
+  	</if>
+  </select>
+  
+  <select id="findAllSchool" resultType="map" >
+    select 
+    distinct SCH_NAME
+    from RPT_EXP_SCHOOL_SUBJECT
+    where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
+    <if test = "stuType!=null">
+        	and student_type = #{stuType}        
+  	</if>
+  </select>
+  
+  <sql id="OracleDialectPrefix" >
+    <if test="page != null" >
+      select * from ( select row_.*, rownum rownum_ from ( 
+    </if>
+  </sql>
+  <sql id="OracleDialectSuffix" >
+    <if test="page != null" >
+      <![CDATA[ ) row_ ) where rownum_ >= #{page.begin} and rownum_ <= #{page.end} ]]>
+    </if>
+  </sql>
+</mapper>

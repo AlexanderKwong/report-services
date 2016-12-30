@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="zyj.report.persistence.client.RptExpQuestionMapper" >
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Question_Column_List" >
+    EXAMBATCH_ID,PAPER_ID,SUBJECT,QUESTION_ORDER,QUESTION_NO,QST_TIPY,QST_SCORE,DIFFICULTY,TAKE_EXAM_NUM,AVG_SCORE,TOP_SCORE,UP_SCORE,FULL_RANK,STAND_POOR,DIS_DEGREE,DIFFICULTY_NUM,SCORE_RANK,<!--decode(STANDARD_ANSWER,'null','',STANDARD_ANSWER)-->STANDARD_ANSWER AS STANDARD_ANSWER,CITY_CODE,NULL_ANSWER_RATE,MULTI_CHOICE_RATE,ZERO_SCORE_RATE,CV
+  </sql>
+  <sql id="School_Subject_Column_List" >
+	SCH_ID,AREA_ID 
+  </sql>
+  <sql id="Class_Subject_Column_List" >
+    SCH_ID,AREA_ID,CLS_ID 
+  </sql>
+  <sql id="Area_Subject_Column_List" >
+    AREA_ID 
+  </sql>
+  <sql id="QuestionItem_Column_List" >
+    EXAMBATCH_ID,PAPER_ID,SUBJECT,QUESTION_ORDER,QUESTION_NO,OPT_DETAIL,CITY_CODE
+  </sql>
+  
+  <select id="findRptExpQuestion" resultType="map"  parameterType="map" >
+    select 
+    <include refid="Question_Column_List" />
+    <if test="level == 'city'" >
+    from  RPT_EXP_CITY_QUESTION
+    </if>
+     <if test="level == 'area'" >
+         ,<include refid="Area_Subject_Column_List" />
+    from  RPT_EXP_AREA_QUESTION
+    </if>
+    <if test="level == 'school'" >
+    ,<include refid="School_Subject_Column_List" />
+   from   RPT_EXP_SCHOOL_QUESTION
+    </if>
+    <if test="level == 'classes'" >
+        ,<include refid="Class_Subject_Column_List" />
+   from   RPT_EXP_CLASS_QUESTION
+    </if>
+    where 
+    EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR} 
+    and SUBJECT=#{subject,jdbcType=VARCHAR} and paper_id = #{paperId}
+    <if test = "stuType!=null">
+        and student_type = #{stuType}        
+  	</if>
+ 	<if test="level!='city' and areaId!=null" >
+     and AREA_ID=#{areaId,jdbcType=VARCHAR}
+    </if>
+    <if test="level!='area'  and level!='city' and schoolId!=null" >
+     and SCH_ID=#{schoolId,jdbcType=VARCHAR}
+    </if>
+    <if test="level=='classes' and classesId!=null" >
+     and CLS_ID=#{classesId,jdbcType=VARCHAR}
+    </if>
+    order by QUESTION_ORDER
+  </select>
+  
+  <select id="findRptExpQuestionItem" resultType="map"  parameterType="map" >
+    select 
+    <include refid="QuestionItem_Column_List" />
+   
+    <if test="level == 'city'" >
+    from   RPT_EXP_CITY_QUESTION_ITEM
+    </if>
+     <if test="level == 'area'" >
+          ,area_id
+    from   RPT_EXP_AREA_QUESTION_ITEM
+    </if>
+    <if test="level == 'school'" >
+        ,sch_id
+    from   RPT_EXP_SCH_QUESTION_ITEM
+    </if>
+    <if test="level == 'classes'" >
+    ,cls_id
+     from  RPT_EXP_CLASS_QUESTION_ITEM
+    </if>
+    where 
+    EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR} 
+    and SUBJECT=#{subject,jdbcType=VARCHAR} and paper_id = #{paperId}
+    <if test = "stuType!=null">
+        	and student_type = #{stuType}        
+  	</if>
+	<if test="areaId!=null" >
+     and AREA_ID=#{areaId,jdbcType=VARCHAR}
+    </if>
+    <if test="schoolId!=null" >
+     and SCH_ID=#{schoolId,jdbcType=VARCHAR}
+    </if>
+    <if test="classesId!=null" >
+     and CLS_ID=#{classesId,jdbcType=VARCHAR}
+    </if>
+  </select>
+  
+   <select id="findRptExpSchoolQuestion" resultType="map"  parameterType="map" >
+    select 
+    <include refid="Question_Column_List" />,AREA_ID,SCH_ID,SCH_NAME,EXCE_NUM,MIDD_NUM,PASS_NUM,UNPASS_NUM
+    from 
+    RPT_EXP_SCHOOL_QUESTION
+    where 
+    EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR} 
+    and SUBJECT=#{subject,jdbcType=VARCHAR} and paper_id = #{paperId}
+    <if test = "stuType!=null">
+        	and student_type = #{stuType}        
+  	</if>
+  		<if test="schoold!=null">and sch_id = #{schoolId}</if>
+    order by QUESTION_ORDER
+  </select>
+  
+  <select id="findRptExpSchoolQuestionItem" resultType="map"  parameterType="map" >
+    select 
+    <include refid="QuestionItem_Column_List" />,SCH_ID,SCH_NAME,area_id
+    from 
+    RPT_EXP_SCH_QUESTION_ITEM
+    where 
+    EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR} 
+    and SUBJECT=#{subject,jdbcType=VARCHAR} and paper_id = #{paperId}
+    <if test = "stuType!=null">
+        	and student_type = #{stuType}        
+  	</if>
+  </select>
+  <select id="findRptExpAreaQuestion" resultType="map"  parameterType="map" >
+    select 
+    <include refid="Question_Column_List" />,AREA_ID
+    from 
+    RPT_EXP_AREA_QUESTION
+    where 
+    EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR} 
+    and SUBJECT=#{subject,jdbcType=VARCHAR} and paper_id = #{paperId}
+    <if test = "stuType!=null">
+        	and student_type = #{stuType}        
+  	</if>
+  	<if test="areaId!=null">and area_id = #{areaId}</if>
+    order by QUESTION_ORDER
+  </select>
+  <select id="findRptExpClassQuestion" resultType="map"  parameterType="map" >
+    select 
+    <include refid="Question_Column_List" />,AREA_ID,SCH_ID,CLS_ID
+    from 
+    RPT_EXP_CLASS_QUESTION
+    where 
+    EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR} 
+    and SUBJECT=#{subject,jdbcType=VARCHAR} and paper_id = #{paperId}
+    <if test = "stuType!=null">
+        	and student_type = #{stuType}        
+  	</if>
+  	<if test="classesId!=null">and cls_id = #{classesId}</if>
+    order by QUESTION_ORDER
+  </select>
+  
+  
+  <select id="findAllQuestionOrderItem" resultType="map"  parameterType="map" >
+    select 
+    <include refid="Question_Column_List" />
+    from 
+    RPT_EXP_CITY_QUESTION
+    where 
+    EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR} 
+    and SUBJECT=#{subject,jdbcType=VARCHAR} and paper_id = #{paperId}
+    <if test = "stuType!=null">
+        	and student_type = #{stuType}        
+  	</if>
+    order by QUESTION_ORDER 
+  </select>
+  
+  
+ 	<!-- 获取题号信息-->
+ 		<select id="qryClassQuestionScore6" resultType="java.util.HashMap" >
+ 		 <!-- select distinct question_no,question_order,qst_tipy from RPT_EXP_SCHOOL_QUESTION where exambatch_id = #{exambatchId} and subject like #{subject}  order by question_order -->
+ 		 select distinct question_no,question_order,qst_tipy from RPT_EXP_CITY_QUESTION where exambatch_id = #{exambatchId} and subject like #{subject} and paper_id = #{paperId} order by question_order
+ 		 </select>
+
+
+	<!-- 获取学生答题信息,有点慢，但是至少比在循环内不断查询要强很多倍 -->
+	<select id="qryStudentQuestionScore" resultType="java.util.HashMap">
+		select user_id,sum(std_score) as total,sum(decode(qst_tipy,4,std_score,0)) as subjective
+		,sum(decode(trunc(qst_tipy/4),0,std_score,0)) as objective 
+		<foreach collection="orderList" index="index" item="question_order"
+			open="," separator="," close=",">
+			sum(decode(question_order,#{question_order},std_score,0)) as Q${question_order}
+		</foreach>
+		sch_id,cls_id,area_id,name, nvl(tmp_sequence,sequence) as sequence <!--decode(tmp_sequence,'null',sequence,tmp_sequence) as sequence-->
+        ,schoolname as schname,classname as clsname,areaname as areaname
+		from RPT_EXP_STUDENT_QUESTION
+		where exambatch_id = #{exambatchId} and subject like #{subject} and paper_id = #{paperId}
+		
+		<if test="areaId != null">
+			and area_id = #{areaId}
+		</if>
+		<if test="schoolId != null">
+			and sch_id = #{schoolId}
+		</if>
+		<if test="classesId!= null">
+			and cls_id = #{classesId}
+		</if>
+		<if test = "stuType!=null">
+        	and student_type = #{stuType}        
+  		</if>
+		group by user_id,sch_id,cls_id,area_id,name,tmp_sequence,sequence,schoolname,classname,areaname
+		order by sequence
+	</select> 
+  
+  <!--难度：0为合适，1为太难，2为太易 ； 区分度：0为不合适，1为合适-->
+ 		<!--  select sign(trunc((difficulty-0.6)*5)) as nandu,decode(sign(dis_degree-0.4),1,1,0) as qufendu,count(question_order) as tiliang ,
+wmsys.wm_concat(question_no) as tihao from rpt_exp_city_question where exambatch_id=#{exambatchId} and subject=#{subject}
+				<if test="cityCode!=null">
+					and city_code=#{cityCode}
+				</if>
+group by sign(trunc((difficulty-0.6)*5)),decode(sign(dis_degree-0.4),1,1,0)  -->
+ 		<select id="qryQuestionSuitable" resultType="java.util.HashMap" >
+<![CDATA[select P,R,LTRIM(MAX(SYS_CONNECT_BY_PATH(NO, '，')), '，') NO ,COUNT(NO) AS TILIANG ,concat(to_char(round(count(no)/qnum,4)*100),'%') as bili  FROM
+      (select case when difficulty_NUM>0.7 then 1 when difficulty_NUM<0.5 then -1 else 0 end as  P ,decode(sign(dis_degree-0.4),1,1,0) R,
+    question_no NO,ROW_NUMBER() OVER(PARTITION BY case when difficulty_NUM>0.7 then 1 when difficulty_NUM<0.5 then -1 else 0 end ,decode(sign(dis_degree-0.4),1,1,0) ORDER BY question_no ) RN ,
+  COUNT(1) OVER() as qnum ]]>
+ 		from rpt_exp_city_question where exambatch_id = #{exambatchId} and subject = #{subject} and paper_id = #{paperId}
+ 				<if test="cityCode!=null">
+					and city_code=#{cityCode}
+				</if>
+				<if test = "stuType!=null">
+        		and student_type = #{stuType}        
+  				</if>
+				)
+     START WITH RN =1
+ 		CONNECT BY RN - 1 = PRIOR RN  
+       AND P = PRIOR P
+       AND R = PRIOR R   
+		GROUP BY P,R,qnum
+ 		</select>
+ 		
+  <!-- 统计非听力题的总分 -->
+  <select id="qryTotalWithoutListening" resultType="java.util.HashMap" >
+  <![CDATA[
+  select stu_other_avg as AVG_SCORE ,stu_other_num as TAKE_EXAM_NUM,'YY_N_L' as subject,'' as paper_id,
+min(case when stu_other_rank < stu_other_num*0.3 then stu_other_score else 999 end ) as A ,
+min(case when stu_other_rank >= stu_other_num*0.3 and stu_other_rank < stu_other_num*0.65 then stu_other_score else 999 end ) as B ,
+min(case when stu_other_rank >= stu_other_num*0.65 and stu_other_rank <stu_other_num*0.9 then stu_other_score else 999 end ) as C 
+from (
+select 
+rank()over(order by stu_other_score desc) as stu_other_rank,
+round(avg(stu_other_score)over(),2) as stu_other_avg,
+count(1)over() as stu_other_num,
+a.*
+from(
+SELECT
+user_id,
+subject, 
+paperScore,
+round(sum(std_score),2) stuScored,
+round(sum(CASE WHEN question_no like '%听力题%' THEN std_score ELSE 0 END),2) stu_listen_score,
+round(sum(CASE WHEN question_no not like '%听力题%' THEN std_score ELSE 0 END),2) stu_other_score
+]]>
+FROM rpt_exp_student_question  where subject = 'YY' and exambatch_id=#{exambatchId}
+<if test="cityCode!=null">
+		and city_code=#{cityCode}
+</if>
+<if test = "stuType!=null">
+		and student_type = #{stuType}        
+ </if>
+GROUP BY subject,paperScore,user_id)a)group by stu_other_avg,stu_other_num,subject
+</select>
+  
+  <sql id="OracleDialectPrefix" >
+    <if test="page != null" >
+      select * from ( select row_.*, rownum rownum_ from ( 
+    </if>
+  </sql>
+  <sql id="OracleDialectSuffix" >
+    <if test="page != null" >
+      <![CDATA[ ) row_ ) where rownum_ >= #{page.begin} and rownum_ <= #{page.end} ]]>
+    </if>
+  </sql>
+</mapper>

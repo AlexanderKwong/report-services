@@ -1,0 +1,650 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="zyj.report.persistence.client.RptExpAllscoreMapper" >
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+     <!-- 获取学生科目总成绩信息-->
+ 		<select id="qryStudentSubjectAllScore" resultType="java.util.HashMap" >
+
+ 		 select USER_ID,cls_id,sch_id,area_id,ALL_TOTAL,city_rank,grd_rank,cls_rank,classname,schoolname,areaname from RPT_EXP_STUDENT_ALLSCORE where exambatch_id =#{exambatchId}
+ 		 <if test="cityCode!= null">
+           		and city_code = #{cityCode}
+           </if>
+           <if test = "stuType!=null">
+        	and student_type = #{stuType}        
+  			</if>
+           <if test="areaId!= null">
+           		and area_id = #{areaId}
+           </if>
+           <if test="schoolId!= null">
+           		and sch_id = #{schoolId}
+           </if>
+           <if test="classesId!= null">
+           		and cls_id = #{classesId}
+           </if>
+ 		 </select>
+ 	
+ 		    <!-- 获取不分文理科总分市前300名信息-->
+ 		<select id="qryAllScoreByRanking" resultType="java.util.HashMap" >
+ 	
+       select DISTINCT SCH_ID,NAME,USER_ID,all_TOTAL,city_rank,area_id  from RPT_EXP_STUDENT_ALLSCORE 
+       where exambatch_id = #{exambatchId} and type = 0
+       <if test="cityCode!=null">
+
+       		and city_code = #{cityCode}
+       </if>
+       <if test = "stuType!=null">
+        	and student_type = #{stuType}        
+  			</if>
+  		<![CDATA[and city_rank <= 300 ]]>
+       order by city_rank
+       
+
+      
+ 		  </select>
+ 		  <!-- 获取文科总分市前300名信息-->
+ 		<select id="qryWenKeAllScoreByRanking" resultType="java.util.HashMap" >
+
+       select DISTINCT SCH_ID,NAME,USER_ID,all_TOTAL,city_rank,area_id  from RPT_EXP_STUDENT_ALLSCORE 
+       where exambatch_id = #{exambatchId} and type = 1 
+       <if test="cityCode!=null">
+
+       		and city_code = #{cityCode}
+       </if>
+       <if test = "stuType!=null">
+        	and student_type = #{stuType}        
+  		</if>
+  		<![CDATA[and city_rank <= 300 ]]>
+       order by city_rank
+   
+      
+ 		  </select>
+ 		  <!-- 获取理科总分市前300名信息-->
+ 		<select id="qryLiKeAllScoreByRanking" resultType="java.util.HashMap" >
+
+       select DISTINCT SCH_ID,NAME,USER_ID,all_TOTAL,city_rank,area_id  from RPT_EXP_STUDENT_ALLSCORE 
+       where exambatch_id = #{exambatchId} and type =2
+       <if test="cityCode!=null">
+
+       		and city_code = #{cityCode}
+       </if>
+       <if test = "stuType!=null">
+        	and student_type = #{stuType}        
+  			</if>
+  		<![CDATA[and city_rank <= 300 ]]>
+       order by city_rank
+   
+      
+ 		  </select>
+  	   <!-- 获取全市参加这次考试的学校总分的信息-->
+ 		<select id="qrySchoolAllScoreInfo" resultType="java.util.HashMap" >
+ 		 select   esa.sch_id ,esa.sch_name ,esa.avg_score,esa.top_score,
+ 		 esa.up_score,esa.person_num AS TAKE_EXAM_NUM,
+ 		 esa.stu_score_sd as standard_dev,
+      	esa.full_score_rate as full_rank,
+      	 esa.AREA_ID,
+      	 esa.full_score,
+      	round((esa.LEVEL_GD_NUM/esa.person_num)*100,2) as level_gd_rate,
+      	round((esa.LEVEL_FN_NUM/esa.person_num)*100,2) as level_fn_rate,
+      	round((esa.LEVEL_PS_NUM/esa.person_num)*100,2) as level_ps_rate,
+      	round((esa.LEVEL_FL_NUM/esa.person_num)*100,2) as low_rate,
+      	round((esa.avg_score/esq.avg_score-1)*100,2) as over_avg_rate,
+      	round((esa.avg_score/esq.avg_score)*100,2) as ratio_avg_rate,
+       	esq.avg_score as grade_avg_score,
+       	esa.type,
+      	esa.AVG_SCore_rank  as rank   
+ 		  from RPT_EXP_SCHOOL_ALLSCORE esa 
+ 		   left join  RPT_EXP_CITY_ALLSCORE esq 
+       on esa.exambatch_id = esq.exambatch_id and esq.city_code = esa.city_code  AND ESQ.TYPE = ESA.TYPE and esq.student_type = esa.student_type
+ 		 where esa.exambatch_id = #{exambatchId}
+ 		 <if test="cityCode != null ">
+ 		 		 and  esa.city_code = #{cityCode} 
+ 		 </if>
+ 		 <if test="schoolId != null ">
+ 		 		and esa.sch_id = #{schoolId}
+ 		 </if>
+ 		  <if test="areaId != null ">
+ 		 		and esa.area_id = #{areaId}
+ 		 </if>
+ 		 <if test = "stuType!=null">
+        	and esa.student_type = #{stuType}        
+  			</if>
+  			 <if test = "type!=null">
+        	and esa.type = #{type}        
+  			</if>
+ 		 order by esa.area_id,esa.sch_id
+ 		 </select>
+ 		 
+ 		 
+ 		 <!-- 获取全市参加这次考试的镇区总分的信息--><!-- 若精确到镇区，则必须同时传type -->
+ 		<select id="qryAreaAllScoreInfo" resultType="java.util.HashMap" >
+ select   esa.area_id ,esa.avg_score,esa.top_score,
+ 		 esa.up_score,esa.person_num as TAKE_EXAM_NUM,esa.area_name,
+ 		 esa.stu_score_sd as standard_dev,
+      	esa.full_score_rate as full_rank,
+      	esa.full_score,
+      	round((esa.LEVEL_GD_NUM/esa.person_num)*100,2) as level_gd_rate,
+      	round((esa.LEVEL_FN_NUM/esa.person_num)*100,2) as level_fn_rate,
+      	round((esa.LEVEL_PS_NUM/esa.person_num)*100,2) as level_ps_rate,
+      	round((esa.LEVEL_FL_NUM/esa.person_num)*100,2) as low_rate,
+      	round((esa.avg_score/esq.avg_score-1)*100,2) as over_avg_rate,
+      	round((esa.avg_score/esq.avg_score)*100,2) as ratio_avg_rate,
+       	esq.avg_score as grade_avg_score,
+       	esa.type,
+      	esa.AVG_SCore_rank  as rank   
+ 		  from RPT_EXP_AREA_ALLSCORE esa 
+ 		   left join  RPT_EXP_CITY_ALLSCORE esq 
+       on esa.exambatch_id = esq.exambatch_id and esq.city_code = esa.city_code  AND ESQ.TYPE = ESA.TYPE and  esa.student_type = esq.student_type
+ 		 where esa.exambatch_id = #{exambatchId} 
+ 		 <if test="cityCode != null ">
+ 		 		 and  esa.city_code = #{cityCode} 
+ 		 </if>
+ 		 <if test = "stuType!=null">
+        	and esa.student_type = #{stuType}        
+  			</if>
+ 		 <if test="areaId != null ">
+ 		 		and esa.area_id = #{areaId}	
+ 		 </if>
+  			<if test = "type!=null">
+        	and esa.type = #{type}        
+  			</if>
+  			order by esa.area_id
+ 		 </select>
+ 		 
+ 		 <!-- 查该次考试班级的总分 -->
+       <select id="qryClassAllScoreInfo" resultType="java.util.HashMap" >
+		  
+ 		 select   eca.sch_id ,eca.cls_id ,eca.area_id ,eca.avg_score,eca.top_score,
+ 		 eca.up_score,eca.person_num as TAKE_EXAM_NUM,eca.sch_name,eca.cls_name,
+ 		 eca.stu_score_sd as standard_dev,
+		eca.full_score_rank as full_rank,
+		eca.full_score,
+      	round((eca.LEVEL_GD_NUM/eca.person_num)*100,2) as level_gd_rate,
+      	round((eca.LEVEL_FN_NUM/eca.person_num)*100,2) as level_fn_rate,
+      	round((eca.LEVEL_PS_NUM/eca.person_num)*100,2) as level_ps_rate,
+      	round((eca.LEVEL_FL_NUM/eca.person_num)*100,2) as low_rate,
+      	round((eca.avg_score/esq.avg_score-1)*100,2) as over_avg_rate,
+      	round((eca.avg_score/esq.avg_score)*100,2) as ratio_avg_rate,
+       	esq.avg_score as grade_avg_score,
+       	eca.type,
+      	eca.AVG_SCore_rank  as rank   
+      from RPT_EXP_CLASS_ALLSCORE eca
+      left join  RPT_EXP_CITY_ALLSCORE esq on eca.exambatch_id = esq.exambatch_id and esq.city_code = eca.city_code  AND ESQ.TYPE = ECA.TYPE and esq.student_type = eca.student_type 
+      where eca.exambatch_id = #{exambatchId} 
+ 		 <if test="cityCode != null ">
+ 		 		 and  eca.city_code = #{cityCode} 
+ 		 </if>
+ 		 <if test = "stuType!=null">
+        	and eca.student_type = #{stuType}        
+  			</if>
+  			<if test="classesId!=null">and eca.cls_id = #{classesId}</if>
+      		<if test="schoolId!=null">and eca.sch_id = #{schoolId}</if>
+		   <if test="type!=null">and eca.type = #{type}</if>
+       </select>
+ 		  <!-- 查该考次全市的总分 -->
+       <select id="qryCityAllScoreInfo" resultType="java.util.HashMap" >
+     select  eca.avg_score,eca.top_score,eca.FULL_SCORE,
+     eca.up_score,eca.person_num AS TAKE_EXAM_NUM,
+ 		eca.stu_score_sd as standard_dev,
+      	eca.full_score_rate as full_rank,
+      	round((eca.LEVEL_GD_NUM/eca.person_num)*100,2) as level_gd_rate,
+      	round((eca.LEVEL_FN_NUM/eca.person_num)*100,2) as level_fn_rate,
+      	round((eca.LEVEL_PS_NUM/eca.person_num)*100,2) as level_ps_rate,
+      	round((eca.LEVEL_FL_NUM/eca.person_num)*100,2) as low_rate,
+       	eca.type,
+       	eca.city_code
+      from RPT_EXP_CITY_ALLSCORE eca 
+      where eca.exambatch_id = #{exambatchId} 
+ 		 <if test="cityCode != null ">
+ 		 		 and  eca.city_code = #{cityCode} 
+ 		 </if>
+		<if test = "stuType!=null">
+        	and eca.student_type = #{stuType}        
+  		</if>
+      
+       </select>
+
+
+
+ 		 
+ 		  		 <!-- 获取全市参加这次考试的学校总分的信息2-->
+ 		<select id="qrySchoolAllScoreInfo2" resultType="java.util.HashMap" >
+       select 
+       area_id,sch_id,sch_name,
+       SUM(decode(type,0,person_num,0)) AS PERSON_NUM,
+       SUM(decode(type,0,AVG_SCORE,0)) AS AVG_SCORE,
+       SUM(decode(type,0,STU_SCORE_SD,0)) AS STU_SCORE_SD,
+       SUM(decode(type,0,TOP_SCORE,0)) AS TOP_SCORE,
+       SUM(decode(type,0,UP_SCORE,0)) AS UP_SCORE,
+       SUM(decode(type,0,AVG_SCORE_RANK,0)) AS AVG_SCORE_RANK,
+       SUM(decode(type,1,person_num,0)) AS W_PERSON_NUM,
+       SUM(decode(type,1,AVG_SCORE,0)) AS W_AVG_SCORE,
+       SUM(decode(type,1,STU_SCORE_SD,0)) AS W_STU_SCORE_SD,
+       SUM(decode(type,1,TOP_SCORE,0)) AS W_TOP_SCORE,
+       SUM(decode(type,1,UP_SCORE,0)) AS W_UP_SCORE,
+       SUM(decode(type,1,AVG_SCORE_RANK,0)) AS W_AVG_SCORE_RANK,
+       SUM(decode(type,2,person_num,0)) AS L_PERSON_NUM,
+       SUM(decode(type,2,AVG_SCORE,0)) AS L_AVG_SCORE,
+       SUM(decode(type,2,STU_SCORE_SD,0)) AS L_STU_SCORE_SD,
+        SUM(decode(type,2,TOP_SCORE,0)) AS L_TOP_SCORE,
+       SUM(decode(type,2,UP_SCORE,0)) AS L_UP_SCORE,
+       SUM(decode(type,2,AVG_SCORE_RANK,0)) AS L_AVG_SCORE_RANK,
+        SUM(decode(type,3,person_num,0)) AS WL_PERSON_NUM,
+       SUM(decode(type,3,AVG_SCORE,0)) AS WL_AVG_SCORE,
+       SUM(decode(type,3,STU_SCORE_SD,0)) AS WL_STU_SCORE_SD,
+ 			 SUM(decode(type,3,TOP_SCORE,0)) AS WL_TOP_SCORE,
+ 			SUM(decode(type,3,UP_SCORE,0)) AS WL_UP_SCORE,
+ 			SUM(decode(type,3,AVG_SCORE_RANK,0)) AS WL_AVG_SCORE_RANK
+ 			from RPT_EXP_SCHOOL_ALLSCORE  where exambatch_id = #{exambatchId} 
+ 			<if test="cityCode != null ">
+ 		 		and  city_code = #{cityCode} 
+ 		 </if>
+ 		 <if test = "stuType!=null">
+        	and student_type = #{stuType}        
+  			</if>
+ 			GROUP BY SCH_ID ,area_id,sch_name
+ 			 order by area_id,sch_id
+ 		</select>
+  		 <!-- 获取全市参加这次考试的镇区总分的信息2-->
+ 		<select id="qryAreaAllScoreInfo2" resultType="java.util.HashMap" >
+ 			select 
+ 			AREA_id,area_name,
+       SUM(decode(type,0,person_num,0)) AS PERSON_NUM,
+       SUM(decode(type,0,AVG_SCORE,0)) AS AVG_SCORE,
+       SUM(decode(type,0,STU_SCORE_SD,0)) AS STU_SCORE_SD,
+       SUM(decode(type,0,TOP_SCORE,0)) AS TOP_SCORE,
+       SUM(decode(type,0,UP_SCORE,0)) AS UP_SCORE,
+       SUM(decode(type,0,AVG_SCORE_RANK,0)) AS AVG_SCORE_RANK,
+       SUM(decode(type,1,person_num,0)) AS W_PERSON_NUM,
+       SUM(decode(type,1,AVG_SCORE,0)) AS W_AVG_SCORE,
+       SUM(decode(type,1,STU_SCORE_SD,0)) AS W_STU_SCORE_SD,
+       SUM(decode(type,1,TOP_SCORE,0)) AS W_TOP_SCORE,
+       SUM(decode(type,1,UP_SCORE,0)) AS W_UP_SCORE,
+       SUM(decode(type,1,AVG_SCORE_RANK,0)) AS W_AVG_SCORE_RANK,
+       SUM(decode(type,2,person_num,0)) AS L_PERSON_NUM,
+       SUM(decode(type,2,AVG_SCORE,0)) AS L_AVG_SCORE,
+       SUM(decode(type,2,STU_SCORE_SD,0)) AS L_STU_SCORE_SD,
+        SUM(decode(type,2,TOP_SCORE,0)) AS L_TOP_SCORE,
+       SUM(decode(type,2,UP_SCORE,0)) AS L_UP_SCORE,
+       SUM(decode(type,2,AVG_SCORE_RANK,0)) AS L_AVG_SCORE_RANK,
+        SUM(decode(type,3,person_num,0)) AS WL_PERSON_NUM,
+       SUM(decode(type,3,AVG_SCORE,0)) AS WL_AVG_SCORE,
+       SUM(decode(type,3,STU_SCORE_SD,0)) AS WL_STU_SCORE_SD,
+ 			 SUM(decode(type,3,TOP_SCORE,0)) AS WL_TOP_SCORE,
+ 			SUM(decode(type,3,UP_SCORE,0)) AS WL_UP_SCORE,
+ 			SUM(decode(type,3,AVG_SCORE_RANK,0)) AS WL_AVG_SCORE_RANK
+ 			from RPT_EXP_AREA_ALLSCORE  where exambatch_id = #{exambatchId} 
+ 			<if test="cityCode != null ">
+ 		 		and  city_code = #{cityCode} 
+ 			</if>
+ 			<if test = "stuType!=null">
+        	and student_type = #{stuType}        
+  			</if>
+  			<if test = "areaId!=null">
+        	and area_id = #{areaId}        
+  			</if>
+ 			GROUP BY AREA_ID ,area_name
+ 			 order by area_id
+ 		</select>
+ 		 		 <!-- 获取全市参加这次考试的科目的信息2-->
+ 		<select id="qryCityAllScoreInfo2" resultType="java.util.HashMap" >
+ 			select 
+ 			CITY_CODE,
+ 			SUM(decode(type,0,person_num,0)) AS PERSON_NUM,
+ 			SUM(decode(type,0,AVG_SCORE,0)) AS AVG_SCORE,
+ 			SUM(decode(type,0,STU_SCORE_SD,0)) AS STU_SCORE_SD,
+ 			SUM(decode(type,0,TOP_SCORE,0)) AS TOP_SCORE,
+ 			SUM(decode(type,0,UP_SCORE,0)) AS UP_SCORE,
+ 			SUM(decode(type,1,person_num,0)) AS W_PERSON_NUM,
+ 			SUM(decode(type,1,AVG_SCORE,0)) AS W_AVG_SCORE,
+ 			SUM(decode(type,1,STU_SCORE_SD,0)) AS W_STU_SCORE_SD,
+ 			SUM(decode(type,1,TOP_SCORE,0)) AS W_TOP_SCORE,
+ 			SUM(decode(type,1,UP_SCORE,0)) AS W_UP_SCORE,
+ 			SUM(decode(type,2,person_num,0)) AS L_PERSON_NUM,
+ 			SUM(decode(type,2,AVG_SCORE,0)) AS L_AVG_SCORE,
+ 			SUM(decode(type,2,STU_SCORE_SD,0)) AS L_STU_SCORE_SD,
+ 			 SUM(decode(type,2,TOP_SCORE,0)) AS L_TOP_SCORE,
+ 			SUM(decode(type,2,UP_SCORE,0)) AS L_UP_SCORE,
+ 			 SUM(decode(type,3,person_num,0)) AS WL_PERSON_NUM,
+ 			SUM(decode(type,3,AVG_SCORE,0)) AS WL_AVG_SCORE,
+ 			SUM(decode(type,3,STU_SCORE_SD,0)) AS WL_STU_SCORE_SD,
+ 			 SUM(decode(type,3,TOP_SCORE,0)) AS WL_TOP_SCORE,
+ 			SUM(decode(type,3,UP_SCORE,0)) AS WL_UP_SCORE
+ 			from RPT_EXP_CITY_ALLSCORE  where exambatch_id = #{exambatchId} 
+ 			<if test="cityCode != null ">
+ 		 		and  city_code = #{cityCode} 
+ 		 </if>
+ 		 <if test = "stuType!=null">
+        	and student_type = #{stuType}        
+  			</if>
+			 GROUP BY CITY_CODE
+ 		</select>
+ 		
+ 		
+ 		
+ 		
+ 		    
+  
+    
+    <!-- 获取参加这次考试的所有学校总分的分数段人数-->
+ 		<select id="qryScorePersonNumBySchoolAllscore" resultType="java.util.HashMap" >
+ 				select sch_id, sch_name as schname,
+ 				<if test="scoreList!=null">
+				<foreach collection="scoreList" index="index" item="score"
+						open=" " separator="," close="  ">
+						<!-- sum(decode(trunc(all_total/replace('${score}','_','.')),0,0,1)) as HE${score} -->
+						sum(case when all_total >= replace('${score}','_','.') then 1 else 0 end) as HE${score}
+				</foreach>
+				<if test="rankList!=null"><!-- 孝感需求 按名次出上线数  应有scoreList -->
+				<foreach collection="rankList" index="index" item="rank"
+						open=" ," separator="," close="  ">
+
+					<![CDATA[	sum(case when city_rank <= #{rank} then 1 else 0 end) as HE${rank}]]>
+				</foreach>
+				</if>		
+				</if>
+				<if test="scoreList2!=null"><!-- 中山报表指标 -->
+					<foreach collection="scoreList2" index="index" item="score"
+						open=" " separator="," close="  ">
+						<!-- sum(decode(trunc(sign_total/replace('${score}','_','.')),0,0,1)) as HE${score} -->
+						<![CDATA[decode(	concat(to_char(round(sum(case when ALL_TOTAL< (${score}+${step}) and ALL_TOTAL >= ${score} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%'),'0.0%',''
+					,concat(to_char(round(sum(case when ALL_TOTAL< (${score}+${step}) and ALL_TOTAL >= ${score} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%')) as UNDER${score} ]]>
+					</foreach>
+					<if test="highest!=null">
+					,decode(	concat(to_char(round(sum(case when  ALL_TOTAL >= ${highest} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%'),'0.0%',''
+					,concat(to_char(round(sum(case when ALL_TOTAL >= ${highest} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%')) as HE${highest} 
+					</if>
+					<if test="lowest!=null">
+				<![CDATA[	,decode(	concat(to_char(round(sum(case when  ALL_TOTAL < ${lowest} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%'),'0.0%',''
+					,concat(to_char(round(sum(case when ALL_TOTAL < ${lowest} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%')) as LS${lowest} ]]>
+					</if>
+					<if test="take_exam_num !=null">
+				<![CDATA[
+				,concat(to_char(round(sum(case when city_rank <= ${take_exam_num}*0.3 THEN 1 else 0 END)/count(1),4)*100),'%') as A,
+				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.3 and city_rank <= ${take_exam_num}*0.65 THEN 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')   as B,
+				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.65 and city_rank <= ${take_exam_num}*0.9 then 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')   as C,
+				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.9 and city_rank <= ${take_exam_num}*1 THEN 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')  as D 
+				]]>
+				</if>
+				</if>			
+				from rpt_exp_student_allscore
+				where exambatch_id = #{exambatchId} 
+				<if test = "type != null">
+					AND type = #{type}
+				</if>
+				<if test = "cityCode != null">
+					AND city_code = #{cityCode}
+				</if>  
+				<if test = "stuType!=null">
+        		and student_type = #{stuType}        
+  				</if>
+  				<if test = "type!=null">
+        		and type = #{type}        
+  				</if>
+  				<if test="areaId!=null">
+  					and area_id = #{areaId}
+  				</if>
+  				<if test="schoold!=null">
+  					and SCH_id = #{schoolId}
+  				</if>
+				group by sch_id,sch_name
+				order by sch_id
+ 		</select>
+ 		<!-- 获取参加这次考试的所有全市总分的分数段人数-->
+ 		<select id="qryScorePersonNumByCityAllscore" resultType="java.util.HashMap" >
+ 				select city_code, 
+ 				<if test="scoreList!=null">
+				<foreach collection="scoreList" index="index" item="score"
+						open=" " separator="," close="  ">
+						<!-- sum(decode(trunc(all_total/replace('${score}','_','.')),0,0,1)) as HE${score} -->
+						sum(case when all_total >= replace('${score}','_','.') then 1 else 0 end) as HE${score}
+				</foreach>
+				</if>
+				<if test="scoreList2!=null"><!-- 中山报表指标 -->
+					<foreach collection="scoreList2" index="index" item="score"
+						open=" " separator="," close="  ">
+						<!-- sum(decode(trunc(sign_total/replace('${score}','_','.')),0,0,1)) as HE${score} -->
+						<![CDATA[decode(	concat(to_char(round(sum(case when ALL_TOTAL< (${score}+${step}) and ALL_TOTAL >= ${score} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%'),'0.0%',''
+					,concat(to_char(round(sum(case when ALL_TOTAL< (${score}+${step}) and ALL_TOTAL >= ${score} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%')) as UNDER${score} ]]>
+					</foreach>
+					<if test="highest!=null">
+					,decode(	concat(to_char(round(sum(case when  ALL_TOTAL >= ${highest} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%'),'0.0%',''
+					,concat(to_char(round(sum(case when ALL_TOTAL >= ${highest} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%')) as HE${highest} 
+					</if>
+					<if test="lowest!=null">
+				<![CDATA[	,decode(	concat(to_char(round(sum(case when  ALL_TOTAL < ${lowest} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%'),'0.0%',''
+					,concat(to_char(round(sum(case when ALL_TOTAL < ${lowest} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%')) as LS${lowest} ]]>
+					</if>
+					<if test="take_exam_num !=null">
+				<![CDATA[
+				,concat(to_char(round(sum(case when city_rank <= ${take_exam_num}*0.3 THEN 1 else 0 END)/count(1),4)*100),'%') as A,
+				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.3 and city_rank <= ${take_exam_num}*0.65 THEN 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')   as B,
+				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.65 and city_rank <= ${take_exam_num}*0.9 then 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')   as C,
+				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.9 and city_rank <= ${take_exam_num}*1 THEN 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')  as D 
+				]]>
+				</if>
+				</if>			
+				from rpt_exp_student_allscore
+				where exambatch_id = #{exambatchId} 
+				<if test = "type != null">
+					AND type = #{type}
+				</if>
+				<if test = "cityCode != null">
+					AND city_code = #{cityCode}
+				</if>  
+				<if test = "stuType!=null">
+        		and student_type = #{stuType}        
+  				</if>
+  				<if test = "type!=null">
+        		and type = #{type}        
+  				</if>
+				group by exambatch_id,city_code
+ 		</select>
+ 		<!-- 获取参加这次考试的所有地区总分的分数段人数-->
+ 		<select id="qryScorePersonNumByAreaAllscore" resultType="java.util.HashMap" >
+ 				select area_id, 
+ 				<if test="scoreList!=null">
+				<foreach collection="scoreList" index="index" item="score"
+						open=" " separator="," close="  ">
+						<!-- sum(decode(trunc(all_total/replace('${score}','_','.')),0,0,1)) as HE${score} -->
+						sum(case when all_total >= replace('${score}','_','.') then 1 else 0 end) as HE${score}
+				</foreach>
+				</if>
+				<if test="scoreList2!=null"><!-- 中山报表指标 -->
+					<foreach collection="scoreList2" index="index" item="score"
+						open=" " separator="," close="  ">
+						<!-- sum(decode(trunc(sign_total/replace('${score}','_','.')),0,0,1)) as HE${score} -->
+						<![CDATA[decode(	concat(to_char(round(sum(case when ALL_TOTAL< (${score}+${step}) and ALL_TOTAL >= ${score} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%'),'0.0%',''
+					,concat(to_char(round(sum(case when ALL_TOTAL< (${score}+${step}) and ALL_TOTAL >= ${score} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%')) as UNDER${score} ]]>
+				</foreach>
+				<if test="highest!=null">
+					,decode(	concat(to_char(round(sum(case when  ALL_TOTAL >= ${highest} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%'),'0.0%',''
+					,concat(to_char(round(sum(case when ALL_TOTAL >= ${highest} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%')) as HE${highest} 
+					</if>
+					<if test="lowest!=null">
+				<![CDATA[	,decode(	concat(to_char(round(sum(case when  ALL_TOTAL < ${lowest} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%'),'0.0%',''
+					,concat(to_char(round(sum(case when ALL_TOTAL < ${lowest} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%')) as LS${lowest} ]]>
+					</if>
+					<if test="take_exam_num !=null">
+				<![CDATA[
+				,concat(to_char(round(sum(case when city_rank <= ${take_exam_num}*0.3 THEN 1 else 0 END)/count(1),4)*100,'FM990.09'),'%') as A,
+				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.3 and city_rank <= ${take_exam_num}*0.65 THEN 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')   as B,
+				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.65 and city_rank <= ${take_exam_num}*0.9 then 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')   as C,
+				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.9 and city_rank <= ${take_exam_num}*1 THEN 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')  as D 
+				]]>
+				</if>
+				</if>			
+				from rpt_exp_student_allscore
+				where exambatch_id = #{exambatchId} 
+				<if test = "type != null">
+					AND type = #{type}
+				</if>
+				<if test = "cityCode != null">
+					AND city_code = #{cityCode}
+				</if>  
+				<if test = "stuType!=null">
+        		and student_type = #{stuType}        
+  				</if>
+  				 <if test="areaId!=null">
+  					and area_id = #{areaId}
+  				</if>
+  				<if test = "type!=null">
+        		and type = #{type}        
+  				</if>
+				group by area_id
+				order by area_id
+ 		</select>
+ 		<!-- 获取参加这次考试的所有班级总分的分数段人数-->
+ 		<select id="qryScorePersonNumByClassAllscore" resultType="java.util.HashMap" >
+ 				select sch_id,cls_id,
+ 				<if test="scoreList!=null">
+				<foreach collection="scoreList" index="index" item="score"
+						open=" " separator="," close="  ">
+						<!-- sum(decode(trunc(all_total/replace('${score}','_','.')),0,0,1)) as HE${score} -->
+						sum(case when all_total >= replace('${score}','_','.') then 1 else 0 end) as HE${score}
+				</foreach>
+				</if>
+				<if test="scoreList2!=null"><!-- 中山报表指标 -->
+					<foreach collection="scoreList2" index="index" item="score"
+						open=" " separator="," close="  ">
+						<![CDATA[decode(	concat(to_char(round(sum(case when ALL_TOTAL< (${score}+${step}) and ALL_TOTAL >= ${score} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%'),'0.0%',''
+					,concat(to_char(round(sum(case when ALL_TOTAL< (${score}+${step}) and ALL_TOTAL >= ${score} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%')) as UNDER${score} ]]>
+				</foreach>
+					<if test="highest!=null">
+					,decode(	concat(to_char(round(sum(case when  ALL_TOTAL >= ${highest} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%'),'0.0%',''
+					,concat(to_char(round(sum(case when ALL_TOTAL >= ${highest} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%')) as HE${highest} 
+					</if>
+					<if test="lowest!=null">
+				<![CDATA[	,decode(	concat(to_char(round(sum(case when  ALL_TOTAL < ${lowest} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%'),'0.0%',''
+					,concat(to_char(round(sum(case when ALL_TOTAL < ${lowest} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%')) as LS${lowest} ]]>
+					</if>
+					<if test="take_exam_num !=null">
+				<![CDATA[
+				,concat(to_char(round(sum(case when city_rank <= ${take_exam_num}*0.3 THEN 1 else 0 END)/count(1),4)*100,'FM990.09'),'%') as A,
+				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.3 and city_rank <= ${take_exam_num}*0.65 THEN 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')   as B,
+				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.65 and city_rank <= ${take_exam_num}*0.9 then 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')   as C,
+				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.9 and city_rank <= ${take_exam_num}*1 THEN 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')  as D 
+				]]>
+				</if>
+				</if>			
+				from rpt_exp_student_allscore
+				where exambatch_id = #{exambatchId} 
+				<if test = "type != null">
+					AND type = #{type}
+				</if>
+				<if test = "cityCode != null">
+					AND city_code = #{cityCode}
+				</if>  
+				<if test = "stuType!=null">
+        		and student_type = #{stuType}        
+  				</if>
+				 <if test="schoolId!=null">and  sch_id = #{schoolId}</if>
+				<if test="classesId!=null">and  cls_id = #{classesId}</if>
+				<if test = "type!=null">
+        		and type = #{type}        
+  				</if>
+				group by sch_id,cls_id
+				order by cls_id
+ 		</select>
+ 		
+ 		<!-- 根据名次段获取分数段-->
+ 		<select id="getScoreLineOfAllscoreByRank" resultType="java.util.HashMap" >
+ 			select 
+ 			<foreach collection="rankList" index="index" item="rank"
+						open="  "  separator="," close=" ">
+							<![CDATA[	min(case when city_rank <= #{rank} then all_total else 9999 end) as scoreOfHead${rank}]]>
+			</foreach>
+			from rpt_exp_student_allscore 
+			where exambatch_id = #{exambatchId}
+			<if test = "type != null">
+					AND type = #{type}
+				</if>
+				<if test = "cityCode != null">
+					AND city_code = #{cityCode}
+				</if>  
+				<if test = "stuType!=null">
+        		and student_type = #{stuType}        
+  				</if>
+ 		</select>
+
+	<select id="qryAllscoreStuNum" resultType="java.util.HashMap" >
+		select  exambatch_id, exambatch_name, batchid,
+		<if test="GroupBy"> ${GroupBy},</if>
+		max(absent_exam_stu_num) as absent_exam_stu_num,
+		max(should_exam_stu_num) as should_exam_stu_num,
+		max(exam_stu_num) as exam_stu_num
+		from (
+		select
+		exambatch_id, exambatch_name, batchid,
+		paper_id, paper_name,/* city_id, city_name, area_id, area_name, sch_id.sch_name, grade_id, grade_name, cls_id,
+		cls_name,cls_type,*/
+		<if test="GroupBy"> ${GroupBy},</if>
+		sum(absent_exam_stu_num) AS absent_exam_stu_num,
+		sum(should_exam_stu_num) AS should_exam_stu_num,
+		sum(exam_stu_num) AS exam_stu_num
+		from rpt_exp_issue_class_info
+		<where>
+			exambatch_id = #{exambatchId}
+			<if test="areaId != null ">
+				and area_id = #{areaId}
+			</if>
+			<if test="schoolId != null">
+				and sch_id = #{schoolId}
+			</if>
+			<if test="classesId != null">
+				and cls_id = classesId
+			</if>
+			<if test="type != null">
+				and cls_type = #{type}
+			</if>
+		</where>
+		group by exambatch_id, exambatch_name, batchid，paper_id, paper_name
+		<if test="GroupBy != null">
+			, ${GroupBy}
+		</if>
+		)group by exambatch_id, exambatch_name, batchid
+		<if test="GroupBy != null">
+			, ${GroupBy}
+		</if>
+	</select>
+
+
+
+  <sql id="OracleDialectPrefix" >
+    <if test="page != null" >
+      select * from ( select row_.*, rownum rownum_ from ( 
+    </if>
+  </sql>
+  <sql id="OracleDialectSuffix" >
+    <if test="page != null" >
+      <![CDATA[ ) row_ ) where rownum_ >= #{page.begin} and rownum_ <= #{page.end} ]]>
+    </if>
+  </sql>
+</mapper>

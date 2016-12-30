@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="zyj.report.persistence.client.JyjRptExtMapper" >
+	<!-- 查询考试场次有的科目 -->
+	<select id="qrySubjectInfoByExam" resultType="java.util.HashMap" >
+		<!-- select LTRIM(MAX(SYS_CONNECT_BY_PATH(subject, ',')), ',') subject from(select a.*,lag(no)over(order by no) pid from (select  subject,rownum as no from rpt_exp_city_subject where exambatch_id = #{exambatchId} )a
+         )t start with pid is null connect by prior no=pid -->
+		select  paper_id ,subject ,subject_name ,type from yjxt.rpt_exp_paperexam_info where exambatch_id = #{exambatchId}
+		group by paper_id ,subject,type,subject_name
+	</select>
+
+	<select id="qryAreaAndSchName" resultType="java.util.HashMap" >
+		<!--	select cs.areacode as area_id,cs.name as schname,cs.id as sch_id,decode(xian.name,'null','市直',xian.name)  as areaname
+            from yjxt.cas_school@yjxt cs
+            left join yjxt.xian@yjxt  xian on cs.areacode = xian.code_id -->
+		select a.sch_name as schname,b.area_name as areaname,a.area_id , a.sch_id  from (
+		SELECT area_id , sch_id ,sch_name from rpt_exp_school_subject where exambatch_id = #{exambatchId}
+		group by area_id , sch_id ,sch_name)a
+		left join (
+		select area_id ,area_name from rpt_exp_area_subject where exambatch_id =#{exambatchId} group by area_id ,area_name
+		) b on b.area_id = a.area_id
+	</select>
+
+	<select id="qryAreaName" resultType="java.util.HashMap" >
+		<!--	select  xian.name as areaname,xian.code_id as area_id
+            from yjxt.xian@yjxt -->
+		SELECT area_id,area_name as areaname   from rpt_exp_area_subject where exambatch_id =#{exambatchId}
+		group by area_id  ,area_name
+	</select>
+	<select id="qryClassesInfo" resultType="java.util.HashMap" >
+		<!--select cc.id as cls_id,csh.areacode as area_Id,nvl(xian.name,'市直')as areaname,cc.name as clsname,cc.type as cls_type,csh.id as sch_id,csh.name as schname  from yjxt.tifen_studentpaper@yjxt  tsp
+        join yjxt.tifen_paper@yjxt tp on  tp.id = tsp.paper_id
+        inner join yjxt.cas_student@yjxt cs on tsp."USER" = cs.user_id
+        join yjxt.cas_classes@yjxt cc on cc.id = cs.classes_id
+        join yjxt.cas_school@yjxt csh on csh.id = cc.school_id
+        left join yjxt.xian@yjxt xian on xian.code_id = csh.areacode
+        where tp.tips =#{exambatchId}
+        group by cc.id,cc.name,cc.type,csh.id,csh.name,csh.areacode,csh.areacode,xian.name -->
+		<!-- select a.cls_id,a.cls_name as clsname,a.sch_id,a.sch_name as schname,a.type as cls_type,a.area_id ,b.area_name as areaname from(
+		select cls_id ,type,cls_name,sch_id,sch_name,area_id from rpt_exp_class_subject where exambatch_id = #{exambatchId} and type!=3
+		group by cls_id ,type,cls_name,sch_id,sch_name,area_id) a
+		left join (select area_id ,area_name from rpt_exp_area_subject where exambatch_id = #{exambatchId} group by area_id ,area_name
+		) b on b.area_id = a.area_id -->
+		select exambatch_id , exambatch_name, city_id,city_name ,area_id , area_name , sch_id , sch_name , cls_id , cls_name , cls_type from rpt_exp_issue_class_info
+		where exambatch_id = #{exambatchId}
+		group by  exambatch_id , exambatch_name, city_id,city_name ,area_id , area_name , sch_id , sch_name , cls_id , cls_name , cls_type
+	</select>
+
+
+
+	<!-- 获取全市参加这次考试的所有学校的信息-->
+	<select id="qryAllSchoolByCity" resultType="java.util.HashMap" >
+		select   sch_id,sch_name,area_id from RPT_EXP_SCHOOL_SUBJECT where exambatch_id = #{exambatchId}
+		<if test="cityCode!=null">
+
+			and  city_code = #{cityCode}
+		</if>
+		<if test = "stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		group by sch_id,sch_name,area_id
+		order by area_id,sch_id
+
+	</select>
+	<!-- 获取全市参加这次考试的所有地区的信息-->
+	<select id="qryAllAreaByCity" resultType="java.util.HashMap" >
+		select  distinct area_id from RPT_EXP_AREA_ALLSCORE where exambatch_id = #{exambatchId} and  city_code = #{cityCode}
+	</select>
+
+
+
+
+	<!-- 考试场次 -->
+	<select id="qryExambatch" resultType="java.util.HashMap" parameterType="java.lang.String">
+		<!--   select id ,name ,school_id ,cuser_id ,to_char(cdate,'DD Mon YYYY') as cdate, status
+              from yjxt.tifen_exambatch@yjxt
+                <where>
+                     id=#{id}
+                </where>  -->
+		select exambatch_id as id ,exambatch_name  as name from yjxt.rpt_exp_paperexam_info where exambatch_id = #{id}
+		group by exambatch_id ,exambatch_name
+	</select>
+
+	<!-- 查询参考年级 -->
+	<select id="qryExamGrade" resultType="java.lang.String" parameterType="java.lang.String">
+		<!--  select p.grade
+              from yjxt.tifen_paper@yjxt p
+                join yjxt.tifen_exambatch@yjxt e on p.tips=e.id
+            where e.id=#{examId}
+            group by p.grade -->
+		select distinct grade from yjxt.rpt_exp_paperexam_info where exambatch_id = #{examId}
+	</select>
+
+	<!-- 试卷列表-->
+	<select id="qryPaperList" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+		<!--   select  id, name ,status ,subject ,template_id ,to_char(cdate,'DD Mon YYYY') as cdate
+            ,grade,type,exam_scope,school, answercard_count,scores
+            ,tips,difficulty
+              from yjxt.tifen_paper@yjxt t
+                where tips=#{examId}
+                <if test="finished == 'true'">and status =5 and type !=-3</if>
+                 <if test="grade!=null">and grade=#{grade}</if>
+                <if test="subject!=null">and subject=#{subject}</if>
+                 <if test="paperId!=null">and id=#{paperId}</if> -->
+		select paper_id as id ,grade,subject from yjxt.rpt_exp_paperexam_info where exambatch_id = #{examId}
+	</select>
+
+	<!-- 检查是否存在文理科混考的班级 @deprecated -->
+	<select id="qryClassesInWenAndLiCnt" resultType="java.lang.Integer" parameterType="java.util.HashMap">
+		select count(1)
+		from yjxt.tifen_issue@yjxt iss
+		join yjxt.tifen_paper@yjxt p on iss.paper_id=p.id
+		where (p.subject='WSX'or p.subject='WZ') and p.tips=#{examId} and p.grade=#{grade}
+		and iss.classes in
+		(
+		select iss.classes
+		from yjxt.tifen_issue@yjxt iss
+		join yjxt.tifen_paper@yjxt p on iss.paper_id=p.id
+		where (p.subject='LSX'or p.subject='LZ') and p.tips=#{examId} and p.grade=#{grade}
+		)
+	</select>
+
+	<!-- 检查是否存在文理科都不考的班级  @deprecated-->
+	<select id="qryClassesNotInWenAndLiCnt" resultType="java.lang.Integer" parameterType="java.util.HashMap">
+		select count(1)
+		from yjxt.tifen_issue@yjxt iss
+		join yjxttifen_paper@yjxt p on iss.paper_id=p.id
+		where p.tips=#{examId} and p.grade=#{grade}
+		and iss.classes not in
+		(
+		select iss.classes
+		from yjxt.tifen_issue@yjxt iss
+		join yjxt.tifen_paper@yjxt p on iss.paper_id=p.id
+		where (p.subject='WSX'or p.subject='WZ' or p.subject='LSX'or p.subject='LZ')
+		and p.tips=#{examId} and p.grade=#{grade}
+		)
+	</select>
+
+	<!-- 考试城市 -->
+	<select id="qryExamCity" resultType="java.util.HashMap" parameterType="java.lang.String">
+		<!--   select to_char(shi.code_id) as citycode, shi.name
+              from yjxt.tifen_exambatch@yjxt e
+                join yjxt.tifen_paper@yjxt p on p.tips=e.id
+                  join yjxt.tifen_issueschool@yjxt iss on iss.paper_id=p.id
+                    join yjxt.cas_school@yjxt cs on cs.id=iss.school
+                      join yjxt.shi@yjxt shi on shi.code_id=cs.citycode
+            where e.id=#{examId}
+            group by shi.code_id, shi.name
+            order by shi.name -->
+		select city_code as citycode ,city_name  as name from yjxt.rpt_exp_paperexam_info where exambatch_id =#{examId}
+		group by city_code   ,city_name
+	</select>
+
+	<!-- 考试县镇 -->
+	<select id="qryExamArea" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+		<!--   select nvl(xian.code_id,cs.citycode) as areacode, nvl(xian.name,'市直') as name
+              from yjxt.tifen_exambatch@yjxt e
+                join yjxt.tifen_paper@yjxt  p on p.tips=e.id
+                  join yjxt.tifen_issueschool@yjxt iss on iss.paper_id=p.id
+                    join yjxt.cas_school@yjxt cs on cs.id=iss.school
+                      left join yjxt.xian@yjxt xian on xian.code_id=cs.areacode
+            where e.id=#{examId} and p.grade=#{grade} and cs.citycode=#{cityCode}
+             group by xian.code_id, xian.name,cs.citycode
+            order by xian.name -->
+		select area_id as areacode ,area_name as name from rpt_exp_area_subject where exambatch_id = #{examId}  group by area_id ,area_name
+	</select>
+
+	<!-- 考试学校 -->
+	<select id="qryExamSchool" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+		<!--   select cs.id, cs.name, cs.schoolcode
+              from yjxt.tifen_exambatch@yjxt e
+                join yjxt.tifen_paper@yjxt p on p.tips=e.id
+                  join yjxt.tifen_issueschool@yjxt iss on iss.paper_id=p.id
+                    join yjxt.cas_school@yjxt cs on cs.id=iss.school
+            where e.id=#{examId} and p.grade=#{grade} and areacode=#{areaCode}
+            group by cs.id, cs.name, cs.schoolcode
+            order by cs.name -->
+		SELECT area_id , sch_id as id ,sch_name  as name from rpt_exp_school_subject where exambatch_id =#{examId} and area_id=#{areaCode}
+		group by area_id , sch_id ,sch_name
+	</select>
+
+	<!-- 考试班级 -->
+	<select id="qryExamClasses" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+		<!--  select cl.id, cl.name
+              from yjxt.tifen_exambatch@yjxt e
+                join yjxt.tifen_paper@yjxt p on p.tips=e.id
+                  join yjxt.tifen_issue@yjxt iss on iss.paper_id=p.id
+                    join yjxt.cas_classes@yjxt cl on cl.id=iss.classes
+                      join yjxt.cas_school@yjxt csh on csh.id=cl.school_id
+            where e.id=#{examId} and p.grade=#{grade}
+            <if test="cityCode != null">
+              and csh.citycode=#{cityCode}
+            </if>
+            <if test="paperId != null">
+              and p.id=#{paperId}
+            </if>
+            <if test="areaCode != null">
+              and csh.areacode=#{areaCode}
+            </if>
+            <if test="schoolId != null">
+              and cl.school_id=#{schoolId}
+            </if>
+            <if test="classesId != null">
+              and iss.classes=#{classesId}
+            </if>
+            <if test="paperIds != null">
+              and p.id in (${paperIds})
+            </if>
+            group by cl.id, cl.name
+            order by cl.name -->
+		select cls_id as id ,cls_name as name,sch_id,sch_name,area_id from rpt_exp_class_subject where exambatch_id = #{examId}
+		<if test="cityCode != null">
+			and city_code=#{cityCode}
+		</if>
+		<if test="paperId != null">
+			and paper_id=#{paperId}
+		</if>
+		<if test="areaCode != null">
+			and area_id=#{areaCode}
+		</if>
+		<if test="schoolId != null">
+			and sch_id=#{schoolId}
+		</if>
+		<if test="classesId != null">
+			and cls_id=#{classesId}
+		</if>
+		<if test="paperIds != null">
+			and paper_id in (${paperIds})
+		</if>
+		group by cls_id ,cls_name,sch_id,sch_name,area_id
+		order by cls_name
+	</select>
+
+	<select id="qryExamType" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+		<!--	select cc.type from yjxt.tifen_studentpaper@yjxt tsp
+        join yjxt.tifen_paper@yjxt tp on  tp.id = tsp.paper_id
+        inner join yjxt.cas_student@yjxt cs on tsp."USER" = cs.user_id
+        join yjxt.cas_classes@yjxt cc on cc.id = cs.classes_id
+        where tp.tips = #{examId}
+        group by cc.type -->
+
+		select distinct type from yjxt.rpt_exp_paperexam_info where exambatch_id =#{examId}
+	</select>
+
+	<!--  新增页面数据查询 -->
+	<select id="qryExamRecent" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+		<!--
+    select * from (
+    select to_char(shi.code_id) as citycode, shi.name AS AREANAME,e.id,to_char(e.cdate,'DD Mon YYYY') as cdate,e.name,decode(AVG(p.status),5,'true','false') as isfinished
+            from yjxt.tifen_exambatch@yjxt e
+              join yjxt.tifen_paper@yjxt p on (p.tips=e.id and p.type!=-3 )
+                  join yjxt.tifen_issueschool@yjxt iss on iss.paper_id=p.id
+                    join yjxt.cas_school@yjxt cs on cs.id=iss.school
+                      join yjxt.shi@yjxt shi on shi.code_id=cs.citycode
+            <where>
+                  shi.name not like '%测试%'
+            <if test = "batchname!=null">
+           and  e.name like #{batchname}
+            </if>
+                <if test="idList !=null">
+                    and e.id in
+                    <foreach collection="idList" index="index" item="id"
+                             open=" (" separator="," close=") ">
+                        #{id}
+                    </foreach>
+                </if>
+            </where>
+            group by shi.code_id, shi.name,e.id,e.cdate,e.name
+            order by e.cdate desc
+            )
+    <![CDATA[	 where rownum<15 ]]>
+    -->
+	</select>
+
+	<select id="qryQuestionsByExamAndSubject" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+		<!--
+         select q.question_order ,q.no,q.type,q.scores,sum(q.scores)over() as papertotal  ,p.id as paper_id from yjxt.tifen_question@yjxt q
+         join yjxt.tifen_paper@yjxt p on p.id = q.paper_id
+         where p.tips = #{exambatchId}
+         and subject = #{subject}
+         and (p.status = 3 or p.status = 5)
+         order by q.question_order
+         -->
+	</select>
+	<select id="qryIsChooseQuestionsByExamAndSubject" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+		<!--
+          select qg.id as group_id,qgd.question_orders,p.subject,p.id as paper_id from yjxt.tifen_question_group@yjxt qg,yjxt.tifen_question_group_detail@yjxt qgd,yjxt.tifen_paper@yjxt p
+         where p.id = qg.paper_id and qgd.question_group_id = qg.id and p.tips =#{exambatchId}
+         and p.subject= #{subject0}  AND( P.STATUS =3 OR P.STATUS =5)
+         -->
+	</select>
+
+	<insert id="insertOneIntoWLQuestion" parameterType="java.util.HashMap">
+		<!--
+         insert into yjxt.rpt_exp_wl_question@yjxt values(#{exambatchId},#{orderList},#{subject},#{paperId},#{new_subject},#{subTotal},#{objTotal},#{paperScore})
+         -->
+	</insert>
+
+	<delete id="deleteOneFromWLQuestion" parameterType="java.util.HashMap">
+delete from yjxt.rpt_exp_wl_question@yjxt where
+tip_id = #{exambatchId}
+and subject = #{subject}
+and new_subject = #{new_subject}
+ </delete>
+
+
+	<select id="qryWLQuestion" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+		select tip_id ,order_list,subject,paper_id,sub_total,obj_total,paper_score from yjxt.rpt_exp_wl_question@yjxt
+		<where>
+			<if test ="exambatchId!=null">
+				and tip_id = #{exambatchId}
+			</if>
+			<if test ="paperId!=null">
+				and paper_id = #{paperId}
+			</if>
+
+			<if test ="new_subject!=null">
+				and new_subject = #{new_subject}
+			</if>
+		</where>
+	</select>
+
+	<select id="qryStuType" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+ select cs.type from
+       yjxt.tifen_paper@yjxt p 
+      join yjxt.tifen_issue@yjxt i on i.paper_id = p.id
+      join yjxt.cas_student@yjxt cs on cs.classes_id = i.classes
+      where p.tips = #{examId} group by cs.type
+</select>
+	<select id="qryStuNum" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+select count(1)  as num from (
+  select 1
+	      from yjxt.tifen_exambatch@yjxt e
+	        join yjxt.tifen_paper@yjxt p on p.tips=e.id
+	          join yjxt.tifen_issue@yjxt iss on iss.paper_id=p.id
+	            join yjxt.cas_classes@yjxt cl on cl.id=iss.classes
+	              join yjxt.cas_student@yjxt cs on cs.classes_id=cl.id
+	    where e.id=#{examId} group by cs.user_id) 
+</select>
+
+	<select id="qryExpProcess" resultType="java.util.HashMap" parameterType="java.util.HashMap">
+		select exambatch_id ,city_code ,student_type,persentage,last_update_time,status,paper_id ,report_type,subject  from rpt_exp_process
+		<where>
+			<if test="exambatchId != null">and exambatch_id = #{exambatchId}</if>
+			<if test="cityCode != null">and city_code = #{cityCode}</if>
+			<if test="stuType != null">and student_type = #{stuType}</if>
+			<if test="paperId != null">and paper_id = #{paperId}</if>
+			<if test="rptType != null">and report_type = #{rptType}</if>
+			<if test="statusList != null">and status in
+				<foreach collection="statusList" index="index" item="status"
+						 open=" (" separator="," close=") ">
+					#{status}
+				</foreach>
+			</if>
+		</where>
+	</select>
+	<insert id="insertExpProcess" parameterType="java.util.HashMap">
+ insert into rpt_exp_process  values(#{exambatchId},#{cityCode},#{stuType},#{persentage},#{time},#{status},#{paperId},#{rptType},#{subject})
+ </insert>
+	<delete id="delExpProcess" parameterType="java.util.HashMap">
+		delete from rpt_exp_process
+		<where>
+			<if test="exambatchId != null">and exambatch_id = #{exambatchId}</if>
+			<if test="cityCode != null">and city_code = #{cityCode}</if>
+			<if test="stuType != null">and student_type = #{stuType}</if>
+			<if test="paperId != null">and paper_id = #{paperId}</if>
+			<if test="rptType != null">and report_type = #{rptType}</if>
+			<if test="status != null">and status = #{status}</if>
+		</where>
+	</delete>
+	<update id="updateExpProcess" parameterType="java.util.HashMap">
+		update rpt_exp_process set
+		<if test="exambatchId != null">exambatch_id = #{exambatchId}</if>
+		<if test="cityCode != null"> ,city_code = #{cityCode}</if>
+		<if test="stuType != null">,student_type = #{stuType}</if>
+		<if test="persentage != null">,persentage = #{persentage}</if>
+		<if test="status != null">,status = #{status}</if>
+		<if test="time != null">,last_update_time = #{time}</if>
+		<where>
+			<if test="exambatchId != null">and exambatch_id = #{exambatchId}</if>
+			<if test="cityCode != null">and city_code = #{cityCode}</if>
+			<if test="stuType != null">and student_type = #{stuType}</if>
+			<if test="paperId != null">and paper_id = #{paperId}</if>
+			<if test="rptType != null">and report_type = #{rptType}</if>
+		</where>
+	</update>
+
+	<!-- 学生答题记录（student_question）在学生试卷（student_paper  )中都找到对应关系。 -->
+	<select id="checkpaper1" resultType="java.util.HashMap" parameterType="java.lang.String">
+    	SELECT /*+ parallel(a 20) */
+         COUNT (*) as result
+     FROM tifen_studentquestion a
+    WHERE     NOT EXISTS
+                     (SELECT *
+                        FROM tifen_studentpaper b
+                       WHERE     a.paper_id = b.paper_id
+                             AND a."USER" = b."USER"
+                             AND a.studentpaper_id = b.id)
+          AND EXISTS
+                 (SELECT *
+                    FROM tifen_paper c
+                   WHERE     a.paper_id = c.id
+                          and   c.id = #{paperId}
+                         AND TO_CHAR (c."START", 'yyyy-mm') >= '2015-05')
+    </select>
+	<!--  同一学生同一试卷 在 学生试卷（student_paper )只有1条记录  -->
+	<select id="checkpaper2" resultType="java.util.HashMap" parameterType="java.lang.String">
+   		SELECT /*+ parallel(a 20) */
+           COUNT (PAPER_ID)  as result
+       FROM tifen_studentpaper a
+      WHERE EXISTS
+               (SELECT *
+                  FROM tifen_paper b
+                 WHERE     a.paper_id = b.id
+                       and b.id = #{paperId}
+                       AND TO_CHAR (b."START", 'yyyy-mm') >= '2015-05')
+   GROUP BY "USER", PAPER_ID
+     HAVING COUNT (*) > 1
+   </select>
+	<!-- 同一学生同一试卷同一试题 在学生答题记录（student_question）只有1条记录     -->
+	<select id="checkpaper3" resultType="java.util.HashMap" parameterType="java.lang.String">
+    SELECT /*+ parallel(a 20) */
+        COUNT (QUESTION_ORDER)  as result
+    FROM tifen_studentquestion a
+   where paper_id =  #{paperId}
+GROUP BY "USER", PAPER_ID, QUESTION_ORDER
+  HAVING COUNT (*) > 1
+   </select>
+	<!-- 同一学生同一试卷 的试题数量应该和 学生答题记录（student_question）中同一试卷的数量一致  -->
+	<select id="checkpaper4" resultType="java.util.HashMap" parameterType="java.lang.String">
+   SELECT /*+ parallel(a 20) */
+         COUNT (*)  as result
+     FROM tifen_paper p, tifen_question a, tifen_studentpaper b
+    WHERE     p.id = a.paper_id
+          AND a.paper_id = b.paper_id
+          and p.id =  #{paperId}
+          AND NOT EXISTS
+                     (SELECT /*+ index(c IDX_TIFEN_STUDENTQUESTION_USER)*/*
+                        FROM tifen_studentquestion c
+                       WHERE     p.id = c.paper_id
+                             AND a.question_order = c.question_order
+                             AND b."USER" = C."USER")
+   </select>
+
+
+	<select id="updateSubjectName" resultType="java.util.HashMap" >
+		SELECT shortname,longname, effective FROM rpt_exp_subjectName_mapping
+	</select>
+</mapper>

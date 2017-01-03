@@ -99,7 +99,7 @@ public class ExpZongHeZhiBiaoService extends BaseRptService {
 			parmter.put("GroupBy", "SCH_ID,CLS_TYPE");
 			Map<String,Map<String, Object>>schPersonNum_wl = CalToolUtil.trans(rptExpAllscoreMapper.qryAllscoreStuNum(parmter), new String[]{"SCH_ID", "CLS_TYPE"});
 			parmter.put("GroupBy", "AREA_ID,CLS_TYPE");
-			Map<String,Map<String, Object>>areaPersonNum_wl = CalToolUtil.trans(rptExpAllscoreMapper.qryAllscoreStuNum(parmter), new String[]{"AERA_ID", "CLS_TYPE"});
+			Map<String,Map<String, Object>>areaPersonNum_wl = CalToolUtil.trans(rptExpAllscoreMapper.qryAllscoreStuNum(parmter), new String[]{"AREA_ID", "CLS_TYPE"});
 			parmter.put("GroupBy", "CITY_ID,CLS_TYPE");
 			Map<String,Map<String, Object>>cityPersonNum_wl = CalToolUtil.trans(rptExpAllscoreMapper.qryAllscoreStuNum(parmter), new String[]{ "CLS_TYPE"});
 			//不分文理时的人数

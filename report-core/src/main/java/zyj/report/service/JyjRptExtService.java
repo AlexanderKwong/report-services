@@ -97,6 +97,7 @@ public class JyjRptExtService {
 			totalscoreMap.put("PAPER_ID", "total");
 			totalscoreMap.put("SUBJECT", "total");
 			totalscoreMap.put("SUBJECT_NAME", "总分");
+			totalscoreMap.put("TYPE", "0");
 			if (paperIds2Exp.contains("all")) {
 				subjects2Exp = new ArrayList<>(subjectList);
 				subjects2Exp.add(totalscoreMap);
@@ -126,7 +127,7 @@ public class JyjRptExtService {
 				wenliFlag = true;
 				for (Map<String, Object> subjectInfo : subjects2Exp) {
 //					String subject = (String) subjectInfo.get("SUBJECT");
-					String type = (String) subjectInfo.get("TYPE");
+					String type =  subjectInfo.get("TYPE").toString();
 //					if (Arrays.asList(BaseRptService.subjects_w).contains(subject)) {
 //						wenPaperList.add(subjectInfo);
 //					} else if (Arrays.asList(BaseRptService.subjects_l).contains(subject))

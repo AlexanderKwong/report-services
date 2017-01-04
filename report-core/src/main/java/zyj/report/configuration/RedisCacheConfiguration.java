@@ -51,6 +51,7 @@ public class RedisCacheConfiguration extends CachingConfigurerSupport {
         redisConnectionFactory.setPort(env.getRequiredProperty("jedispool.port", Integer.class));
 //        redisConnectionFactory.setPassword(env.getProperty("jedispool.password"));
         redisConnectionFactory.setUsePool(env.getRequiredProperty("jedispool.usePool", Boolean.class));
+        redisConnectionFactory.setTimeout(env.getRequiredProperty("jedispool.timeOut", Integer.class));
 
         redisConnectionFactory.setPoolConfig(jedisPoolConfig);
         return redisConnectionFactory;

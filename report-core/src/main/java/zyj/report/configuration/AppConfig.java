@@ -27,14 +27,14 @@ public class AppConfig {
 
         AbstractApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
 
-        final String examId = "e43548ed-677e-4f86-a762-60808eb08299";
+        final String examId = "7943ec7c-956c-4cd1-8ada-65e35097aa95";
 //        final String examId = args[0];
 //        final Integer stuType = Integer.valueOf(args[1]);
 //        final Integer rptType = Integer.valueOf(args[2]);
 
         JyjRptExtService jyjRptExtService = (JyjRptExtService) context.getBean("jyjRptExtService");
 
-        RptTaskQueue<RptTask> rptTaskQueue = jyjRptExtService.getRptTaskQueue(examId, 0, 0, Arrays.asList(new String[]{"all"}));
+        RptTaskQueue<RptTask> rptTaskQueue = jyjRptExtService.getRptTaskQueue(examId, 1, 0, Arrays.asList(new String[]{"all"}));
         //单机模式
         JyjRptExtService.MainTaskThread mainTaskThread = new JyjRptExtService.MainTaskThread(examId,examId ,rptTaskQueue);
 

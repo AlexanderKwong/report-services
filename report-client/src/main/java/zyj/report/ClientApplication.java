@@ -69,7 +69,7 @@ public class ClientApplication {
             /**
              * test
              */
-            ((ReportMsgService)context.getBean("reportMsgService")).dispatchMsg("{\"paperExamIds\":[\"all\"],\"paperId\":\"e43548ed-677e-4f86-a762-60808eb08299\",\"reDo\":true,\"reportType\":0,\"studentType\":0}");
+//            ((ReportMsgService)context.getBean("reportMsgService")).dispatchMsg("{\"paperExamIds\":[\"all\"],\"paperId\":\"e43548ed-677e-4f86-a762-60808eb08299\",\"reDo\":true,\"reportType\":0,\"studentType\":0}");
             ;
             while(true){
 

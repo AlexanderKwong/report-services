@@ -99,6 +99,7 @@ public class RptTaskBase extends RptTask {
 			parmter.put("subject", subject.get("SUBJECT"));
 			parmter.put("subjectName", subject.get("SUBJECT_NAME"));
 			parmter.put("paperId", subject.get("PAPER_ID"));
+			parmter.put("type", subject.get("TYPE"));
 		}
 		if (this.scopeId != null)
 			parmter.put(level + "Id", scopeId);

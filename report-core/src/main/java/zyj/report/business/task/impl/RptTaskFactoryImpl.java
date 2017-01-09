@@ -615,7 +615,7 @@ public class RptTaskFactoryImpl implements RptTaskFactory {
 	}
 
 	/**
-	 * 孝感版
+	 * 湖北版
 	 *
 	 * @author admin
 	 */

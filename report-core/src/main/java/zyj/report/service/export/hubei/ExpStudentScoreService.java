@@ -31,10 +31,6 @@ public class ExpStudentScoreService extends BaseRptService {
 
 	private static String excelName = "学生各科成绩和总分（%s)";
 
-	private final String myKey = "StudentScore";//与学科分组分析共享key ，缓存内容相同
-
-	List<SubjectInfo> subjectList;
-
 	@Override
 	public void exportData(Map<String, Object> params) throws Exception {
 
@@ -45,14 +41,17 @@ public class ExpStudentScoreService extends BaseRptService {
 		if (p.getExamBatchId() == null || p.getPath() == null || p.getLevel() == null)
 			return;
 
+		// 查询出当前有多少个班级参与
+		List<Map<String, Object>> classList = jyjRptExtMapper.qryClassesInfo(p.getExamBatchId());
+
 		// 初始化 filed
-		List<Field> fields = getFields();
+		List<Field> fields = getFields(classList);
 
 		// 初始化 sheet
-		List<Sheet> sheets = getSheet(fields);
+		List<Sheet> sheets = getSheet(fields, classList);
 
 		// 初始化 excel
-		Excel excel = new Excel(String.format(excelName, "班级")+".xls", p.getPath(), sheets);
+		Excel excel = new Excel(String.format(excelName, "班级") + ".xls", p.getPath(), sheets);
 
 		// 导出 excel 文件
 		ExportUtil.createExcel(excel);
@@ -62,10 +61,11 @@ public class ExpStudentScoreService extends BaseRptService {
 	/**
 	 * 初始化 Fields
 	 */
-	private List<Field> getFields() {
+	private List<Field> getFields(List<Map<String, Object>> classList) {
 
 		//获取 本次考试科目列表
 		List<SubjectInfo> subjects = getSubjectList(p.getExamBatchId());
+
 		List<Field> fields = new ArrayList<>();
 
 		fields.add(new Field("考号", "SEQUENCE", "考号"));
@@ -73,14 +73,21 @@ public class ExpStudentScoreService extends BaseRptService {
 		fields.add(new Field("班级", "CLS_NAME", "班级"));
 		fields.add(new Field("区县", "AREA_NAME", "区县"));
 
-		subjects.forEach(model -> {
-			fields.add(new Field(model.getSubjectName() + "分数", model.getSubjectName() + "_SCORE", model.getSubjectName() + "分数"));
-			fields.add(new Field(model.getSubjectName() + "班名", model.getSubjectName() + "_RANK_CLS", model.getSubjectName() + "班名"));
-			fields.add(new Field(model.getSubjectName() + "校名", model.getSubjectName() + "_RANK_SCH", model.getSubjectName() + "校名"));
+		classList.forEach(claModel -> {
+
+			subjects.forEach(model -> {
+
+				if (claModel.get("TYPE").toString().equals(model.getType())) {
+
+					fields.add(new Field(model.getSubjectName() + "分数", model.getSubjectName() + "_SCORE", model.getSubjectName() + "分数"));
+					fields.add(new Field(model.getSubjectName() + "班名", model.getSubjectName() + "_RANK_CLS", model.getSubjectName() + "班名"));
+					fields.add(new Field(model.getSubjectName() + "校名", model.getSubjectName() + "_RANK_SCH", model.getSubjectName() + "校名"));
+				}
+			});
 		});
 
 		fields.add(new Field("总分分数", "ALL_SCORE", "总分分数"));
-		fields.add(new Field("总分级名", "ALL_RANK", "总分级名"));
+		fields.add(new Field("标准分", "ALL_RANK", "标准分"));
 		fields.add(new Field("总分班名", "ALL_RANK_CLS", "总分班名"));
 		fields.add(new Field("总分校名", "ALL_RANK_SCH", "总分校名"));
 
@@ -92,12 +99,13 @@ public class ExpStudentScoreService extends BaseRptService {
 	 *
 	 * @param fields
 	 */
-	private List<Sheet> getSheet(List<Field> fields) {
+	private List<Sheet> getSheet(List<Field> fields, List<Map<String, Object>> classList) {
+
+		//获取 本次考试科目列表
+		List<SubjectInfo> subjectList = getSubjectList(p.getExamBatchId());
 
 		List<Sheet> sheets = new ArrayList<>();
 
-		// 查询出当前有多少个班级参与
-		List<Map<String, Object>> classList = jyjRptExtMapper.qryClassesInfo(p.getExamBatchId());
 
 		Map conditions = new HashMap<String, Object>();
 
@@ -115,9 +123,12 @@ public class ExpStudentScoreService extends BaseRptService {
 
 			sheet.getFields().addAll(fields);
 
+			// 锁定表头2行
+			sheet.setFreeze(2);
+
 			conditions.put("classesId", p.getClassesId());
 			List<Map<String, Object>> data = baseDataService.getStudentSubjectsAndAllscore(p.getExamBatchId(),
-					model.get("CLS_ID").toString(),p.getLevel(), p.getStuType());
+					model.get("CLS_ID").toString(), p.getLevel(), p.getStuType());
 
 			zyj.report.common.CalToolUtil.sortByIndexValue2(data, "ALL_RANK");
 
@@ -136,11 +147,12 @@ public class ExpStudentScoreService extends BaseRptService {
 	 * @return
 	 */
 	private List<SubjectInfo> getSubjectList(String batchId) {
+
 		List<Map<String, Object>> subjects_cur = baseDataService.getSubjectByExamid(p.getExamBatchId());
 
 		//产生查询考试科目列表
-		subjectList = subjects_cur.stream().map(subject -> new SubjectInfo(subject.get("PAPER_ID").toString(),
-				subject.get("SUBJECT").toString(), subject.get("SUBJECT_NAME").toString(), (Integer) subject.get("TYPE"))).sorted(
+		List<SubjectInfo> subjectList = subjects_cur.stream().map(subject -> new SubjectInfo(subject.get
+				("PAPER_ID").toString(), subject.get("SUBJECT").toString(), subject.get("SUBJECT_NAME").toString(), (Integer) subject.get("TYPE"))).sorted(
 				(subject1, subject2) -> {
 					return zyj.report.common.CalToolUtil.indexOf(zyj.report.common.CalToolUtil.getSubjectOrder(), subject1.getSubject()) - zyj.report.common.CalToolUtil.indexOf(zyj.report.common.CalToolUtil.getSubjectOrder(), subject2.getSubject());
 				}).collect(Collectors.toList());

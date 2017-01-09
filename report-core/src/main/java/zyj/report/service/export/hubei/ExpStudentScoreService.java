@@ -41,14 +41,8 @@ public class ExpStudentScoreService extends BaseRptService {
 		if (p.getExamBatchId() == null || p.getPath() == null || p.getLevel() == null)
 			return;
 
-		// 查询出当前有多少个班级参与
-		List<Map<String, Object>> classList = jyjRptExtMapper.qryClassesInfo(p.getExamBatchId());
-
-		// 初始化 filed
-		List<Field> fields = getFields(classList);
-
 		// 初始化 sheet
-		List<Sheet> sheets = getSheet(fields, classList);
+		List<Sheet> sheets = getSheet();
 
 		// 初始化 excel
 		Excel excel = new Excel(String.format(excelName, "班级") + ".xls", p.getPath(), sheets);
@@ -61,51 +55,49 @@ public class ExpStudentScoreService extends BaseRptService {
 	/**
 	 * 初始化 Fields
 	 */
-	private List<Field> getFields(List<Map<String, Object>> classList) {
+	private List<Field> getFields(Map<String, Object> claModel) {
 
 		//获取 本次考试科目列表
 		List<SubjectInfo> subjects = getSubjectList(p.getExamBatchId());
 
 		List<Field> fields = new ArrayList<>();
 
-		fields.add(new Field("考号", "SEQUENCE", "考号"));
-		fields.add(new Field("姓名", "NAME", "姓名"));
-		fields.add(new Field("班级", "CLS_NAME", "班级"));
-		fields.add(new Field("区县", "AREA_NAME", "区县"));
+		fields.add(new Field("SEQUENCE", "考号"));
+		fields.add(new Field("NAME", "姓名"));
+		fields.add(new Field("CLS_NAME", "班级"));
+		fields.add(new Field("AREA_NAME", "区县"));
 
-		classList.forEach(claModel -> {
+		subjects.forEach(model -> {
 
-			subjects.forEach(model -> {
+			if (claModel.get("CLS_TYPE").toString().equals(model.getType() + "")) {
 
-				if (claModel.get("TYPE").toString().equals(model.getType())) {
-
-					fields.add(new Field(model.getSubjectName() + "分数", model.getSubjectName() + "_SCORE", model.getSubjectName() + "分数"));
-					fields.add(new Field(model.getSubjectName() + "班名", model.getSubjectName() + "_RANK_CLS", model.getSubjectName() + "班名"));
-					fields.add(new Field(model.getSubjectName() + "校名", model.getSubjectName() + "_RANK_SCH", model.getSubjectName() + "校名"));
-				}
-			});
+				fields.add(new Field(model.getSubjectName() + "_SCORE", model.getSubjectName() + "分数"));
+				fields.add(new Field(model.getSubjectName() + "_RANK_CLS", model.getSubjectName() + "班名"));
+				fields.add(new Field(model.getSubjectName() + "_RANK_SCH", model.getSubjectName() + "校名"));
+			}
 		});
 
-		fields.add(new Field("总分分数", "ALL_SCORE", "总分分数"));
-		fields.add(new Field("标准分", "ALL_RANK", "标准分"));
-		fields.add(new Field("总分班名", "ALL_RANK_CLS", "总分班名"));
-		fields.add(new Field("总分校名", "ALL_RANK_SCH", "总分校名"));
+
+		fields.add(new Field("ALL_SCORE", "总分分数"));
+		fields.add(new Field("ALL_RANK", "标准分"));
+		fields.add(new Field("ALL_RANK_CLS", "总分班名"));
+		fields.add(new Field("ALL_RANK_SCH", "总分校名"));
 
 		return fields;
 	}
 
 	/**
 	 * 初始化 sheet
-	 *
-	 * @param fields
 	 */
-	private List<Sheet> getSheet(List<Field> fields, List<Map<String, Object>> classList) {
+	private List<Sheet> getSheet() {
 
 		//获取 本次考试科目列表
 		List<SubjectInfo> subjectList = getSubjectList(p.getExamBatchId());
 
-		List<Sheet> sheets = new ArrayList<>();
+		// 查询出当前有多少个班级参与
+		List<Map<String, Object>> classList = jyjRptExtMapper.qryClassesInfo(p.getExamBatchId());
 
+		List<Sheet> sheets = new ArrayList<>();
 
 		Map conditions = new HashMap<String, Object>();
 
@@ -121,7 +113,7 @@ public class ExpStudentScoreService extends BaseRptService {
 			Sheet sheet = new Sheet(model.get("CLS_ID").toString(), model.get("CLS_NAME").toString(), String
 					.format(excelName, model.get("CLS_NAME").toString()));
 
-			sheet.getFields().addAll(fields);
+			sheet.getFields().addAll(getFields(model));
 
 			// 锁定表头2行
 			sheet.setFreeze(2);

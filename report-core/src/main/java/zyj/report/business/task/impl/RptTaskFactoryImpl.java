@@ -29,6 +29,8 @@ public class RptTaskFactoryImpl implements RptTaskFactory {
 			return new RptTaskQueueXG();
 		else if (parameter.getRptType() == RptParameter.ZHONGSHAN)
 			return new RptTaskQueueZS();
+		else if (parameter.getRptType() == RptParameter.HUBEI)
+			return new RptTaskQueueHB();
 		return null;
 	}
 
@@ -58,7 +60,7 @@ public class RptTaskFactoryImpl implements RptTaskFactory {
 					this.add(new RptTaskBase(r, "expXueShengChengJiService", "city", cityPath));
 //				总分-分数段	extZffsdServer
 					this.add(new RptTaskBase(r, "extZffsdServer", "city", zfPath));
-					if (r.isWL()) {//分文理
+					if (r.isWL()) {//分文理e
 
 //					总分-分数段对比(横)_文科	extZffsddbhServer
 						this.add(new RptTaskBase(r, "extZffsddbhServer", "city", zfPath, totalscoreMap_LK));
@@ -631,10 +633,25 @@ public class RptTaskFactoryImpl implements RptTaskFactory {
 			return false;
 		}
 
+		@SuppressWarnings({"unchecked", "rawtypes"})
 		@Override
 		public boolean addSchoolTask(RptParameter parameter) throws Exception {
-			// TODO Auto-generated method stub
-			return false;
+
+			RptParameterBase r = (RptParameterBase) parameter;
+			String rootPath = r.getPathFile();
+			Map<String, Object> otherParams = r.getOtherParams();
+			String schoolId = otherParams.get("schoolId").toString();
+			String schoolName = otherParams.get("schoolName").toString();
+			String areaName = otherParams.get("areaName").toString();
+			String schoolPath = rootPath + "/" + areaName + "/" + schoolName;
+
+			RptTaskSeries rpttaskseries = new RptTaskSeries(r.getExambatchId(), schoolPath);
+
+			rpttaskseries.add(new RptTaskBase(r, "expStudentScoreService", "classes", schoolPath+"/多科",
+					null, schoolId));
+
+			this.add(rpttaskseries);
+			return true;
 		}
 
 		@Override

@@ -1,923 +1,981 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="zyj.report.persistence.client.RptExpSubjectMapper" >
-  <sql id="Example_Where_Clause" >
-    <where >
-      <foreach collection="oredCriteria" item="criteria" separator="or" >
-        <if test="criteria.valid" >
-          <trim prefix="(" suffix=")" prefixOverrides="and" >
-            <foreach collection="criteria.criteria" item="criterion" >
-              <choose >
-                <when test="criterion.noValue" >
-                  and ${criterion.condition}
-                </when>
-                <when test="criterion.singleValue" >
-                  and ${criterion.condition} #{criterion.value}
-                </when>
-                <when test="criterion.betweenValue" >
-                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
-                </when>
-                <when test="criterion.listValue" >
-                  and ${criterion.condition}
-                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
-                    #{listItem}
-                  </foreach>
-                </when>
-              </choose>
-            </foreach>
-          </trim>
-        </if>
-      </foreach>
-    </where>
-  </sql>
-  <sql id="Common_Subject_Column_List" >
+<mapper namespace="zyj.report.persistence.client.RptExpSubjectMapper">
+	<sql id="Example_Where_Clause">
+		<where>
+			<foreach collection="oredCriteria" item="criteria" separator="or">
+				<if test="criteria.valid">
+					<trim prefix="(" suffix=")" prefixOverrides="and">
+						<foreach collection="criteria.criteria" item="criterion">
+							<choose>
+								<when test="criterion.noValue">
+									and ${criterion.condition}
+								</when>
+								<when test="criterion.singleValue">
+									and ${criterion.condition} #{criterion.value}
+								</when>
+								<when test="criterion.betweenValue">
+									and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+								</when>
+								<when test="criterion.listValue">
+									and ${criterion.condition}
+									<foreach collection="criterion.value" item="listItem" open="(" close=")"
+											 separator=",">
+										#{listItem}
+									</foreach>
+								</when>
+							</choose>
+						</foreach>
+					</trim>
+				</if>
+			</foreach>
+		</where>
+	</sql>
+	<sql id="Common_Subject_Column_List">
     EXAMBATCH_ID,PAPER_ID,SUBJECT,FULL_SCORE,TAKE_EXAM_NUM,AVG_SCORE,TOP_SCORE,UP_SCORE,LEVEL_A_NUM,LEVEL_B_NUM,LEVEL_C_NUM,LEVEL_D_NUM,LEVEL_E_NUM,LEVEL_GD_NUM,LEVEL_FN_NUM,LEVEL_PS_NUM,LEVEL_FL_NUM,CITY_CODE,SUB_DIFFICULT,OBJ_DIFFICULT,SUB_DIFFENCE,OBJ_DIFFENCE,SUB_RELIABILITY,OBJ_RELIABILITY,SUB_SD,OBJ_SD,SUB_AVG_SCORE,OBJ_AVG_SCORE,STU_SCORE_SD,CANDIDATES_NUM,MODELS
   </sql>
-  <sql id="School_Subject_Column_List" >
+	<sql id="School_Subject_Column_List">
     FULL_SCORE_RATE as FULL_RANK,AVG_SCORE_RANK,BEYOND_AVG_RATE,COMPARE_AVG_RATE,SCH_ID,AREA_ID 
   </sql>
-  <sql id="Class_Subject_Column_List" >
+	<sql id="Class_Subject_Column_List">
     FULL_RANK,BEYOND_AVG_RATE,AVG_SCH_ORDER,COMPARE_AVG_RATE,SCH_ID,AREA_ID,CLS_ID 
   </sql>
-  <sql id="Area_Subject_Column_List" >
+	<sql id="Area_Subject_Column_List">
     FULL_RANK,AVG_SCORE_RANK,BEYOND_AVG_RATE,COMPARE_AVG_RATE,AREA_ID 
   </sql>
 
-  <select id="findRptExpSubject" resultType="map"  parameterType="map" >
-    select 
-    <include refid="Common_Subject_Column_List" />
-    <if test="level == 'city'" >
-    ,FULL_RANK 
-    from  RPT_EXP_CITY_SUBJECT
-    </if>
-     <if test="level == 'area'" >
-      ,<include refid="Area_Subject_Column_List" />
-    from  RPT_EXP_AREA_SUBJECT
-    </if>
-    <if test="level == 'school'" >
-     ,<include refid="School_Subject_Column_List" />
-    from  RPT_EXP_SCHOOL_SUBJECT
-    </if>
-    <if test="level == 'classes'" >
-     ,<include refid="Class_Subject_Column_List" />
-    from  RPT_EXP_CLASS_SUBJECT
-    </if>
-    where 
-    EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} 
-    and CITY_CODE = #{cityCode,jdbcType=VARCHAR} 
-    <if test="subject!=null">
-    and SUBJECT=#{subject,jdbcType=VARCHAR}
-    </if>
-	  <if test="paperId!=null">
-		  and PAPER_ID=#{paperId,jdbcType=VARCHAR}
-	  </if>
-    <if test = "stuType!=null">
-        and student_type = #{stuType}        
-  	</if>
-  	<if test="level!='city' and areaId!=null" >
-     and AREA_ID=#{areaId,jdbcType=VARCHAR}
-    </if>
-    <if test="level!='area'  and level!='city' and schoolId!=null" >
-     and SCH_ID=#{schoolId,jdbcType=VARCHAR}
-    </if>
-    <if test="level=='classes' and classesId!=null" >
-     and CLS_ID=#{classesId,jdbcType=VARCHAR}
-    </if>
-    <if test = "orderBy != null">
-    	order by ${orderBy}
-    </if>
-  </select>
-  
-  
-  <!-- 各科考试质量-->
-   <select id="qrySubjectQualityInfo" resultType="java.util.HashMap" >
-    select 
-    	esq.subject ,
-	   esq.paper_id,
-    	esq.CANDIDATES_NUM, 
-    	esq.TAKE_EXAM_NUM ,
-    	esq.top_score,
-    	esq.up_score ,
-    	esq.avg_score ,
-    	esq.models,
-    	esq.composite_rate,
-      	esq.stu_score_sd as standard_dev,
-      	esq.STU_SCORE_DIFFICUT as difficult,
-      	esq.STU_SCORE_DIFFERENT as discrimination,
-      	esq.full_rank as full_rank,
-      	round((esq.LEVEL_GD_NUM/esq.TAKE_EXAM_NUM)*100,2) as level_gd_rate,
-      	round((esq.LEVEL_FN_NUM/esq.TAKE_EXAM_NUM)*100,2) as level_fn_rate,
-      	round((esq.LEVEL_PS_NUM/esq.TAKE_EXAM_NUM)*100,2) as level_ps_rate,
-      	round((esq.LEVEL_FL_NUM/esq.TAKE_EXAM_NUM)*100,2) as low_rate
-      from RPT_EXP_CITY_SUBJECT esq
-       
-  where 
-       		 esq.exambatch_id = #{exambatchId} 
-        <if test = "cityCode!=null">
-        	and esq.CITY_CODE=#{cityCode}        
-        </if>
-        <if test = "subject!=null">
-        	and esq.subject = #{subject}        
-  		</if>
-	   <if test="paperId!=null">
-		   and esq.PAPER_ID=#{paperId,jdbcType=VARCHAR}
-	   </if>
-  		<if test = "stuType!=null">
-        	and esq.student_type = #{stuType}        
-  		</if>
-  </select> 
-  
-  			<!--查询地区的各科综合  -->
-   <select id="qryAreaSubjectInfo" resultType="java.util.HashMap" >
-  select distinct
-	   eas.paper_id,
-    	eas.subject ,
-		eas.area_id ,
-		eas.CANDIDATES_NUM, 
-    	eas.TAKE_EXAM_NUM,
-    	eas.top_score ,
-    	eas.up_score ,
-    	eas.avg_score ,
-    	eas.area_id ,
-	   eas.area_name,
-    	EAS.COMPOSITE_RATE,
-    	EAS.MODELS,
-      	eas.stu_score_sd as standard_dev,
-      	esq.STU_SCORE_DIFFICUT as difficult,
-      	esq.STU_SCORE_DIFFERENT as discrimination,
-      	eas.full_rank as full_rank,
-      	round((eas.LEVEL_GD_NUM/eas.TAKE_EXAM_NUM)*100,2) as level_gd_rate,
-      	round((eas.LEVEL_FN_NUM/eas.TAKE_EXAM_NUM)*100,2) as level_fn_rate,
-      	round((eas.LEVEL_PS_NUM/eas.TAKE_EXAM_NUM)*100,2) as level_ps_rate,
-      	round((eas.LEVEL_FL_NUM/eas.TAKE_EXAM_NUM)*100,2) as low_rate,
-      	round((eas.avg_score/esq.avg_score-1)*100,2) as over_avg_rate,
-      	round((eas.avg_score/esq.avg_score)*100,2) as ratio_avg_rate,
-       	esq.avg_score as grade_avg_score,
-      	eas.AVG_SCORE_RANK as rank      
-      from RPT_EXP_AREA_SUBJECT eas
-       left join  RPT_EXP_CITY_SUBJECT esq 
-      on EAS.EXAMBATCH_ID = ESQ.EXAMBATCH_ID AND EAS.SUBJECT = ESQ.SUBJECT 	and esq.student_type = eas.student_type 
-  where 
-       		 eas.exambatch_id = #{exambatchId} 
-         <if test = "areaId!=null">
-        	and eas.area_id=#{areaId}        
-        </if>
-        <if test = "subject!=null">
-        	and eas.subject = #{subject}        
-  		</if>
-	   <if test="paperId!=null">
-		   and eas.PAPER_ID=#{paperId,jdbcType=VARCHAR}
-	   </if>
-        <if test = "cityCode!=null">
-        	and eas.CITY_CODE=#{cityCode}        
-  		</if>
-  		 <if test = "stuType!=null">
-        	and eas.student_type = #{stuType}        
-  		</if>
-  </select>
-  
-  			<!--查询学校的各科综合  -->
-   <select id="qrySchoolSubjectInfo" resultType="java.util.HashMap" >
+	<select id="findRptExpSubject" resultType="map" parameterType="map">
+		select
+		<include refid="Common_Subject_Column_List"/>
+		<if test="level == 'city'">
+			,FULL_RANK
+			from RPT_EXP_CITY_SUBJECT
+		</if>
+		<if test="level == 'area'">
+			,
+			<include refid="Area_Subject_Column_List"/>
+			from RPT_EXP_AREA_SUBJECT
+		</if>
+		<if test="level == 'school'">
+			,
+			<include refid="School_Subject_Column_List"/>
+			from RPT_EXP_SCHOOL_SUBJECT
+		</if>
+		<if test="level == 'classes'">
+			,
+			<include refid="Class_Subject_Column_List"/>
+			from RPT_EXP_CLASS_SUBJECT
+		</if>
+		where
+		EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR}
+		and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
+		<if test="subject!=null">
+			and SUBJECT=#{subject,jdbcType=VARCHAR}
+		</if>
+		<if test="paperId!=null">
+			and PAPER_ID=#{paperId,jdbcType=VARCHAR}
+		</if>
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		<if test="level!='city' and areaId!=null">
+			and AREA_ID=#{areaId,jdbcType=VARCHAR}
+		</if>
+		<if test="level!='area'  and level!='city' and schoolId!=null">
+			and SCH_ID=#{schoolId,jdbcType=VARCHAR}
+		</if>
+		<if test="level=='classes' and classesId!=null">
+			and CLS_ID=#{classesId,jdbcType=VARCHAR}
+		</if>
+		<if test="orderBy != null">
+			order by ${orderBy}
+		</if>
+	</select>
 
-     
-  select DISTINCT
-	   ess.paper_id,
-    	ess.subject ,
-      	ess.sch_id ,
+
+	<!-- 各科考试质量-->
+	<select id="qrySubjectQualityInfo" resultType="java.util.HashMap">
+		select
+		esq.subject ,
+		esq.paper_id,
+		esq.CANDIDATES_NUM,
+		esq.TAKE_EXAM_NUM ,
+		esq.top_score,
+		esq.up_score ,
+		esq.avg_score ,
+		esq.models,
+		esq.composite_rate,
+		esq.stu_score_sd as standard_dev,
+		esq.STU_SCORE_DIFFICUT as difficult,
+		esq.STU_SCORE_DIFFERENT as discrimination,
+		esq.full_rank as full_rank,
+		round((esq.LEVEL_GD_NUM/esq.TAKE_EXAM_NUM)*100,2) as level_gd_rate,
+		round((esq.LEVEL_FN_NUM/esq.TAKE_EXAM_NUM)*100,2) as level_fn_rate,
+		round((esq.LEVEL_PS_NUM/esq.TAKE_EXAM_NUM)*100,2) as level_ps_rate,
+		round((esq.LEVEL_FL_NUM/esq.TAKE_EXAM_NUM)*100,2) as low_rate
+		from RPT_EXP_CITY_SUBJECT esq
+
+		where
+		esq.exambatch_id = #{exambatchId}
+		<if test="cityCode!=null">
+			and esq.CITY_CODE=#{cityCode}
+		</if>
+		<if test="subject!=null">
+			and esq.subject = #{subject}
+		</if>
+		<if test="paperId!=null">
+			and esq.PAPER_ID=#{paperId,jdbcType=VARCHAR}
+		</if>
+		<if test="stuType!=null">
+			and esq.student_type = #{stuType}
+		</if>
+	</select>
+
+	<!--查询地区的各科综合  -->
+	<select id="qryAreaSubjectInfo" resultType="java.util.HashMap">
+		select distinct
+		eas.paper_id,
+		eas.subject ,
+		eas.area_id ,
+		eas.CANDIDATES_NUM,
+		eas.TAKE_EXAM_NUM,
+		eas.top_score ,
+		eas.up_score ,
+		eas.avg_score ,
+		eas.area_id ,
+		eas.area_name,
+		EAS.COMPOSITE_RATE,
+		EAS.MODELS,
+		eas.stu_score_sd as standard_dev,
+		esq.STU_SCORE_DIFFICUT as difficult,
+		esq.STU_SCORE_DIFFERENT as discrimination,
+		eas.full_rank as full_rank,
+		round((eas.LEVEL_GD_NUM/eas.TAKE_EXAM_NUM)*100,2) as level_gd_rate,
+		round((eas.LEVEL_FN_NUM/eas.TAKE_EXAM_NUM)*100,2) as level_fn_rate,
+		round((eas.LEVEL_PS_NUM/eas.TAKE_EXAM_NUM)*100,2) as level_ps_rate,
+		round((eas.LEVEL_FL_NUM/eas.TAKE_EXAM_NUM)*100,2) as low_rate,
+		round((eas.avg_score/esq.avg_score-1)*100,2) as over_avg_rate,
+		round((eas.avg_score/esq.avg_score)*100,2) as ratio_avg_rate,
+		esq.avg_score as grade_avg_score,
+		eas.AVG_SCORE_RANK as rank
+		from RPT_EXP_AREA_SUBJECT eas
+		left join RPT_EXP_CITY_SUBJECT esq
+		on EAS.EXAMBATCH_ID = ESQ.EXAMBATCH_ID AND EAS.SUBJECT = ESQ.SUBJECT and esq.student_type =
+		eas.student_type
+		where
+		eas.exambatch_id = #{exambatchId}
+		<if test="areaId!=null">
+			and eas.area_id=#{areaId}
+		</if>
+		<if test="subject!=null">
+			and eas.subject = #{subject}
+		</if>
+		<if test="paperId!=null">
+			and eas.PAPER_ID=#{paperId,jdbcType=VARCHAR}
+		</if>
+		<if test="cityCode!=null">
+			and eas.CITY_CODE=#{cityCode}
+		</if>
+		<if test="stuType!=null">
+			and eas.student_type = #{stuType}
+		</if>
+	</select>
+
+	<!--查询学校的各科综合  -->
+	<select id="qrySchoolSubjectInfo" resultType="java.util.HashMap">
+
+
+		select DISTINCT
+		ess.paper_id,
+		ess.subject ,
+		ess.sch_id ,
 		ess.sch_name ,
-        ess.paper_id,
-		ess.CANDIDATES_NUM, 
-    	ess.TAKE_EXAM_NUM,
-    	ess.top_score ,
-    	ess.up_score ,
-    	ess.avg_score ,
+		ess.paper_id,
+		ess.CANDIDATES_NUM,
+		ess.TAKE_EXAM_NUM,
+		ess.top_score ,
+		ess.up_score ,
+		ess.avg_score ,
 		ESS.COMPOSITE_RATE,
 		ESS.MODELS,
-      	ess.stu_score_sd as standard_dev,
-      	esq.STU_SCORE_DIFFICUT as difficult,
-      	esq.STU_SCORE_DIFFERENT as discrimination,
-      	ess.full_score_rate as full_rank,
-      	 ESS.AREA_ID,
-      	round((ess.LEVEL_GD_NUM/ess.TAKE_EXAM_NUM)*100,2) as level_gd_rate,
-      	round((ess.LEVEL_FN_NUM/ess.TAKE_EXAM_NUM)*100,2) as level_fn_rate,
-      	round((ess.LEVEL_PS_NUM/ess.TAKE_EXAM_NUM)*100,2) as level_ps_rate,
-      	round((ess.LEVEL_FL_NUM/ess.TAKE_EXAM_NUM)*100,2) as low_rate,
-      	round((ess.avg_score/esq.avg_score-1)*100,2) as over_avg_rate,
-      	round((ess.avg_score/esq.avg_score)*100,2) as ratio_avg_rate,
-       	esq.avg_score as grade_avg_score,
-      	ess.AVG_SCORE_RANK  as rank   
-      from RPT_EXP_SCHOOL_SUBJECT ess
-      left join  RPT_EXP_CITY_SUBJECT esq 
+		ess.stu_score_sd as standard_dev,
+		esq.STU_SCORE_DIFFICUT as difficult,
+		esq.STU_SCORE_DIFFERENT as discrimination,
+		ess.full_score_rate as full_rank,
+		ESS.AREA_ID,
+		round((ess.LEVEL_GD_NUM/ess.TAKE_EXAM_NUM)*100,2) as level_gd_rate,
+		round((ess.LEVEL_FN_NUM/ess.TAKE_EXAM_NUM)*100,2) as level_fn_rate,
+		round((ess.LEVEL_PS_NUM/ess.TAKE_EXAM_NUM)*100,2) as level_ps_rate,
+		round((ess.LEVEL_FL_NUM/ess.TAKE_EXAM_NUM)*100,2) as low_rate,
+		round((ess.avg_score/esq.avg_score-1)*100,2) as over_avg_rate,
+		round((ess.avg_score/esq.avg_score)*100,2) as ratio_avg_rate,
+		esq.avg_score as grade_avg_score,
+		ess.AVG_SCORE_RANK as rank
+		from RPT_EXP_SCHOOL_SUBJECT ess
+		left join RPT_EXP_CITY_SUBJECT esq
 
-      on ESS.EXAMBATCH_ID = ESQ.EXAMBATCH_ID AND ESS.SUBJECT = ESQ.SUBJECT and ess.paper_id = esq.paper_id and esq.student_type = ess.student_type
+		on ESS.EXAMBATCH_ID = ESQ.EXAMBATCH_ID AND ESS.SUBJECT = ESQ.SUBJECT and ess.paper_id = esq.paper_id
+		and esq.student_type = ess.student_type
 
-          where 
-       		 ess.exambatch_id = #{exambatchId} 
-       	<if test = "schoolId!=null">
-        	and ess.sch_id=#{schoolId}        
-        </if>
-         <if test = "areaId!=null">
-        	and ess.area_id=#{areaId}        
-        </if>
-        <if test = "subject!=null">
-        	and ess.subject = #{subject}        
-  		</if>
-	   <if test="paperId!=null">
-		   and ess.PAPER_ID=#{paperId,jdbcType=VARCHAR}
-	   </if>
-        <if test = "cityCode!=null">
-        	and ess.CITY_CODE=#{cityCode}        
-  		</if>
-  		<if test = "stuType!=null">
-        	and ess.student_type = #{stuType}        
-  		</if>
-        	order by ess.area_id,ess.sch_id
-       
-  </select>
-  
+		where
+		ess.exambatch_id = #{exambatchId}
+		<if test="schoolId!=null">
+			and ess.sch_id=#{schoolId}
+		</if>
+		<if test="areaId!=null">
+			and ess.area_id=#{areaId}
+		</if>
+		<if test="subject!=null">
+			and ess.subject = #{subject}
+		</if>
+		<if test="paperId!=null">
+			and ess.PAPER_ID=#{paperId,jdbcType=VARCHAR}
+		</if>
+		<if test="cityCode!=null">
+			and ess.CITY_CODE=#{cityCode}
+		</if>
+		<if test="stuType!=null">
+			and ess.student_type = #{stuType}
+		</if>
+		order by ess.area_id,ess.sch_id
 
-  <!-- 查询班级各科综合信息 -->
-    <select id="qryClassSubjectInfo" resultType="java.util.HashMap" >
-select
-	  ecs.paper_id as paper_id,
-      ecs.subject as subject,
-      ecs.CANDIDATES_NUM, 
-      ecs.TAKE_EXAM_NUM,
-      ecs.top_score as top_score,
-      ecs.up_score as up_score,
-      ecs.avg_score as avg_score,
-      ecs.sch_id as school_id,
-      ecs.cls_id as classes_id,
-      ecs.stu_score_sd as standard_dev,
-        esq.STU_SCORE_DIFFICUT as difficult,
-        esq.STU_SCORE_DIFFERENT as discrimination,
-        ecs.full_rank as full_rank,
+	</select>
+
+
+	<!-- 查询班级各科综合信息 -->
+	<select id="qryClassSubjectInfo" resultType="java.util.HashMap">
+		select
+		ecs.paper_id as paper_id,
+		ecs.subject as subject,
+		ecs.CANDIDATES_NUM,
+		ecs.TAKE_EXAM_NUM,
+		ecs.top_score as top_score,
+		ecs.up_score as up_score,
+		ecs.avg_score as avg_score,
+		ecs.sch_id as school_id,
+		ecs.cls_id as classes_id,
+		ecs.stu_score_sd as standard_dev,
+		esq.STU_SCORE_DIFFICUT as difficult,
+		esq.STU_SCORE_DIFFERENT as discrimination,
+		ecs.full_rank as full_rank,
 		ecs.cls_name,
-        round((ecs.LEVEL_GD_NUM/ecs.TAKE_EXAM_NUM)*100,2) as level_gd_rate,
-        round((ecs.LEVEL_FN_NUM/ecs.TAKE_EXAM_NUM)*100,2) as level_fn_rate,
-        round((ecs.LEVEL_PS_NUM/ecs.TAKE_EXAM_NUM)*100,2) as level_ps_rate,
-        round((ecs.LEVEL_FL_NUM/ecs.TAKE_EXAM_NUM)*100,2) as low_rate,
-        round((ecs.avg_score/esq.avg_score-1)*100,2) as over_avg_rate,
-        round((ecs.avg_score/esq.avg_score)*100,2) as ratio_avg_rate,
-         esq.avg_score as grade_avg_score,
-       ecs.AVG_SCH_ORDER  as rank   
-      from RPT_EXP_CLASS_SUBJECT ecs
-      left join  RPT_EXP_CITY_SUBJECT esq 
-      on ECS.EXAMBATCH_ID = ESQ.EXAMBATCH_ID AND ECS.SUBJECT = ESQ.SUBJECT  and ecs.paper_id = esq.paper_id  and ecs.student_type =esq.student_type
-        where 
-       		 ecs.exambatch_id = #{exambatchId} 
-       	<if test = "schoolId!=null">
-        	and ecs.sch_id=#{schoolId}        
-        </if>
-         <if test = "classesId!=null">
-        	and ecs.cls_id=#{classesId}        
-        </if>
-         <if test = "areaId!=null">
-        	and ecs.area_id=#{areaId}        
-        </if>
-        <if test = "cityCode!=null">
-        	and ecs.CITY_CODE=#{cityCode}        
-        </if>
-		<if test = "subject!=null">
+		round((ecs.LEVEL_GD_NUM/ecs.TAKE_EXAM_NUM)*100,2) as level_gd_rate,
+		round((ecs.LEVEL_FN_NUM/ecs.TAKE_EXAM_NUM)*100,2) as level_fn_rate,
+		round((ecs.LEVEL_PS_NUM/ecs.TAKE_EXAM_NUM)*100,2) as level_ps_rate,
+		round((ecs.LEVEL_FL_NUM/ecs.TAKE_EXAM_NUM)*100,2) as low_rate,
+		round((ecs.avg_score/esq.avg_score-1)*100,2) as over_avg_rate,
+		round((ecs.avg_score/esq.avg_score)*100,2) as ratio_avg_rate,
+		esq.avg_score as grade_avg_score,
+		ecs.AVG_SCH_ORDER as rank
+		from RPT_EXP_CLASS_SUBJECT ecs
+		left join RPT_EXP_CITY_SUBJECT esq
+		on ECS.EXAMBATCH_ID = ESQ.EXAMBATCH_ID AND ECS.SUBJECT = ESQ.SUBJECT and ecs.paper_id = esq.paper_id
+		and ecs.student_type =esq.student_type
+		where
+		ecs.exambatch_id = #{exambatchId}
+		<if test="schoolId!=null">
+			and ecs.sch_id=#{schoolId}
+		</if>
+		<if test="classesId!=null">
+			and ecs.cls_id=#{classesId}
+		</if>
+		<if test="areaId!=null">
+			and ecs.area_id=#{areaId}
+		</if>
+		<if test="cityCode!=null">
+			and ecs.CITY_CODE=#{cityCode}
+		</if>
+		<if test="subject!=null">
 			and ecs.subject = #{subject}
 		</if>
 		<if test="paperId!=null">
 			and ecs.PAPER_ID=#{paperId,jdbcType=VARCHAR}
 		</if>
-         <if test = "stuType!=null">
-        	and ecs.student_type = #{stuType}        
-  		</if>
-        	order by ecs.area_id,ecs.sch_id  
-      
-      </select>
-      
-       
-       
-       <!--根据试卷 查市、镇区、学校、班级小题分的相关学生及其考号 -->
-       <select id="qryStudentSubjectScore" resultType="java.util.HashMap" >
-       	select distinct
-       		ess.sch_id,
-       		ess.cls_id,
-           ess.user_id,
-           ess.name as name,
-           ess.full_score,
-           ess.sign_total,
-           nvl(ess.tmp_sequence,ess.sequence) as sequence
-           <!--decode(ess.tmp_sequence,'null',ess.sequence,ess.tmp_sequence) as sequence -->
-           from RPT_EXP_STUDENT_SUBJECT ess
-           <where>
-          <if test="exambatchId != null">
-           		and ess.exambatch_id = #{exambatchId }
-           </if>
-            <if test="paperId != null">
-           		and ess.paper_id = #{paperId}
-           </if>
-           	<if test="subject != null">
-           		and ess.subject = #{subject}
-           </if>
-           <if test="areaId != null">
-           		and ess.area_id = #{areaId}
-           </if>
-           <if test="schoolId != null">
-           		and ess.sch_id = #{schoolId}
-           </if>
-           <if test="classesId!= null">
-           		and ess.cls_id = #{classesId}
-           </if>
-           <if test="cityCode!= null">
-           		and ess.city_code = #{cityCode}
-           </if>
-           <if test = "stuType!=null">
-        	and ess.student_type = #{stuType}        
-  			</if>
-           <if test="orderBy!= null">
-           		order by  ${orderBy}
-           </if>
-           </where> 
-       </select>
-  
-  	  	<!-- 获取指定场次下学生科目信息-->
- 		<select id="qryStudentSubjectScore1" resultType="java.util.HashMap" >
- 		select a.* from(
- 		       select distinct   <!-- decode(ess.tmp_sequence,'null',ess.sequence,ess.tmp_sequence) as sequence--> nvl(ess.tmp_sequence,ess.sequence) as sequence , subject,sign_total,CITY_RANK ,user_id,name,ess.sch_id,ess.cls_id from RPT_EXP_STUDENT_SUBJECT ess
-            where exambatch_id =#{exambatchId}
-            <if test="areaId!= null">
-           		and ess.area_id = #{areaId}
-           </if>
-            <if test="cityCode!= null">
-           		and ess.city_code = #{cityCode}
-           </if>
-           <if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  			</if>
-              order by ess.sch_id,ess.cls_id
-              )a 
-              order by a.sch_id,a.cls_id,a.sequence
- 		</select>
- 		 		  	<!-- 获取指定场次下学生科目信息-->
- 		<select id="qryStudentSubjectScore2" resultType="java.util.HashMap" >
-<![CDATA[		select user_id,(case when sign(sum(case when type =1 then -1 when type =2 then 1 else 0 end))>0 then 2  when sign(sum(case when type =1 then -1 when type =2 then 1 else 0 end))<0 then 1  else 0 end) as type ]]>
-		,name,sequence as sequence0,/*decode(tmp_sequence,'null',sequence,tmp_sequence)*/nvl(tmp_sequence,sequence) as sequence,sch_id,schoolname as sch_name,cls_id ,classname as cls_name,area_id,areaname as area_name
- 		<foreach collection="subjectList" index="index" item="subjectInfo" open=" ," separator="," close="  ">
-			sum(case when subject= #{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then sign_total end ) as ${subjectInfo.subjectName}_SCORE
-			,sum(case when subject= #{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then city_rank end ) as ${subjectInfo.subjectName}_RANK
-			,sum(case when subject= #{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then cls_rank end ) as ${subjectInfo.subjectName}_RANK_cls
-			,sum(case when subject= #{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then grd_rank end ) as ${subjectInfo.subjectName}_RANK_sch
-		</foreach>
- 		from RPT_EXP_STUDENT_SUBJECT 
-		where exambatch_id =#{exambatchId}
-			<if test="schoolId!= null">
-				and sch_id = #{schoolId}
+		<if test="stuType!=null">
+			and ecs.student_type = #{stuType}
+		</if>
+		order by ecs.area_id,ecs.sch_id
+
+	</select>
+
+
+	<!--根据试卷 查市、镇区、学校、班级小题分的相关学生及其考号 -->
+	<select id="qryStudentSubjectScore" resultType="java.util.HashMap">
+		select distinct
+		ess.sch_id,
+		ess.cls_id,
+		ess.user_id,
+		ess.name as name,
+		ess.full_score,
+		ess.sign_total,
+		nvl(ess.tmp_sequence,ess.sequence) as sequence
+		<!--decode(ess.tmp_sequence,'null',ess.sequence,ess.tmp_sequence) as sequence -->
+		from RPT_EXP_STUDENT_SUBJECT ess
+		<where>
+			<if test="exambatchId != null">
+				and ess.exambatch_id = #{exambatchId }
 			</if>
-			<if test="classesId!= null">
-				and cls_id = #{classesId}
-			</if>
-			<if test="areaId!= null">
-           		and area_id = #{areaId}
-           </if>
-            <if test="cityCode!= null">
-           		and city_code = #{cityCode}
-           </if>
-           <if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  			</if>
-			group by  user_id,name,sch_id,schoolname,area_id,areaname,cls_id,classname,tmp_sequence,sequence order by sch_id,cls_id,SEQUENCE
- 		</select>
- 		
- 			 		  	<!-- 获取指定场次下学校科目信息-->
- 		<select id="qrySchoolSubjectScore2" resultType="java.util.HashMap" >
-		select sch_id,sch_name,AREA_ID
-		<if test="subjectListOfWL!=null">
-		,max(
-			case 
-			<foreach collection="subjectListOfWL" index="index" item="subject2" open=" " separator="  " close="  ">when subject=#{subject2} then 0</foreach>
-			else CANDIDATES_NUM end
-		) as CANDIDATES_NUM
-		</if>
-		<if test="subjectList!=null">
-		<foreach collection="subjectList" index="index" item="subjectInfo" open=" ," separator="," close="  ">
-			sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then avg_score end) as ${subjectInfo.subjectName}_SCORE
-			,sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then avg_score_rank end)  as ${subjectInfo.subjectName}_RANK,
-			sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then top_score end)  as ${subjectInfo.subjectName}_TOP,
-			sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then up_score end)  as ${subjectInfo.subjectName}_UP
-		</foreach>
-		</if>
- 		from RPT_EXP_SCHOOL_SUBJECT 
-		where exambatch_id =#{exambatchId}
-            <if test="cityCode!= null">
-           		and city_code = #{cityCode}
-           </if>
-           <if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  			</if>
-  			<if test="areaId!=null"> and area_id  = #{areaId}</if>
-  			<if test="schoolId!=null"> and sch_id  = #{schoolId}</if>
-			group by  SCH_id,SCH_NAME,AREA_ID
-			ORDER BY AREA_ID,SCH_id
-	</select>
-				 		  	<!-- 获取指定场次下班级科目信息-->
- 		<select id="qryClassSubjectScore2" resultType="java.util.HashMap" >
-		select cls_id,sch_id,AREA_ID,CLS_NAME
-		<if test="subjectListOfWL!=null">
-		,max(
-			case 
-			<foreach collection="subjectListOfWL" index="index" item="subject2" open=" " separator="  " close="  ">when subject=#{subject2} then 0</foreach>
-			else CANDIDATES_NUM end
-		) as CANDIDATES_NUM
-		</if>
-		<if test="subjectList!=null">
-		<foreach collection="subjectList" index="index" item="subjectInfo" open=" ," separator="," close="  ">
-			sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then avg_score end) as ${subjectInfo.subjectName}_SCORE
-			,sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then avg_sch_order end)  as ${subjectInfo.subjectName}_RANK,
-			sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then top_score end)  as ${subjectInfo.subjectName}_TOP,
-			sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then up_score end)  as ${subjectInfo.subjectName}_UP
-		</foreach>
-		</if>
- 		from RPT_EXP_CLASS_SUBJECT 
-		where exambatch_id =#{exambatchId}
-            <if test="cityCode!= null">
-           		and city_code = #{cityCode}
-           </if>
-           <if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  			</if>
-  			<if test="classesId!=null">and cls_id = #{classesId}</if>
-  			<if test="schoolId!=null">and sch_id = #{schoolId}</if>
-			<if test="type!=null">and type = #{type}</if>
-			group by  cls_id,sch_id,AREA_ID,CLS_NAME
-			ORDER BY CLS_NAME
-	</select>
-			 		  	<!-- 获取指定场次下学校科目信息-->
- 		<select id="qryCitySubjectScore2" resultType="java.util.HashMap" >
-		select city_code
-		<if test="subjectListOfWL!=null">
-		,max(
-			case 
-			<foreach collection="subjectListOfWL" index="index" item="subject2" open=" " separator="  " close="  ">when subject=#{subject2} then 0</foreach>
-			else CANDIDATES_NUM end
-		) as CANDIDATES_NUM
-		</if>
-		<if test="subjectList!=null">
-		<foreach collection="subjectList" index="index" item="subjectInfo" open=" ," separator="," close="  ">
-			sum(case when subject=#{subjectInfo.subject} and paper_id=#{subjectInfo.paperId} then avg_score end ) as ${subjectInfo.subjectName}_SCORE,
-			sum(case when subject=#{subjectInfo.subject} and paper_id=#{subjectInfo.paperId} then top_score end ) as ${subjectInfo.subjectName}_TOP,
-			sum(case when subject=#{subjectInfo.subject} and paper_id=#{subjectInfo.paperId} then up_score end ) as ${subjectInfo.subjectName}_UP
-		</foreach>
-		</if>
- 		from RPT_EXP_city_SUBJECT 
-		where exambatch_id =#{exambatchId} 
-            <if test="cityCode!= null">
-           		and city_code = #{cityCode}
-           </if>
-           <if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  			</if>
-			group by  city_code
-	</select>
-	
-	 			 		  	<!-- 获取指定场次下镇区科目信息-->
- 		<select id="qryAreaSubjectScore2" resultType="java.util.HashMap" >
-		select area_id,area_name
-		<if test="subjectListOfWL!=null">
-		,max(
-			case 
-			<foreach collection="subjectListOfWL" index="index" item="subject2" open=" " separator="  " close="  ">when subject=#{subject2} then 0</foreach>
-			else CANDIDATES_NUM end
-		) as CANDIDATES_NUM
-		</if>
-		<if test="subjectList!=null">
-		<foreach collection="subjectList" index="index" item="subjectInfo" open=" ," separator="," close="  ">
-			sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then avg_score end) as ${subjectInfo.subjectName}_SCORE
-			,sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then avg_score_rank end)  as ${subjectInfo.subjectName}_RANK,
-			sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then top_score end)  as ${subjectInfo.subjectName}_TOP,
-			sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then up_score end)  as ${subjectInfo.subjectName}_UP
-		</foreach>
-		</if>
- 		from RPT_EXP_AREA_SUBJECT 
-		where exambatch_id =#{exambatchId}
-            <if test="cityCode!= null">
-           		and city_code = #{cityCode}
-           </if>
-           <if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  			</if>
-  			<if test = "areaId!=null">
-        	and area_id = #{areaId}        
-  			</if>
-			group by  AREA_ID,area_name
-			ORDER BY AREA_ID
-	</select>
-	
-		  		   <!-- 获取市科目信息-->
- 		<select id="qrySubjectQuality" resultType="java.util.HashMap" >
-
- 		 select  distinct TOP_SCORE as TOP_SCORE,UP_SCORE as UP_SCORE,AVG_SCORE as AVG_SCORE from RPT_EXP_CITY_SUBJECT where exambatch_id =#{exambatchId}  AND SUBJECT = #{subject}  and paper_id = #{paperId}
- 		 <if test="cityCode!= null">
-           		and city_code = #{cityCode}
-           </if>
-           <if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  			</if>
- 		 </select>
- 		  <!-- 获取市前300名科目信息-->
- 		<select id="qrySubjectQualityByRanking" resultType="java.util.HashMap" >
-       select DISTINCT SCH_ID,NAME,USER_ID,SIGN_TOTAL,city_rank,area_id from RPT_EXP_STUDENT_SUBJECT 
-       where exambatch_id = #{exambatchId} AND subject = #{subject} and paper_id = #{paperId}
-       <if test="cityCode!=null">
-
-       		and city_code = #{cityCode}
-       </if>
-       <if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  			</if>
-  		<![CDATA[and city_rank <= 300 ]]>
-       order by city_rank
-
- 		  </select>
-	     		 	   <!-- 获取全市参加这次考试的学校科目的信息2-->
-       		 	
- 		<select id="qrySchoolSubjectInfo2" resultType="java.util.HashMap" >
- 		 select   ess.sch_id ,ess.area_id,ess.avg_score,ess.take_exam_num,ess.top_score,ess.up_score,ess.sch_name,
- 		 ess.CANDIDATES_NUM, ess.sub_avg_score,ess.full_score_rate as full_rank,
- 		 ess.obj_avg_score,  		 ess.sub_sd, 
-      	ess.obj_sd, 
-      	 ess.stu_score_sd,
-		ess.full_score
- 		  from RPT_EXP_SCHOOL_SUBJECT ess 
- 		 where ess.exambatch_id = #{exambatchId} 
- 		  <if test="cityCode != null ">
- 		 		and  ess.city_code = #{cityCode} 
- 		 </if>
- 		 <if test="schoolId != null ">
- 		 		and ess.sch_id = #{schoolId}
- 		 </if>
- 		 <if test="areaId != null ">
- 		 		and ess.area_id = #{areaId}
- 		 </if>
- 		 <if test="subject != null ">
- 		 		and ess.subject = #{subject}
- 		 </if>
-			<if test="paperId != null ">
+			<if test="paperId != null">
 				and ess.paper_id = #{paperId}
 			</if>
- 		 <if test = "stuType!=null">
-        	and ess.student_type = #{stuType}        
-  			</if>
- 		 order by ess.area_id,ess.sch_id
- 		 </select>
- 		 
- 		 <!-- 获取全市参加这次考试的镇区科目的信息2-->
- 		<select id="qryAreaSubjectInfo2" resultType="java.util.HashMap" >
- 		 select   eas.area_id ,eas.avg_score,eas.sub_avg_score,eas.top_score,eas.up_score,eas.CANDIDATES_NUM,eas.area_name,
- 		 eas.obj_avg_score,eas.take_exam_num,eas.full_rank,
- 		 eas.sub_sd ,
-      	eas.obj_sd ,
-      	 eas.stu_score_sd
- 		  from RPT_EXP_AREA_SUBJECT eas 
- 		 where eas.exambatch_id = #{exambatchId} 
- 		 <if test="cityCode != null ">
- 		 		and  eas.city_code = #{cityCode} 
- 		 </if>
- 		 <if test = "stuType!=null">
-        	and eas.student_type = #{stuType}        
-  			</if>
- 		 <if test="areaId != null ">
- 		 		and eas.area_id = #{areaId}
- 		 </if>
-		 <if test="subject != null ">
- 		 		and eas.subject = #{subject}
- 		 </if>
-			<if test="paperId != null ">
-				and eas.paper_id = #{paperId}
+			<if test="subject != null">
+				and ess.subject = #{subject}
 			</if>
- 		 order by eas.area_id
- 		 </select>
- 		 
- 		  <!-- 获取全市参加这次考试的地区科目的信息2-->
- 		<select id="qrySubjectQualityInfo2" resultType="java.util.HashMap" >
- 		 select  ecs.avg_score,ecs.sub_avg_score,ecs.CANDIDATES_NUM, (ecs.CANDIDATES_NUM-ecs.take_exam_num) as ABSENT_NUM,
- 		 ecs.obj_avg_score,ecs.take_exam_num,ecs.top_score,ecs.up_score,ecs.full_score,ecs.full_rank,
- 		 ecs.sub_sd ,
-      	ecs.obj_sd ,
-      	 ecs.stu_score_sd,
-      	 ecs.city_code
- 		  from RPT_EXP_CITY_SUBJECT ecs 
- 		 where ecs.exambatch_id = #{exambatchId} 
- 		 <if test="cityCode != null ">
- 		 		and  ecs.city_code = #{cityCode} 
- 		 </if>
- 		 <if test = "stuType!=null">
-        	and ecs.student_type = #{stuType}        
-  			</if>
-		 <if test="subject != null ">
- 		 		and ecs.subject = #{subject}
- 		 </if>
-			<if test="paperId != null ">
-				and ecs.paper_id = #{paperId}
+			<if test="areaId != null">
+				and ess.area_id = #{areaId}
 			</if>
- 		 </select>
- 		 	  <!-- 获取全市参加这次考试的班级科目的信息2-->
- 		<select id="qryClassSubjectInfo2" resultType="java.util.HashMap" >
- 		 select  ecs.avg_score,ecs.sub_avg_score,ecs.CANDIDATES_NUM,ecs.cls_name ,ecs.sch_name,
- 		 ecs.obj_avg_score,ecs.take_exam_num,ecs.top_score,ecs.up_score,ecs.full_score,ecs.full_rank,
- 		 ecs.sub_sd ,
-      	ecs.obj_sd ,
-      	 ecs.stu_score_sd,
-      	 ecs.cls_id
- 		  from RPT_EXP_CLASS_SUBJECT ecs 
- 		 where ecs.exambatch_id = #{exambatchId} 
- 		 <if test="cityCode != null ">
- 		 		and  ecs.city_code = #{cityCode} 
- 		 </if>
- 		 <if test = "stuType!=null">
-        	and ecs.student_type = #{stuType}        
-  			</if>
-		 <if test="subject != null ">
- 		 		and ecs.subject = #{subject}
- 		 </if>
-			<if test="paperId != null ">
-				and ecs.paper_id = #{paperId}
+			<if test="schoolId != null">
+				and ess.sch_id = #{schoolId}
 			</if>
- 		 <if test="schoolId != null ">
- 		 		and ecs.sch_id = #{schoolId}
- 		 </if>
- 		  <if test="classesId != null ">
- 		 		and ecs.cls_id = #{classesId}
- 		 </if>
- 		 	 order by ecs.cls_id
- 		 </select>
-	 <!-- 获取参加这次考试的学校某个科目的应考人数-->
- 		<select id="qrySchPersonNumBySubject" resultType="java.util.HashMap" >
- 			select  sch_id,CANDIDATES_NUM,take_exam_num  from  RPT_EXP_SCHOOL_SUBJECT where exambatch_id=#{exambatchId} and city_code = #{cityCode} and subject like #{subject} and paper_id = #{paperId}
- 			<if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  			</if>			
-  			<if test="areaId!=null">and  area_id = #{areaId}</if>
- 		</select>
- 		 <!-- 获取参加这次考试的镇区某个科目的应考人数-->
- 		<select id="qryAreaPersonNumBySubject" resultType="java.util.HashMap" >
- 			select  AREA_ID,CANDIDATES_NUM from  RPT_EXP_AREA_SUBJECT where exambatch_id=#{exambatchId} and city_code = #{cityCode} and subject like #{subject}	 and paper_id = #{paperId}
- 			<if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  			</if>
- 		</select>
- 		 <!-- 获取参加这次考试的市区某个科目的应考人数-->
- 		<select id="qryCityPersonNumBySubject" resultType="java.util.HashMap" >
- 			select  CANDIDATES_NUM from  RPT_EXP_city_SUBJECT where exambatch_id=#{exambatchId} and city_code = #{cityCode} and subject like  #{subject}	and paper_id = #{paperId}
- 			<if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  			</if>
- 		</select>
+			<if test="classesId!= null">
+				and ess.cls_id = #{classesId}
+			</if>
+			<if test="cityCode!= null">
+				and ess.city_code = #{cityCode}
+			</if>
+			<if test="stuType!=null">
+				and ess.student_type = #{stuType}
+			</if>
+			<if test="orderBy!= null">
+				order by ${orderBy}
+			</if>
+		</where>
+	</select>
 
- 		<!-- 获取参加这次考试的班级某个科目的分数段人数-->
- 		<select id="qryScorePersonNumByClassSubject" resultType="java.util.HashMap" >
- 				select 
- 				sch_id,cls_id,
-				<if test="scoreList != null">
-				<foreach collection="scoreList" index="index" item="score"
-						open="" separator="," close=" ">
-						sum(decode(trunc(sign_total/${score}),0,0,1)) as HE${score}
-				</foreach>
-				</if>
-				<if test="scoreList2!=null"><!-- 中山报表指标 -->
-					<foreach collection="scoreList2" index="index" item="score"
-						open=" " separator="," close="  ">
-						<!-- sum(decode(trunc(sign_total/replace('${score}','_','.')),0,0,1)) as HE${score} -->
-					<![CDATA[decode(	concat(to_char(round(sum(case when sign_total< (${score}+${step}) and sign_total >= ${score} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%'),'0.0%',''
+	<!-- 获取指定场次下学生科目信息-->
+	<select id="qryStudentSubjectScore1" resultType="java.util.HashMap">
+		select a.* from(
+		select distinct   <!-- decode(ess.tmp_sequence,'null',ess.sequence,ess.tmp_sequence) as sequence-->
+		nvl(ess.tmp_sequence,ess.sequence) as sequence , subject,sign_total,CITY_RANK
+		,user_id,name,ess.sch_id,ess.cls_id from RPT_EXP_STUDENT_SUBJECT ess
+		where exambatch_id =#{exambatchId}
+		<if test="areaId!= null">
+			and ess.area_id = #{areaId}
+		</if>
+		<if test="cityCode!= null">
+			and ess.city_code = #{cityCode}
+		</if>
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		order by ess.sch_id,ess.cls_id
+		)a
+		order by a.sch_id,a.cls_id,a.sequence
+	</select>
+	<!-- 获取指定场次下学生科目信息-->
+	<select id="qryStudentSubjectScore2" resultType="java.util.HashMap">
+		<![CDATA[		select user_id,(case when sign(sum(case when type =1 then -1 when type =2 then 1 else 0 end))>0 then 2  when sign(sum(case when type =1 then -1 when type =2 then 1 else 0 end))<0 then 1  else 0 end) as type ]]>
+		,name,sequence as
+		sequence0,/*decode(tmp_sequence,'null',sequence,tmp_sequence)*/nvl(tmp_sequence,sequence) as
+		sequence,sch_id,schoolname as sch_name,cls_id ,classname as cls_name,area_id,areaname as area_name
+		<foreach collection="subjectList" index="index" item="subjectInfo" open=" ," separator="," close="  ">
+			sum(case when subject= #{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then
+			sign_total end ) as ${subjectInfo.subjectName}_SCORE
+			,sum(case when subject= #{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then
+			city_rank end ) as ${subjectInfo.subjectName}_RANK
+			,sum(case when subject= #{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then cls_rank
+			end ) as ${subjectInfo.subjectName}_RANK_cls
+			,sum(case when subject= #{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then grd_rank
+			end ) as ${subjectInfo.subjectName}_RANK_sch
+		</foreach>
+		from RPT_EXP_STUDENT_SUBJECT
+		where exambatch_id =#{exambatchId}
+		<if test="schoolId!= null">
+			and sch_id = #{schoolId}
+		</if>
+		<if test="classesId!= null">
+			and cls_id = #{classesId}
+		</if>
+		<if test="areaId!= null">
+			and area_id = #{areaId}
+		</if>
+		<if test="cityCode!= null">
+			and city_code = #{cityCode}
+		</if>
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		group by user_id,name,sch_id,schoolname,area_id,areaname,cls_id,classname,tmp_sequence,sequence order
+		by sch_id,cls_id,SEQUENCE
+	</select>
+
+	<!-- 获取指定场次下学校科目信息-->
+	<select id="qrySchoolSubjectScore2" resultType="java.util.HashMap">
+		select sch_id,sch_name,AREA_ID
+		<if test="subjectListOfWL!=null">
+			,max(
+			case
+			<foreach collection="subjectListOfWL" index="index" item="subject2" open=" " separator="  "
+					 close="  ">when subject=#{subject2} then 0
+			</foreach>
+			else CANDIDATES_NUM end
+			) as CANDIDATES_NUM
+		</if>
+		<if test="subjectList!=null">
+			<foreach collection="subjectList" index="index" item="subjectInfo" open=" ," separator=","
+					 close="  ">
+				sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then
+				avg_score end) as ${subjectInfo.subjectName}_SCORE
+				,sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then
+				avg_score_rank end) as ${subjectInfo.subjectName}_RANK,
+				sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then
+				top_score end) as ${subjectInfo.subjectName}_TOP,
+				sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then
+				up_score end) as ${subjectInfo.subjectName}_UP
+			</foreach>
+		</if>
+		from RPT_EXP_SCHOOL_SUBJECT
+		where exambatch_id =#{exambatchId}
+		<if test="cityCode!= null">
+			and city_code = #{cityCode}
+		</if>
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		<if test="areaId!=null">and area_id = #{areaId}</if>
+		<if test="schoolId!=null">and sch_id = #{schoolId}</if>
+		group by SCH_id,SCH_NAME,AREA_ID
+		ORDER BY AREA_ID,SCH_id
+	</select>
+	<!-- 获取指定场次下班级科目信息-->
+	<select id="qryClassSubjectScore2" resultType="java.util.HashMap">
+		select cls_id,sch_id,AREA_ID,CLS_NAME
+		<if test="subjectListOfWL!=null">
+			,max(
+			case
+			<foreach collection="subjectListOfWL" index="index" item="subject2" open=" " separator="  "
+					 close="  ">when subject=#{subject2} then 0
+			</foreach>
+			else CANDIDATES_NUM end
+			) as CANDIDATES_NUM
+		</if>
+		<if test="subjectList!=null">
+			<foreach collection="subjectList" index="index" item="subjectInfo" open=" ," separator=","
+					 close="  ">
+				sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then
+				avg_score end) as ${subjectInfo.subjectName}_SCORE
+				,sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then
+				avg_sch_order end) as ${subjectInfo.subjectName}_RANK,
+				sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then
+				top_score end) as ${subjectInfo.subjectName}_TOP,
+				sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then
+				up_score end) as ${subjectInfo.subjectName}_UP
+			</foreach>
+		</if>
+		from RPT_EXP_CLASS_SUBJECT
+		where exambatch_id =#{exambatchId}
+		<if test="cityCode!= null">
+			and city_code = #{cityCode}
+		</if>
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		<if test="classesId!=null">and cls_id = #{classesId}</if>
+		<if test="schoolId!=null">and sch_id = #{schoolId}</if>
+		<if test="type!=null">and type = #{type}</if>
+		group by cls_id,sch_id,AREA_ID,CLS_NAME
+		ORDER BY CLS_NAME
+	</select>
+	<!-- 获取指定场次下学校科目信息-->
+	<select id="qryCitySubjectScore2" resultType="java.util.HashMap">
+		select city_code
+		<if test="subjectListOfWL!=null">
+			,max(
+			case
+			<foreach collection="subjectListOfWL" index="index" item="subject2" open=" " separator="  "
+					 close="  ">when subject=#{subject2} then 0
+			</foreach>
+			else CANDIDATES_NUM end
+			) as CANDIDATES_NUM
+		</if>
+		<if test="subjectList!=null">
+			<foreach collection="subjectList" index="index" item="subjectInfo" open=" ," separator=","
+					 close="  ">
+				sum(case when subject=#{subjectInfo.subject} and paper_id=#{subjectInfo.paperId} then
+				avg_score end ) as ${subjectInfo.subjectName}_SCORE,
+				sum(case when subject=#{subjectInfo.subject} and paper_id=#{subjectInfo.paperId} then
+				top_score end ) as ${subjectInfo.subjectName}_TOP,
+				sum(case when subject=#{subjectInfo.subject} and paper_id=#{subjectInfo.paperId} then up_score
+				end ) as ${subjectInfo.subjectName}_UP
+			</foreach>
+		</if>
+		from RPT_EXP_city_SUBJECT
+		where exambatch_id =#{exambatchId}
+		<if test="cityCode!= null">
+			and city_code = #{cityCode}
+		</if>
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		group by city_code
+	</select>
+
+	<!-- 获取指定场次下镇区科目信息-->
+	<select id="qryAreaSubjectScore2" resultType="java.util.HashMap">
+		select area_id,area_name
+		<if test="subjectListOfWL!=null">
+			,max(
+			case
+			<foreach collection="subjectListOfWL" index="index" item="subject2" open=" " separator="  "
+					 close="  ">when subject=#{subject2} then 0
+			</foreach>
+			else CANDIDATES_NUM end
+			) as CANDIDATES_NUM
+		</if>
+		<if test="subjectList!=null">
+			<foreach collection="subjectList" index="index" item="subjectInfo" open=" ," separator=","
+					 close="  ">
+				sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then
+				avg_score end) as ${subjectInfo.subjectName}_SCORE
+				,sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then
+				avg_score_rank end) as ${subjectInfo.subjectName}_RANK,
+				sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then
+				top_score end) as ${subjectInfo.subjectName}_TOP,
+				sum(case when subject=#{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then
+				up_score end) as ${subjectInfo.subjectName}_UP
+			</foreach>
+		</if>
+		from RPT_EXP_AREA_SUBJECT
+		where exambatch_id =#{exambatchId}
+		<if test="cityCode!= null">
+			and city_code = #{cityCode}
+		</if>
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		<if test="areaId!=null">
+			and area_id = #{areaId}
+		</if>
+		group by AREA_ID,area_name
+		ORDER BY AREA_ID
+	</select>
+
+	<!-- 获取市科目信息-->
+	<select id="qrySubjectQuality" resultType="java.util.HashMap">
+
+		select distinct TOP_SCORE as TOP_SCORE,UP_SCORE as UP_SCORE,AVG_SCORE as AVG_SCORE from
+		RPT_EXP_CITY_SUBJECT where exambatch_id =#{exambatchId} AND SUBJECT = #{subject} and paper_id =
+		#{paperId}
+		<if test="cityCode!= null">
+			and city_code = #{cityCode}
+		</if>
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+	</select>
+	<!-- 获取市前300名科目信息-->
+	<select id="qrySubjectQualityByRanking" resultType="java.util.HashMap">
+		select DISTINCT SCH_ID,NAME,USER_ID,SIGN_TOTAL,city_rank,area_id from RPT_EXP_STUDENT_SUBJECT
+		where exambatch_id = #{exambatchId} AND subject = #{subject} and paper_id = #{paperId}
+		<if test="cityCode!=null">
+
+			and city_code = #{cityCode}
+		</if>
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		<![CDATA[and city_rank <= 300 ]]>
+		order by city_rank
+
+	</select>
+	<!-- 获取全市参加这次考试的学校科目的信息2-->
+
+	<select id="qrySchoolSubjectInfo2" resultType="java.util.HashMap">
+		select ess.sch_id
+		,ess.area_id,ess.avg_score,ess.take_exam_num,ess.top_score,ess.up_score,ess.sch_name,
+		ess.CANDIDATES_NUM, ess.sub_avg_score,ess.full_score_rate as full_rank,
+		ess.obj_avg_score, ess.sub_sd,
+		ess.obj_sd,
+		ess.stu_score_sd,
+		ess.full_score
+		from RPT_EXP_SCHOOL_SUBJECT ess
+		where ess.exambatch_id = #{exambatchId}
+		<if test="cityCode != null ">
+			and ess.city_code = #{cityCode}
+		</if>
+		<if test="schoolId != null ">
+			and ess.sch_id = #{schoolId}
+		</if>
+		<if test="areaId != null ">
+			and ess.area_id = #{areaId}
+		</if>
+		<if test="subject != null ">
+			and ess.subject = #{subject}
+		</if>
+		<if test="paperId != null ">
+			and ess.paper_id = #{paperId}
+		</if>
+		<if test="stuType!=null">
+			and ess.student_type = #{stuType}
+		</if>
+		order by ess.area_id,ess.sch_id
+	</select>
+
+	<!-- 获取全市参加这次考试的镇区科目的信息2-->
+	<select id="qryAreaSubjectInfo2" resultType="java.util.HashMap">
+		select eas.area_id
+		,eas.avg_score,eas.sub_avg_score,eas.top_score,eas.up_score,eas.CANDIDATES_NUM,eas.area_name,
+		eas.obj_avg_score,eas.take_exam_num,eas.full_rank,
+		eas.sub_sd ,
+		eas.obj_sd ,
+		eas.stu_score_sd
+		from RPT_EXP_AREA_SUBJECT eas
+		where eas.exambatch_id = #{exambatchId}
+		<if test="cityCode != null ">
+			and eas.city_code = #{cityCode}
+		</if>
+		<if test="stuType!=null">
+			and eas.student_type = #{stuType}
+		</if>
+		<if test="areaId != null ">
+			and eas.area_id = #{areaId}
+		</if>
+		<if test="subject != null ">
+			and eas.subject = #{subject}
+		</if>
+		<if test="paperId != null ">
+			and eas.paper_id = #{paperId}
+		</if>
+		order by eas.area_id
+	</select>
+
+	<!-- 获取全市参加这次考试的地区科目的信息2-->
+	<select id="qrySubjectQualityInfo2" resultType="java.util.HashMap">
+		select ecs.avg_score,ecs.sub_avg_score,ecs.CANDIDATES_NUM, (ecs.CANDIDATES_NUM-ecs.take_exam_num) as
+		ABSENT_NUM,
+		ecs.obj_avg_score,ecs.take_exam_num,ecs.top_score,ecs.up_score,ecs.full_score,ecs.full_rank,
+		ecs.sub_sd ,
+		ecs.obj_sd ,
+		ecs.stu_score_sd,
+		ecs.city_code
+		from RPT_EXP_CITY_SUBJECT ecs
+		where ecs.exambatch_id = #{exambatchId}
+		<if test="cityCode != null ">
+			and ecs.city_code = #{cityCode}
+		</if>
+		<if test="stuType!=null">
+			and ecs.student_type = #{stuType}
+		</if>
+		<if test="subject != null ">
+			and ecs.subject = #{subject}
+		</if>
+		<if test="paperId != null ">
+			and ecs.paper_id = #{paperId}
+		</if>
+	</select>
+	<!-- 获取全市参加这次考试的班级科目的信息2-->
+	<select id="qryClassSubjectInfo2" resultType="java.util.HashMap">
+		select ecs.avg_score,ecs.sub_avg_score,ecs.CANDIDATES_NUM,ecs.cls_name ,ecs.sch_name,
+		ecs.obj_avg_score,ecs.take_exam_num,ecs.top_score,ecs.up_score,ecs.full_score,ecs.full_rank,
+		ecs.sub_sd ,
+		ecs.obj_sd ,
+		ecs.stu_score_sd,
+		ecs.cls_id
+		from RPT_EXP_CLASS_SUBJECT ecs
+		where ecs.exambatch_id = #{exambatchId}
+		<if test="cityCode != null ">
+			and ecs.city_code = #{cityCode}
+		</if>
+		<if test="stuType!=null">
+			and ecs.student_type = #{stuType}
+		</if>
+		<if test="subject != null ">
+			and ecs.subject = #{subject}
+		</if>
+		<if test="paperId != null ">
+			and ecs.paper_id = #{paperId}
+		</if>
+		<if test="schoolId != null ">
+			and ecs.sch_id = #{schoolId}
+		</if>
+		<if test="classesId != null ">
+			and ecs.cls_id = #{classesId}
+		</if>
+		order by ecs.cls_id
+	</select>
+	<!-- 获取参加这次考试的学校某个科目的应考人数-->
+	<select id="qrySchPersonNumBySubject" resultType="java.util.HashMap">
+		select sch_id,CANDIDATES_NUM,take_exam_num from RPT_EXP_SCHOOL_SUBJECT where
+		exambatch_id=#{exambatchId} and city_code = #{cityCode} and subject like #{subject} and paper_id =
+		#{paperId}
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		<if test="areaId!=null">and area_id = #{areaId}</if>
+	</select>
+	<!-- 获取参加这次考试的镇区某个科目的应考人数-->
+	<select id="qryAreaPersonNumBySubject" resultType="java.util.HashMap">
+		select AREA_ID,CANDIDATES_NUM from RPT_EXP_AREA_SUBJECT where exambatch_id=#{exambatchId} and
+		city_code = #{cityCode} and subject like #{subject} and paper_id = #{paperId}
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+	</select>
+	<!-- 获取参加这次考试的市区某个科目的应考人数-->
+	<select id="qryCityPersonNumBySubject" resultType="java.util.HashMap">
+		select CANDIDATES_NUM from RPT_EXP_city_SUBJECT where exambatch_id=#{exambatchId} and city_code =
+		#{cityCode} and subject like #{subject} and paper_id = #{paperId}
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+	</select>
+
+	<!-- 获取参加这次考试的班级某个科目的分数段人数-->
+	<select id="qryScorePersonNumByClassSubject" resultType="java.util.HashMap">
+		select
+		sch_id,cls_id,
+		<if test="scoreList != null">
+			<foreach collection="scoreList" index="index" item="score"
+					 open="" separator="," close=" ">
+				sum(decode(trunc(sign_total/${score}),0,0,1)) as HE${score}
+			</foreach>
+		</if>
+		<if test="scoreList2!=null"><!-- 中山报表指标 -->
+			<foreach collection="scoreList2" index="index" item="score"
+					 open=" " separator="," close="  ">
+				<!-- sum(decode(trunc(sign_total/replace('${score}','_','.')),0,0,1)) as HE${score} -->
+				<![CDATA[decode(	concat(to_char(round(sum(case when sign_total< (${score}+${step}) and sign_total >= ${score} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%'),'0.0%',''
 					,concat(to_char(round(sum(case when sign_total< (${score}+${step}) and sign_total >= ${score} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%')) as UNDER${score} ]]>
-				</foreach>
-				<if test="take_exam_num !=null">
+			</foreach>
+			<if test="take_exam_num !=null">
 				<![CDATA[
 				,concat(to_char(round(sum(case when city_rank <= ${take_exam_num}*0.3 THEN 1 else 0 END)/count(1),4)*100,'FM990.09'),'%') as A,
 				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.3 and city_rank <= ${take_exam_num}*0.65 THEN 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')   as B,
 				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.65 and city_rank <= ${take_exam_num}*0.9 then 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')   as C,
 				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.9 and city_rank <= ${take_exam_num}*1 THEN 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')  as D 
 				]]>
-				</if>
-				</if>
-				from rpt_exp_student_subject
-				where exambatch_id = #{exambatchId} and subject = #{subject} and paper_id = #{paperId}
-				
-				<if test = "cityCode != null">
-					AND city_code = #{cityCode}
-				</if>  
-				<if test = "stuType!=null">
-        		and student_type = #{stuType}        
-  				</if>
-  				<if test="schoolId!=null">and  sch_id = #{schoolId}</if>
-				<if test="classesId!=null">and  cls_id = #{classesId}</if>
-				group by sch_id,cls_id
-				order by cls_id
- 		</select>
-<!-- 获取参加这次考试的所有学校某个科目的分数段人数-->
- 		<select id="qryScorePersonNumBySchoolSubject" resultType="java.util.HashMap" >
- 				select sch_id,schoolname as schname,
- 				<if test="top80 != null">
-				sum(decode(trunc(sign_total/${top80}),0,0,1)) as TOP80,
-				sum(decode(trunc(sign_total/${top70}),0,0,1)) as TOP70,
-				sum(decode(trunc(sign_total/${top60}),0,0,1)) as TOP60,
-				sum(decode(trunc(sign_total/${ls40}),0,1,0)) as LS40,
- 				</if>
- 				<if test="scoreList != null">
-				<foreach collection="scoreList" index="index" item="score"
-						open=" " separator="," close="  ">
-						<!-- sum(decode(trunc(sign_total/replace('${score}','_','.')),0,0,1)) as HE${score} -->
-						sum(case when sign_total>= replace('${score}','_','.') then 1 else 0 end) as HE${score}
-				</foreach>
-				<if test="rankList!=null">
+			</if>
+		</if>
+		from rpt_exp_student_subject
+		where exambatch_id = #{exambatchId} and subject = #{subject} and paper_id = #{paperId}
+
+		<if test="cityCode != null">
+			AND city_code = #{cityCode}
+		</if>
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		<if test="schoolId!=null">and sch_id = #{schoolId}</if>
+		<if test="classesId!=null">and cls_id = #{classesId}</if>
+		group by sch_id,cls_id
+		order by cls_id
+	</select>
+	<!-- 获取参加这次考试的所有学校某个科目的分数段人数-->
+	<select id="qryScorePersonNumBySchoolSubject" resultType="java.util.HashMap">
+		select sch_id,schoolname as schname,
+		<if test="top80 != null">
+			sum(decode(trunc(sign_total/${top80}),0,0,1)) as TOP80,
+			sum(decode(trunc(sign_total/${top70}),0,0,1)) as TOP70,
+			sum(decode(trunc(sign_total/${top60}),0,0,1)) as TOP60,
+			sum(decode(trunc(sign_total/${ls40}),0,1,0)) as LS40,
+		</if>
+		<if test="scoreList != null">
+			<foreach collection="scoreList" index="index" item="score"
+					 open=" " separator="," close="  ">
+				<!-- sum(decode(trunc(sign_total/replace('${score}','_','.')),0,0,1)) as HE${score} -->
+				sum(case when sign_total>= replace('${score}','_','.') then 1 else 0 end) as HE${score}
+			</foreach>
+			<if test="rankList!=null">
 				<foreach collection="rankList" index="index" item="rank"
-						open=" ," separator="," close="  ">
+						 open=" ," separator="," close="  ">
 
 					<![CDATA[	sum(case when city_rank <= #{rank} then 1 else 0 end) as HE${rank}]]>
 				</foreach>
-				</if>
-				</if>
-				<if test="scoreList2!=null"><!-- 中山报表指标 -->
-					<foreach collection="scoreList2" index="index" item="score"
-						open=" " separator="," close="  ">
-						<!-- sum(decode(trunc(sign_total/replace('${score}','_','.')),0,0,1)) as HE${score} -->
-						<![CDATA[decode(	concat(to_char(round(sum(case when sign_total< (${score}+${step}) and sign_total >= ${score} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%'),'0.0%',''
+			</if>
+		</if>
+		<if test="scoreList2!=null"><!-- 中山报表指标 -->
+			<foreach collection="scoreList2" index="index" item="score"
+					 open=" " separator="," close="  ">
+				<!-- sum(decode(trunc(sign_total/replace('${score}','_','.')),0,0,1)) as HE${score} -->
+				<![CDATA[decode(	concat(to_char(round(sum(case when sign_total< (${score}+${step}) and sign_total >= ${score} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%'),'0.0%',''
 					,concat(to_char(round(sum(case when sign_total< (${score}+${step}) and sign_total >= ${score} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%')) as UNDER${score} ]]>
-				</foreach>
-					<if test="take_exam_num !=null">
+			</foreach>
+			<if test="take_exam_num !=null">
 				<![CDATA[
 				,concat(to_char(round(sum(case when city_rank <= ${take_exam_num}*0.3 THEN 1 else 0 END)/count(1),4)*100,'FM990.09'),'%') as A,
 				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.3 and city_rank <= ${take_exam_num}*0.65 THEN 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')   as B,
 				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.65 and city_rank <= ${take_exam_num}*0.9 then 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')   as C,
 				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.9 and city_rank <= ${take_exam_num}*1 THEN 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')  as D 
 				]]>
-				</if>
-				</if>
-				from rpt_exp_student_subject
-				where exambatch_id = #{exambatchId} and subject = #{subject} and paper_id = #{paperId}
-				<if test = "cityCode != null">
-					AND city_code = #{cityCode}
-				</if>  
-				<if test = "stuType!=null">
-        		and student_type = #{stuType}        
-  				</if>
-  				<if test="areaId!=null">
-  					and area_id = #{areaId}
-  				</if>
-  				<if test="schoold!=null">
-  					and SCH_id = #{schoolId}
-  				</if>
-				group by sch_id,schoolname
-				order by sch_id
- 		</select>
- 		<!-- 获取参加这次考试的所有学校某个科目的分数段人数-->
- 		<select id="qryScorePersonNumByAreaSubject" resultType="java.util.HashMap" >
- 				select area_id, 
- 				<if test="scoreList != null">
-				<foreach collection="scoreList" index="index" item="score"
-						open=" " separator="," close="  ">
-						<!-- sum(decode(trunc(sign_total/replace('${score}','_','.')),0,0,1)) as HE${score} -->
-						sum(case when sign_total>= replace('${score}','_','.') then 1 else 0 end) as HE${score}
-				</foreach>
-				</if>
-				<if test="scoreList2!=null"><!-- 中山报表指标 -->
-					<foreach collection="scoreList2" index="index" item="score"
-						open=" " separator="," close="  ">
-						<!-- sum(decode(trunc(sign_total/replace('${score}','_','.')),0,0,1)) as HE${score} -->
-					<![CDATA[decode(	concat(to_char(round(sum(case when sign_total< (${score}+${step}) and sign_total >= ${score} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%'),'0.0%',''
-					,concat(to_char(round(sum(case when sign_total< (${score}+${step}) and sign_total >= ${score} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%')) as UNDER${score} ]]>
-				</foreach>
-				<if test="take_exam_num !=null">
-				<![CDATA[
-				,concat(to_char(round(sum(case when city_rank <= ${take_exam_num}*0.3 THEN 1 else 0 END)/count(1),4)*100),'%') as A,
-				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.3 and city_rank <= ${take_exam_num}*0.65 THEN 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')   as B,
-				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.65 and city_rank <= ${take_exam_num}*0.9 then 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')   as C,
-				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.9 and city_rank <= ${take_exam_num}*1 THEN 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')  as D 
-				]]>
-				</if>
-				</if>
-				from rpt_exp_student_subject
-				where exambatch_id = #{exambatchId} and subject = #{subject} and paper_id = #{paperId}
-				<if test = "cityCode != null">
-					AND city_code = #{cityCode}
-				</if>  
-				<if test = "stuType!=null">
-        		and student_type = #{stuType}        
-  				</if>
-  				<if test="areaId!=null">
-  					and area_id = #{areaId}
-  				</if>
-  				
-				group by area_id
-				order by area_id
- 		</select>
- 		<!-- 获取参加这次考试的市某个科目的分数段人数-->
- 		<select id="qryScorePersonNumByCitySubject" resultType="java.util.HashMap" >
- 				select CITY_CODE,
- 				<if test="top80 != null">
- 				sum(decode(trunc(sign_total/${top80}),0,0,1)) as TOP80,
-				sum(decode(trunc(sign_total/${top70}),0,0,1)) as TOP70,
-				sum(decode(trunc(sign_total/${top60}),0,0,1)) as TOP60,
-				sum(decode(trunc(sign_total/${ls40}),0,1,0)) as LS40,
-				</if>
-				<if test="scoreList != null">
-				<foreach collection="scoreList" index="index" item="score"
-						open="" separator="," close=" ">
-						sum(decode(trunc(sign_total/${score}),0,0,1)) as HE${score}
-				</foreach>
-				</if>
-				<if test="scoreList2!=null"><!-- 中山报表指标 -->
-					<foreach collection="scoreList2" index="index" item="score"
-						open=" " separator="," close="  ">
-						<!-- sum(decode(trunc(sign_total/replace('${score}','_','.')),0,0,1)) as HE${score} -->
+			</if>
+		</if>
+		from rpt_exp_student_subject
+		where exambatch_id = #{exambatchId} and subject = #{subject} and paper_id = #{paperId}
+		<if test="cityCode != null">
+			AND city_code = #{cityCode}
+		</if>
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		<if test="areaId!=null">
+			and area_id = #{areaId}
+		</if>
+		<if test="schoold!=null">
+			and SCH_id = #{schoolId}
+		</if>
+		group by sch_id,schoolname
+		order by sch_id
+	</select>
+	<!-- 获取参加这次考试的所有学校某个科目的分数段人数-->
+	<select id="qryScorePersonNumByAreaSubject" resultType="java.util.HashMap">
+		select area_id,
+		<if test="scoreList != null">
+			<foreach collection="scoreList" index="index" item="score"
+					 open=" " separator="," close="  ">
+				<!-- sum(decode(trunc(sign_total/replace('${score}','_','.')),0,0,1)) as HE${score} -->
+				sum(case when sign_total>= replace('${score}','_','.') then 1 else 0 end) as HE${score}
+			</foreach>
+		</if>
+		<if test="scoreList2!=null"><!-- 中山报表指标 -->
+			<foreach collection="scoreList2" index="index" item="score"
+					 open=" " separator="," close="  ">
+				<!-- sum(decode(trunc(sign_total/replace('${score}','_','.')),0,0,1)) as HE${score} -->
 				<![CDATA[decode(	concat(to_char(round(sum(case when sign_total< (${score}+${step}) and sign_total >= ${score} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%'),'0.0%',''
 					,concat(to_char(round(sum(case when sign_total< (${score}+${step}) and sign_total >= ${score} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%')) as UNDER${score} ]]>
-				</foreach>
-				<if test="take_exam_num !=null">
+			</foreach>
+			<if test="take_exam_num !=null">
 				<![CDATA[
 				,concat(to_char(round(sum(case when city_rank <= ${take_exam_num}*0.3 THEN 1 else 0 END)/count(1),4)*100),'%') as A,
 				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.3 and city_rank <= ${take_exam_num}*0.65 THEN 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')   as B,
 				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.65 and city_rank <= ${take_exam_num}*0.9 then 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')   as C,
 				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.9 and city_rank <= ${take_exam_num}*1 THEN 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')  as D 
 				]]>
-				</if>
-				</if>
-				from rpt_exp_student_subject
-				where exambatch_id = #{exambatchId} and subject = #{subject}and paper_id = #{paperId}
-				<if test = "cityCode != null">
-					AND city_code = #{cityCode}
-				</if>  
-				<if test = "stuType!=null">
-        		and student_type = #{stuType}        
-  				</if>
-				group by exambatch_id,city_code
- 		</select>
- 		
- 		<select id="qryRptExpSchoolSubject" resultType="java.util.HashMap" >
-    select 
-    EXAMBATCH_ID,PAPER_ID,SCH_ID,SCH_NAME,SUBJECT,FULL_SCORE,TAKE_EXAM_NUM,AVG_SCORE,TOP_SCORE,UP_SCORE,FULL_SCORE_RATE,LEVEL_A_NUM,LEVEL_B_NUM,LEVEL_C_NUM,LEVEL_D_NUM,LEVEL_E_NUM,LEVEL_GD_NUM,LEVEL_FN_NUM,LEVEL_PS_NUM,LEVEL_FL_NUM,AVG_SCORE_RANK,PASSED_RATE,excellent_Rate,COMPOSITE_RATE,CITY_CODE
-    from RPT_EXP_SCHOOL_SUBJECT
-    where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
-    <if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  	</if>
-    <if test="subject != null">
-    	and subject = #{subject,jdbcType=VARCHAR}
-    </if>
-			<if test="paperId != null">
-				and paper_Id = #{paperId,jdbcType=VARCHAR}
 			</if>
- 		</select>
- 	  <select id="qryRptExpAreaSubject" resultType="java.util.HashMap" >
-   SELECT  EXAMBATCH_ID,PAPER_ID,AREA_ID,SUBJECT,FULL_SCORE,TAKE_EXAM_NUM,AVG_SCORE,TOP_SCORE,UP_SCORE,FULL_RANK ,LEVEL_A_NUM,LEVEL_B_NUM,LEVEL_C_NUM,LEVEL_D_NUM,LEVEL_E_NUM,LEVEL_GD_NUM,LEVEL_FN_NUM,LEVEL_PS_NUM,LEVEL_FL_NUM,COMPOSITE_RATE,AVG_SCORE_RANK,area_name  from rpt_exp_area_subject
-    where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
-    <if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  	</if>
-    <if test="subject != null">
-    	and subject = #{subject,jdbcType=VARCHAR}
-    </if>
-		  <if test="paperId != null">
-			  and paper_Id = #{paperId,jdbcType=VARCHAR}
-		  </if>
-    </select>
-    <select id="qryRptCitySubject" resultType="java.util.HashMap" >
-   SELECT  EXAMBATCH_ID,PAPER_ID,SUBJECT,FULL_SCORE,TAKE_EXAM_NUM,AVG_SCORE,TOP_SCORE,UP_SCORE,FULL_RANK ,LEVEL_A_NUM,LEVEL_B_NUM,LEVEL_C_NUM,LEVEL_D_NUM,LEVEL_E_NUM,LEVEL_GD_NUM,LEVEL_FN_NUM,LEVEL_PS_NUM,LEVEL_FL_NUM , COMPOSITE_RATE  from rpt_exp_city_subject
-    where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
-   		<if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  		</if>
-    <if test="subject != null">
-    	and subject = #{subject,jdbcType=VARCHAR}
-    </if>
+		</if>
+		from rpt_exp_student_subject
+		where exambatch_id = #{exambatchId} and subject = #{subject} and paper_id = #{paperId}
+		<if test="cityCode != null">
+			AND city_code = #{cityCode}
+		</if>
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		<if test="areaId!=null">
+			and area_id = #{areaId}
+		</if>
+
+		group by area_id
+		order by area_id
+	</select>
+	<!-- 获取参加这次考试的市某个科目的分数段人数-->
+	<select id="qryScorePersonNumByCitySubject" resultType="java.util.HashMap">
+		select CITY_CODE,
+		<if test="top80 != null">
+			sum(decode(trunc(sign_total/${top80}),0,0,1)) as TOP80,
+			sum(decode(trunc(sign_total/${top70}),0,0,1)) as TOP70,
+			sum(decode(trunc(sign_total/${top60}),0,0,1)) as TOP60,
+			sum(decode(trunc(sign_total/${ls40}),0,1,0)) as LS40,
+		</if>
+		<if test="scoreList != null">
+			<foreach collection="scoreList" index="index" item="score"
+					 open="" separator="," close=" ">
+				sum(decode(trunc(sign_total/${score}),0,0,1)) as HE${score}
+			</foreach>
+		</if>
+		<if test="scoreList2!=null"><!-- 中山报表指标 -->
+			<foreach collection="scoreList2" index="index" item="score"
+					 open=" " separator="," close="  ">
+				<!-- sum(decode(trunc(sign_total/replace('${score}','_','.')),0,0,1)) as HE${score} -->
+				<![CDATA[decode(	concat(to_char(round(sum(case when sign_total< (${score}+${step}) and sign_total >= ${score} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%'),'0.0%',''
+					,concat(to_char(round(sum(case when sign_total< (${score}+${step}) and sign_total >= ${score} then 1 else 0 end)/count(1),4)*100,'FM990.09'),'%')) as UNDER${score} ]]>
+			</foreach>
+			<if test="take_exam_num !=null">
+				<![CDATA[
+				,concat(to_char(round(sum(case when city_rank <= ${take_exam_num}*0.3 THEN 1 else 0 END)/count(1),4)*100),'%') as A,
+				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.3 and city_rank <= ${take_exam_num}*0.65 THEN 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')   as B,
+				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.65 and city_rank <= ${take_exam_num}*0.9 then 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')   as C,
+				concat(to_char(round(sum(case when city_rank > ${take_exam_num}*0.9 and city_rank <= ${take_exam_num}*1 THEN 1 else 0 END)/count(1),4)*100,'FM990.09'),'%')  as D 
+				]]>
+			</if>
+		</if>
+		from rpt_exp_student_subject
+		where exambatch_id = #{exambatchId} and subject = #{subject}and paper_id = #{paperId}
+		<if test="cityCode != null">
+			AND city_code = #{cityCode}
+		</if>
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		group by exambatch_id,city_code
+	</select>
+
+	<select id="qryRptExpSchoolSubject" resultType="java.util.HashMap">
+		select
+		EXAMBATCH_ID,PAPER_ID,SCH_ID,SCH_NAME,SUBJECT,FULL_SCORE,TAKE_EXAM_NUM,AVG_SCORE,TOP_SCORE,UP_SCORE,FULL_SCORE_RATE,LEVEL_A_NUM,LEVEL_B_NUM,LEVEL_C_NUM,LEVEL_D_NUM,LEVEL_E_NUM,LEVEL_GD_NUM,LEVEL_FN_NUM,LEVEL_PS_NUM,LEVEL_FL_NUM,AVG_SCORE_RANK,PASSED_RATE,excellent_Rate,COMPOSITE_RATE,CITY_CODE
+		from RPT_EXP_SCHOOL_SUBJECT
+		where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		<if test="subject != null">
+			and subject = #{subject,jdbcType=VARCHAR}
+		</if>
 		<if test="paperId != null">
 			and paper_Id = #{paperId,jdbcType=VARCHAR}
 		</if>
-    </select>
-    <select id="qryCitySubjectContribute" resultType="java.util.HashMap" >
-    select ROUND(stu_score_difficut*${destination}/(select sum(
-    	case
-    	<foreach collection="subjectList" index="index" item="sub"  open="  " separator="  " close=" ">
-				when subject= #{sub} then 0
+	</select>
+	<select id="qryRptExpAreaSubject" resultType="java.util.HashMap">
+		SELECT
+		EXAMBATCH_ID,PAPER_ID,AREA_ID,SUBJECT,FULL_SCORE,TAKE_EXAM_NUM,AVG_SCORE,TOP_SCORE,UP_SCORE,FULL_RANK
+		,LEVEL_A_NUM,LEVEL_B_NUM,LEVEL_C_NUM,LEVEL_D_NUM,LEVEL_E_NUM,LEVEL_GD_NUM,LEVEL_FN_NUM,LEVEL_PS_NUM,LEVEL_FL_NUM,COMPOSITE_RATE,AVG_SCORE_RANK,area_name
+		from rpt_exp_area_subject
+		where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		<if test="subject != null">
+			and subject = #{subject,jdbcType=VARCHAR}
+		</if>
+		<if test="paperId != null">
+			and paper_Id = #{paperId,jdbcType=VARCHAR}
+		</if>
+	</select>
+	<select id="qryRptCitySubject" resultType="java.util.HashMap">
+		SELECT EXAMBATCH_ID,PAPER_ID,SUBJECT,FULL_SCORE,TAKE_EXAM_NUM,AVG_SCORE,TOP_SCORE,UP_SCORE,FULL_RANK
+		,LEVEL_A_NUM,LEVEL_B_NUM,LEVEL_C_NUM,LEVEL_D_NUM,LEVEL_E_NUM,LEVEL_GD_NUM,LEVEL_FN_NUM,LEVEL_PS_NUM,LEVEL_FL_NUM
+		, COMPOSITE_RATE from rpt_exp_city_subject
+		where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		<if test="subject != null">
+			and subject = #{subject,jdbcType=VARCHAR}
+		</if>
+		<if test="paperId != null">
+			and paper_Id = #{paperId,jdbcType=VARCHAR}
+		</if>
+	</select>
+	<select id="qryCitySubjectContribute" resultType="java.util.HashMap">
+		select ROUND(stu_score_difficut*${destination}/(select sum(
+		case
+		<foreach collection="subjectList" index="index" item="sub" open="  " separator="  " close=" ">
+			when subject= #{sub} then 0
 		</foreach>
 		else stu_score_difficut end
-    ) from rpt_exp_city_subject where exambatch_id =#{exambatchId} and city_code = #{cityCode} and student_type = #{stuType}       group by city_code),2)AS CONTRIBUTION_R 
-    from rpt_exp_city_subject where subject LIKE  #{subject} and paper_id = #{paperId} AND exambatch_id =#{exambatchId} and city_code = #{cityCode}
-    		<if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  			</if>
-    </select>
-    
-    <select id="qryRptSubjectSubObJ" resultType="java.util.HashMap" >
-    select distinct subject,SUB_TOTAL,OBJ_TOTAL,FULL_SCORE from rpt_exp_student_subject 
-    where exambatch_id = #{exambatchId} 
-    and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
-    <if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  	</if>
-    <if test="subject!=null">and subject = #{subject}</if>
+		) from rpt_exp_city_subject where exambatch_id =#{exambatchId} and city_code = #{cityCode} and
+		student_type = #{stuType} group by city_code),2)AS CONTRIBUTION_R
+		from rpt_exp_city_subject where subject LIKE #{subject} and paper_id = #{paperId} AND exambatch_id
+		=#{exambatchId} and city_code = #{cityCode}
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+	</select>
+
+	<select id="qryRptSubjectSubObJ" resultType="java.util.HashMap">
+		select distinct subject,SUB_TOTAL,OBJ_TOTAL,FULL_SCORE from rpt_exp_student_subject
+		where exambatch_id = #{exambatchId}
+		and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		<if test="subject!=null">and subject = #{subject}</if>
 		<if test="paperId != null">
 			and paper_Id = #{paperId,jdbcType=VARCHAR}
 		</if>
-    </select>
-    
-        <select id="qryZSzfrptABCD" resultType="java.util.HashMap" >
- <![CDATA[
+	</select>
+
+	<select id="qryZSzfrptABCD" resultType="java.util.HashMap">
+		<![CDATA[
 select
 nvl(min(case when order_1 < zf1_num*0.3 then zongfen1 end),0) as zf1_A,
 nvl(min(case when order_1 < zf1_num*0.65 and order_1 >=zf1_num*0.3 then zongfen1 end),0) as zf1_b,
@@ -928,26 +986,35 @@ nvl(min(case when order_2 < zf2_num*0.9 and order_2 >=zf2_num*0.65 then zongfen2
 nvl(min(case when order_3 < zf3_num*0.3 then zongfen3 end),0) as zf3_A,
 nvl(min(case when order_3 < zf3_num*0.65 and order_3 >=zf3_num*0.3 then zongfen3 end),0) as zf3_b,
 nvl(min(case when order_3 < zf3_num*0.9 and order_3 >=zf3_num*0.65 then zongfen3 end),0) as zf3_c,]]>
-round(avg(zongfen1),2) as zf1_avg ,round(avg(zongfen2),2) as zf2_avg ,round(avg(zongfen3),2) as zf3_avg, 
-zf1_num,zf2_num,zf3_num <if test="GroupBy=='class'">,cls_id</if> <if test="GroupBy=='school'">,sch_id</if> <if test="GroupBy=='area'">,area_id</if>
-from(
-select rank()over(order by zongfen1 desc) as order_1, rank() over(order by zongfen2 desc) as order_2,rank() over(order by zongfen3 desc) as order_3,a.* ,
-count(zongfen1)over() as zf1_num ,count(zongfen2)over() as zf2_num ,count(zongfen3)over() as zf3_num
-from (
-select user_id,cls_id,sch_id,area_id,sum(case when subject = 'YW' OR   subject = 'SX' OR subject = 'YY' THEN sign_total  end) as zongfen1
-,sum(case when subject = 'YW' OR   subject = 'SX' OR subject = 'YY' THEN sign_total when subject = 'WL' then sign_total*0.8 when subject = 'HX' then sign_total*0.5  end) as zongfen2
-,sum(sign_total) as zongfen3
-from rpt_exp_student_subject
-where exambatch_id = #{exambatchId}
-  and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
-and student_type = #{stuType}
-group by user_id,cls_id,sch_id,area_id
-)a
-)group by zf1_num,zf2_num,zf3_num <if test="GroupBy=='class'">,cls_id</if> <if test="GroupBy=='school'">,sch_id</if> <if test="GroupBy=='area'">,area_id</if>
+		round(avg(zongfen1),2) as zf1_avg ,round(avg(zongfen2),2) as zf2_avg ,round(avg(zongfen3),2) as
+		zf3_avg,
+		zf1_num,zf2_num,zf3_num <if test="GroupBy=='class'">,cls_id</if>
+		<if test="GroupBy=='school'">,sch_id</if>
+		<if test="GroupBy=='area'">,area_id</if>
+		from(
+		select rank()over(order by zongfen1 desc) as order_1, rank() over(order by zongfen2 desc) as
+		order_2,rank() over(order by zongfen3 desc) as order_3,a.* ,
+		count(zongfen1)over() as zf1_num ,count(zongfen2)over() as zf2_num ,count(zongfen3)over() as zf3_num
+		from (
+		select user_id,cls_id,sch_id,area_id,sum(case when subject = 'YW' OR subject = 'SX' OR subject = 'YY'
+		THEN sign_total end) as zongfen1
+		,sum(case when subject = 'YW' OR subject = 'SX' OR subject = 'YY' THEN sign_total when subject = 'WL'
+		then sign_total*0.8 when subject = 'HX' then sign_total*0.5 end) as zongfen2
+		,sum(sign_total) as zongfen3
+		from rpt_exp_student_subject
+		where exambatch_id = #{exambatchId}
+		and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
+		and student_type = #{stuType}
+		group by user_id,cls_id,sch_id,area_id
+		)a
+		)group by zf1_num,zf2_num,zf3_num <if test="GroupBy=='class'">,cls_id</if>
+		<if test="GroupBy=='school'">,sch_id</if>
+		<if test="GroupBy=='area'">,area_id</if>
 
-</select>
-<select id="qryZSkmrptABCD" resultType="java.util.HashMap" >
- <![CDATA[
+	</select>
+	<select id="qryZSkmrptABCD" resultType="java.util.HashMap">
+		<![CDATA[
+
 select SUBJECT,PAPER_ID,
 nvl(min(case when city_rank < take_exam_num*0.3 then sign_total end ),0) as A ,
 nvl(min(case when city_rank >=take_exam_num*0.3 and city_rank < take_exam_num*0.65 then sign_total  end ),0) as B ,
@@ -962,24 +1029,24 @@ and student_type = #{stuType}     )
 group by subject,PAPER_ID
 </select>
 
- <!-- 根据名次段获取分数段-->
- 		<select id="getScoreLineOfSubjectByRank" resultType="java.util.HashMap" >
- 			select 
- 			<foreach collection="rankList" index="index" item="rank"
-						open="  "  separator="," close=" ">
-							<![CDATA[	min(case when city_rank <= #{rank} then SIGN_total  end) as scoreOfHead${rank}]]>
-			</foreach>
-			from rpt_exp_student_subject 
-			where exambatch_id = #{exambatchId} and subject = #{subject} and paper_id = #{paperId}
-				<if test = "cityCode != null">
-					AND city_code = #{cityCode}
-				</if>  
-				<if test = "stuType!=null">
-        		and student_type = #{stuType}        
-  				</if> 
-	 		</select>
-	<select id="qryZSzfrptABCDRate" resultType="java.util.HashMap" >
-	select <![CDATA[
+	<!-- 根据名次段获取分数段-->
+	<select id="getScoreLineOfSubjectByRank" resultType="java.util.HashMap">
+		select
+		<foreach collection="rankList" index="index" item="rank"
+				 open="  " separator="," close=" ">
+			<![CDATA[	min(case when city_rank <= #{rank} then SIGN_total  end) as scoreOfHead${rank}]]>
+		</foreach>
+		from rpt_exp_student_subject
+		where exambatch_id = #{exambatchId} and subject = #{subject} and paper_id = #{paperId}
+		<if test="cityCode != null">
+			AND city_code = #{cityCode}
+		</if>
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+	</select>
+	<select id="qryZSzfrptABCDRate" resultType="java.util.HashMap">
+		select <![CDATA[
 	concat(to_char(round(sum(case when order_1 < zf1_num*0.3 then 1 else 0  end)/count(1),4)*100),'%') as zf1_A_RATE,
 	concat(to_char(round(sum(case when order_1 < zf1_num*0.65 and order_1 >=zf1_num*0.3 then  1 else 0    end)/count(1),4)*100),'%')as zf1_b_RATE,
 	concat(to_char(round(sum(case when order_1 < zf1_num*0.9 and order_1 >=zf1_num*0.65 then  1 else 0    end)/count(1),4)*100),'%') as zf1_c_RATE,
@@ -992,32 +1059,41 @@ group by subject,PAPER_ID
 	concat(to_char(round(sum(case when order_3 < zf3_num*0.65 and order_3 >=zf3_num*0.3 then  1 else 0    end)/count(1),4)*100),'%') as zf3_b_RATE,
 	concat(to_char(round(sum(case when order_3 < zf3_num*0.9 and order_3 >=zf3_num*0.65 then  1 else 0    end)/count(1),4)*100),'%') as zf3_c_RATE,
 	concat(to_char(round(sum(case when order_3 >=zf3_num*0.9 then  1 else 0    end)/count(1),4)*100),'%') as zf3_d_RATE, ]]>
-	round(avg(zongfen1),2) as zf1_avg ,round(avg(zongfen2),2) as zf2_avg ,round(avg(zongfen3),2) as zf3_avg,
-	zf1_num,zf2_num,zf3_num<if test="GroupBy=='class'">,cls_id</if> <if test="GroupBy=='school'">,sch_id</if> <if test="GroupBy=='area'">,area_id</if>
-	from(
-	select rank()over(order by zongfen1 desc) as order_1, rank() over(order by zongfen2 desc) as order_2,rank() over(order by zongfen3 desc) as order_3,a.* ,
-	count(zongfen1)over() as zf1_num ,count(zongfen2)over() as zf2_num ,count(zongfen3)over() as zf3_num
-	from (
-	select user_id,cls_id,sch_id,area_id,sum(case when subject = 'YW' OR   subject = 'SX' OR subject = 'YY' THEN sign_total   end) as zongfen1
-	,sum(case when subject = 'YW' OR   subject = 'SX' OR subject = 'YY' THEN sign_total when subject = 'WL' then sign_total*0.8 when subject = 'HX' then sign_total*0.5  end) as zongfen2
-	,sum(sign_total) as zongfen3
-	from rpt_exp_student_subject
-where exambatch_id = #{exambatchId}
-  and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
-and student_type = #{stuType}
-	group by user_id ,cls_id,sch_id,area_id
-	)a
-	)group by zf1_num,zf2_num,zf3_num<if test="GroupBy=='class'">,cls_id</if> <if test="GroupBy=='school'">,sch_id</if> <if test="GroupBy=='area'">,area_id</if>
-</select>
+		round(avg(zongfen1),2) as zf1_avg ,round(avg(zongfen2),2) as zf2_avg ,round(avg(zongfen3),2) as
+		zf3_avg,
+		zf1_num,zf2_num,zf3_num<if test="GroupBy=='class'">,cls_id</if>
+		<if test="GroupBy=='school'">,sch_id</if>
+		<if test="GroupBy=='area'">,area_id</if>
+		from(
+		select rank()over(order by zongfen1 desc) as order_1, rank() over(order by zongfen2 desc) as
+		order_2,rank() over(order by zongfen3 desc) as order_3,a.* ,
+		count(zongfen1)over() as zf1_num ,count(zongfen2)over() as zf2_num ,count(zongfen3)over() as zf3_num
+		from (
+		select user_id,cls_id,sch_id,area_id,sum(case when subject = 'YW' OR subject = 'SX' OR subject = 'YY'
+		THEN sign_total end) as zongfen1
+		,sum(case when subject = 'YW' OR subject = 'SX' OR subject = 'YY' THEN sign_total when subject = 'WL'
+		then sign_total*0.8 when subject = 'HX' then sign_total*0.5 end) as zongfen2
+		,sum(sign_total) as zongfen3
+		from rpt_exp_student_subject
+		where exambatch_id = #{exambatchId}
+		and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
+		and student_type = #{stuType}
+		group by user_id ,cls_id,sch_id,area_id
+		)a
+		)group by zf1_num,zf2_num,zf3_num<if test="GroupBy=='class'">,cls_id</if>
+		<if test="GroupBy=='school'">,sch_id</if>
+		<if test="GroupBy=='area'">,area_id</if>
+	</select>
 
 
-	<select id="qrySubjectStuNum" resultType="java.util.HashMap" >
+	<select id="qrySubjectStuNum" resultType="java.util.HashMap">
 		select
-		  exambatch_id, exambatch_name, batchid, paper_id, paper_name, /* city_id, city_name, area_id, area_name, sch_id.sch_name, grade_id, grade_name, cls_id, cls_name,cls_type,*/
-		  <if test="GroupBy"> ${GroupBy},</if>
-		  sum(absent_exam_stu_num) AS absent_exam_stu_num,
-		  sum(should_exam_stu_num) AS should_exam_stu_num,
-		  sum(exam_stu_num) AS exam_stu_num
+		exambatch_id, exambatch_name, batchid, paper_id, paper_name, /* city_id, city_name, area_id,
+		area_name, sch_id.sch_name, grade_id, grade_name, cls_id, cls_name,cls_type,*/
+		<if test="GroupBy">${GroupBy},</if>
+		sum(absent_exam_stu_num) AS absent_exam_stu_num,
+		sum(should_exam_stu_num) AS should_exam_stu_num,
+		sum(exam_stu_num) AS exam_stu_num
 		from rpt_exp_issue_class_info
 		<where>
 			exambatch_id = #{exambatchId}
@@ -1043,14 +1119,14 @@ and student_type = #{stuType}
 	</select>
 
 
-  <sql id="OracleDialectPrefix" >
-    <if test="page != null" >
-      select * from ( select row_.*, rownum rownum_ from ( 
-    </if>
-  </sql>
-  <sql id="OracleDialectSuffix" >
-    <if test="page != null" >
-      <![CDATA[ ) row_ ) where rownum_ >= #{page.begin} and rownum_ <= #{page.end} ]]>
-    </if>
-  </sql>
+	<sql id="OracleDialectPrefix">
+		<if test="page != null">
+			select * from ( select row_.*, rownum rownum_ from (
+		</if>
+	</sql>
+	<sql id="OracleDialectSuffix">
+		<if test="page != null">
+			<![CDATA[ ) row_ ) where rownum_ >= #{page.begin} and rownum_ <= #{page.end} ]]>
+		</if>
+	</sql>
 </mapper>

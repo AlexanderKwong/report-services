@@ -2,16 +2,19 @@ package zyj.report.service.export;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import zyj.report.common.DataCacheUtil;
-import zyj.report.common.SpringUtil;
 import zyj.report.exception.report.ReportExportException;
-import zyj.report.service.BaseDataService;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class BaseRptService {
 
 	private Logger logger = LoggerFactory.getLogger(BaseRptService.class);
+
+	// excel 导出参数
+	public Param p;
 
 	private static String[][] grades = new String[][] { { "x1", "小学1年级" },
 			{ "x2", "小学2年级" }, { "x3", "小学3年级" }, { "x4", "小学4年级" },
@@ -97,7 +100,7 @@ public class BaseRptService {
 	}
 	
 	public void exportData(Map<String,Object> parmter) throws Exception {
-		
+		this.p = new Param(parmter);
 	}
 
 	/**
@@ -233,5 +236,102 @@ public class BaseRptService {
 	}
 	public static void main(String[] args) {
 
+	}
+
+
+	public class Param {
+
+		private String level;
+		private String examBatchId;
+		private String cityCode;
+		private String path;
+		private String areaId;
+		private String schoolId;
+		private String classesId;
+		private Integer stuType;
+
+		public Param(Map<String, Object> objectMap) {
+
+			level = (String) objectMap.get("level");
+			examBatchId = (String) objectMap.get("exambatchId");
+			cityCode = (String) objectMap.get("cityCode");
+			path = (String) objectMap.get("pathFile");
+			stuType = (Integer) objectMap.get("stuType");
+			areaId = (String) objectMap.get("areaId");
+			schoolId = (String) objectMap.get("schoolId");
+			classesId = (String) objectMap.get("classesId");
+		}
+
+		/**
+		 * 导出级别: city,area,school,classes
+		 *
+		 * @return
+		 */
+		public String getLevel() {
+			return level;
+		}
+
+		/**
+		 * 考试科目ID
+		 *
+		 * @return
+		 */
+		public String getExamBatchId() {
+			return examBatchId;
+		}
+
+		/**
+		 * 城市ID
+		 *
+		 * @return
+		 */
+		public String getCityCode() {
+			return cityCode;
+		}
+
+		/**
+		 * excel 地址
+		 *
+		 * @return
+		 */
+		public String getPath() {
+			return path;
+		}
+
+		/**
+		 * 区县ID
+		 *
+		 * @return
+		 */
+		public String getAreaId() {
+			return areaId;
+		}
+
+		/**
+		 * 学校ID
+		 *
+		 * @return
+		 */
+		public String getSchoolId() {
+			return schoolId;
+		}
+
+		/**
+		 * 班级ID
+		 *
+		 * @return
+		 */
+		public String getClassesId() {
+			return classesId;
+		}
+
+		/**
+		 * 学生类型 用于过滤应往届
+		 *
+		 * @return
+		 */
+		public Integer getStuType() {
+			return stuType;
+		}
 	}
 }

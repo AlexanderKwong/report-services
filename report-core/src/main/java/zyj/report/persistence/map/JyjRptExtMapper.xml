@@ -43,7 +43,8 @@
 		) b on b.area_id = a.area_id -->
 		select exambatch_id , exambatch_name, city_id,city_name ,area_id , area_name , sch_id , sch_name , cls_id , cls_name , cls_type from rpt_exp_issue_class_info
 		where exambatch_id = #{exambatchId}
-		group by  exambatch_id , exambatch_name, city_id,city_name ,area_id , area_name , sch_id , sch_name , cls_id , cls_name , cls_type
+		group by  exambatch_id , exambatch_name, city_id,city_name ,area_id , area_name , sch_id , sch_name
+		, cls_id , cls_name , cls_type ORDER BY cls_name desc
 	</select>
 
 

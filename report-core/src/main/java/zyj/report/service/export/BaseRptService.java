@@ -370,7 +370,7 @@ public class BaseRptService {
 		}
 
 		/**
-		 * 文理类别: 0 不分文理，1 文 2 雷
+		 * 文理类别: 0 不分文理，1 文 2 理科
 		 *
 		 * @return
 		 */

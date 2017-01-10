@@ -65,18 +65,14 @@ public class ExpStudentScoreService extends BaseRptService {
 		fields.add(new Field("SEQUENCE", "考号"));
 		fields.add(new Field("NAME", "姓名"));
 		fields.add(new Field("CLS_NAME", "班级"));
-		fields.add(new Field("AREA_NAME", "区县"));
 
 		subjects.forEach(model -> {
-
 			if (claModel.get("CLS_TYPE").toString().equals(model.getType() + "")) {
-
 				fields.add(new Field(model.getSubjectName() + "_SCORE", model.getSubjectName() + "分数"));
 				fields.add(new Field(model.getSubjectName() + "_RANK_CLS", model.getSubjectName() + "班名"));
 				fields.add(new Field(model.getSubjectName() + "_RANK_SCH", model.getSubjectName() + "校名"));
 			}
 		});
-
 
 		fields.add(new Field("ALL_SCORE", "总分分数"));
 		fields.add(new Field("ALL_RANK", "标准分"));
@@ -145,7 +141,7 @@ public class ExpStudentScoreService extends BaseRptService {
 		//产生查询考试科目列表
 		List<SubjectInfo> subjectList = subjects_cur.stream().map(subject -> new SubjectInfo(subject.get
 				("PAPER_ID").toString(), subject.get("SUBJECT").toString(), subject.get("SUBJECT_NAME").toString(), (Integer) subject.get("TYPE"))).sorted(
-				(subject1, subject2) -> {
+				(subject2, subject1) -> {
 					return zyj.report.common.CalToolUtil.indexOf(zyj.report.common.CalToolUtil.getSubjectOrder(), subject1.getSubject()) - zyj.report.common.CalToolUtil.indexOf(zyj.report.common.CalToolUtil.getSubjectOrder(), subject2.getSubject());
 				}).collect(Collectors.toList());
 

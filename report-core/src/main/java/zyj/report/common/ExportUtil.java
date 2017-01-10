@@ -452,7 +452,6 @@ public class ExportUtil {
 			for (int n = 0; n < model.getData().size(); n++) {
 				Map bean = model.getData().get(n);
 				for (int i = 0; i < model.getFields().size(); i++) {
-
 					WritableCell label = createCell(i, rowNum, bean.get(model.getFields().get(i).getMark()) == null ? "" :
 							bean.get(model.getFields().get(i).getMark()).toString(), cellcf);
 

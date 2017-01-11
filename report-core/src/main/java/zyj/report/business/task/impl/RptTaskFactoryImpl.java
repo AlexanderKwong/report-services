@@ -615,7 +615,7 @@ public class RptTaskFactoryImpl implements RptTaskFactory {
 	}
 
 	/**
-	 * 孝感版
+	 * 湖北版
 	 *
 	 * @author admin
 	 */
@@ -644,10 +644,14 @@ public class RptTaskFactoryImpl implements RptTaskFactory {
 			String schoolName = otherParams.get("schoolName").toString();
 			String areaName = otherParams.get("areaName").toString();
 			String schoolPath = rootPath + "/" + areaName + "/" + schoolName;
+			String multiSubject = rootPath + "/" + areaName + "/" + schoolName + "/多科";
 
 			RptTaskSeries rpttaskseries = new RptTaskSeries(r.getExambatchId(), schoolPath);
 
-			rpttaskseries.add(new RptTaskBase(r, "expStudentScoreService", "classes", schoolPath+"/多科",
+			rpttaskseries.add(new RptTaskBase(r, "expStudentScoreService", "classes", multiSubject,
+					null, schoolId));
+
+			rpttaskseries.add(new RptTaskBase(r, "expTotalScoreEachSegService", "classes", multiSubject,
 					null, schoolId));
 
 			this.add(rpttaskseries);

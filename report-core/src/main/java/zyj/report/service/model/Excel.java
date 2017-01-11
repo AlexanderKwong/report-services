@@ -32,7 +32,7 @@ public class Excel {
 	public Excel(String name, String path) {
 		this.name = name;
 		this.path = path;
-		sheets = new ArrayList<>();
+		this.sheets = new ArrayList<>();
 	}
 
 	/**
@@ -46,7 +46,6 @@ public class Excel {
 		this.path = path;
 		this.sheets = sheets;
 	}
-
 
 	public List<Sheet> getSheets() {
 		return sheets;
@@ -71,4 +70,5 @@ public class Excel {
 	public void setPath(String path) {
 		this.path = path;
 	}
+
 }

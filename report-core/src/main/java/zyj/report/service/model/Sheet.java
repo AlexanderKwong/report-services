@@ -34,6 +34,12 @@ public class Sheet {
 	 */
 	private List<Map> datas;
 
+
+	/**
+	 * 冻结表头
+	 */
+	private Integer freeze;
+
 	/**
 	 *  数据为 list 转化为 二维数组
 	 *
@@ -107,6 +113,14 @@ public class Sheet {
 
 	public void setLevel1Title(String level1Title) {
 		this.level1Title = level1Title;
+	}
+
+	public Integer getFreeze() {
+		return freeze;
+	}
+
+	public void setFreeze(Integer freeze) {
+		this.freeze = freeze;
 	}
 
 }

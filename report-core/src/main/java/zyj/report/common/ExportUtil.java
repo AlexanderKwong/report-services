@@ -402,6 +402,10 @@ public class ExportUtil {
 		WritableFont headfont = new WritableFont(WritableFont.createFont("宋体"), 16);
 		WritableCellFormat headcf = new WritableCellFormat(titlecf);
 
+		WritableCellFormat cellcf = new WritableCellFormat(titlefont);
+		cellcf.setWrap(true);
+		cellcf.setAlignment(Alignment.CENTRE);
+
 		headcf.setFont(headfont);
 
 		String fileName = excel.getPath() + excel.getName();
@@ -410,14 +414,13 @@ public class ExportUtil {
 		WritableWorkbook book = Workbook.createWorkbook(new File(fileName));
 
 		CellView cellView = new CellView();
-		cellView.setAutosize(true); //设置自动大小
-
 
 		// 循环报表 Sheet
 		for (Sheet model : excel.getSheets()) {
 
 			// 创建报表页
 			WritableSheet sheet = book.createSheet(model.getName(), 0);
+			sheet.getSettings().setVerticalFreeze(model.getFreeze());
 
 			// 设置标题
 			int rowNum = 0;
@@ -440,8 +443,10 @@ public class ExportUtil {
 			for (int i = 0; i < model.getFields().size(); i++) {
 				WritableCell label = new Label(i, rowNum, model.getFields().get(i).getTitle(), titlecf);
 
-				if (model.getFields().get(i).getTitle().length() > 5)
+				if (model.getFields().get(i).getTitle().length() > 5) {
+					cellView.setSize(model.getFields().get(i).getTitle().length() * 512);
 					sheet.setColumnView(i, cellView);//根据内容自动设置列宽
+				}
 
 				sheet.addCell(label);
 			}
@@ -449,12 +454,11 @@ public class ExportUtil {
 
 			//填充数据
 			for (int n = 0; n < model.getData().size(); n++) {
-
 				Map bean = model.getData().get(n);
 				for (int i = 0; i < model.getFields().size(); i++) {
-
 					WritableCell label = createCell(i, rowNum, bean.get(model.getFields().get(i).getMark()) == null ? "" :
-							bean.get(model.getFields().get(i).getMark()).toString());
+							bean.get(model.getFields().get(i).getMark()).toString(), cellcf);
+
 					sheet.addCell(label);
 				}
 				rowNum++;

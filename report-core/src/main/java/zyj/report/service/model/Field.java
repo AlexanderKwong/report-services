@@ -5,10 +5,6 @@ package zyj.report.service.model;
  */
 public class Field {
 
-	/**
-	 * 字段名称
-	 */
-	private String name;
 
 	/**
 	 * 字段标示
@@ -20,18 +16,9 @@ public class Field {
 	 */
 	private String title;
 
-	public Field(String name, String mark, String title) {
-		this.name = name;
+	public Field(String mark, String title) {
 		this.mark = mark;
 		this.title = title;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public String getMark() {

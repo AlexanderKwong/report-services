@@ -249,9 +249,12 @@ public class BaseRptService {
 		private String schoolId;
 		private String classesId;
 		private Integer stuType;
+		private String subject;
+		private String subjectName;
+		private String paperId;
+		private Integer type;
 
 		public Param(Map<String, Object> objectMap) {
-
 			level = (String) objectMap.get("level");
 			examBatchId = (String) objectMap.get("exambatchId");
 			cityCode = (String) objectMap.get("cityCode");
@@ -260,6 +263,10 @@ public class BaseRptService {
 			areaId = (String) objectMap.get("areaId");
 			schoolId = (String) objectMap.get("schoolId");
 			classesId = (String) objectMap.get("classesId");
+			subject = (String) objectMap.get("subject");
+			subjectName = (String) objectMap.get("subjectName");
+			paperId = (String) objectMap.get("paperId");
+			type = (Integer) objectMap.get("type");
 		}
 
 		/**
@@ -332,6 +339,43 @@ public class BaseRptService {
 		 */
 		public Integer getStuType() {
 			return stuType;
+		}
+
+
+		/**
+		 * 科目简称: 如 WL : 物理
+		 *
+		 * @return
+		 */
+		public String getSubject() {
+			return subject;
+		}
+
+		/**
+		 * 科目中文名字
+		 *
+		 * @return
+		 */
+		public String getSubjectName() {
+			return subjectName;
+		}
+
+		/**
+		 * 考试科目ID
+		 *
+		 * @return
+		 */
+		public String getPaperId() {
+			return paperId;
+		}
+
+		/**
+		 * 文理类别: 0 不分文理，1 文 2 理科
+		 *
+		 * @return
+		 */
+		public Integer getType() {
+			return type;
 		}
 	}
 }

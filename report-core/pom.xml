@@ -131,6 +131,16 @@
            <!-- <scope>system</scope>
             <systemPath>D:/JAVA第三方库/google/guava-20.0.jar</systemPath>-->
         </dependency>
+
+        <!-- 测试用 -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

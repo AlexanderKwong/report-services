@@ -19,6 +19,9 @@ import zyj.report.exception.report.ReportExportException;
 import zyj.report.service.export.BaseRptService;
 import zyj.report.service.model.Excel;
 import zyj.report.service.model.Sheet;
+import zyj.report.service.model2.CompositionIterator;
+import zyj.report.service.model2.Field;
+import zyj.report.service.model2.SingleField;
 
 import java.io.File;
 import java.util.*;
@@ -59,14 +62,15 @@ public class ExportUtil {
 		conList.add(m);
 		createExpExcel(titleList, conList, "D:/111.xls");*/
 
-		List<Map<String, Object>> res = new ArrayList<Map<String, Object>>();
+		/*List<Map<String, Object>> res = new ArrayList<Map<String, Object>>();
 		Map con = new HashMap<String, Object>();
 		con.put("deptName", "1");
 		con.put("deptCode", "2");
 		con.put("sendDate", new Date());
 		con.put("sendFileName", "永久");
 		res.add(con);
-		ModelToExcelUtil.model2Excel("d:/测试model.xls", "excel/" + "testmodel" + ".xml", "testmodel", res);
+		ModelToExcelUtil.model2Excel("d:/测试model.xls", "excel/" + "testmodel" + ".xml", "testmodel", res);*/
+
 	}
 
 	public static void createExpExcel(String[] titleList, List<List<Object>> conList, String pathFile) throws Exception {
@@ -460,5 +464,140 @@ public class ExportUtil {
 		book.write();
 		book.close();
 	}
+
+	public static void createExcel(zyj.report.service.model2.Excel excel) throws Exception {
+		// 生成XLS报表
+		WritableFont titlefont = new WritableFont(WritableFont.createFont("宋体"), 10);
+		WritableCellFormat titlecf = new WritableCellFormat(titlefont);
+
+		titlecf.setAlignment(Alignment.CENTRE);
+		titlecf.setBackground(Colour.GRAY_25);
+		titlecf.setBorder(Border.ALL, BorderLineStyle.THIN);
+		titlecf.setVerticalAlignment(VerticalAlignment.CENTRE);
+
+		WritableFont headfont = new WritableFont(WritableFont.createFont("宋体"), 16);
+		WritableCellFormat headcf = new WritableCellFormat(titlecf);
+
+		headcf.setFont(headfont);
+
+		String fileName = excel.getPath() + excel.getName();
+
+		// 创建报表文件
+		WritableWorkbook book = Workbook.createWorkbook(new File(fileName));
+
+		CellView cellView = new CellView();
+		cellView.setAutosize(true); //设置自动大小
+
+
+		// 循环报表 Sheet
+		for (zyj.report.service.model2.Sheet model : excel.getSheets()) {
+
+			// 创建报表页
+			WritableSheet sheet = book.createSheet(model.getName(), 0);
+
+			// 设置标题
+			int rowNum = 0;
+
+			List<Field> fields = model.getFields();
+			List<SingleField> singleFields = new ArrayList<>();
+			Iterator<Field> iterator = null;
+
+			//
+			int column = 0;
+			int row = 0;
+			int sameRoot = 1;//有共同的根: 0 ;没有: 1
+			String [][] tmp = new String[20][255];//xls列数无法超过255列
+			List<int[]> notBlank = new ArrayList<>();
+
+			if (fields.size() <= 0) return;
+			else if (fields.size() == 1) {
+				sameRoot = 0;
+				notBlank.add(new int[]{row, column});
+				Field field = fields.get(0);
+				tmp[row][column] = field.getTitle();
+				iterator = field.createIterator();
+			}
+			else iterator = new CompositionIterator(fields.iterator());
+
+			while(iterator.hasNext()){
+
+				int rowIndex = ((CompositionIterator)iterator).getLevel()-sameRoot;
+				int columnIndex = column;
+				notBlank.add(new int[]{rowIndex, columnIndex});
+
+				row = Math.max(rowIndex,row);
+
+				Field field = iterator.next();
+//				System.out.println("title:" + field.getTitle() + "\trow:"+rowIndex+"\tcolumn:"+columnIndex);
+				tmp[rowIndex][columnIndex] = field.getTitle();
+				if (field instanceof SingleField) {
+					singleFields.add((SingleField)field);
+					column ++ ;
+				}
+			}
+			row ++;
+
+			//格式化表头
+			String [][] head = new String[row][column];
+			head = Arrays.copyOf( tmp, row );
+			for (int i = 0 ; i< head .length; i++) head[i] = Arrays.copyOf( head[i], column );
+
+
+			//设置表头
+			for (; rowNum < head.length; rowNum++) {
+				String[] headRow = head[rowNum];
+				for (int c = 0; c < headRow.length ; c++){
+					WritableCell label = new Label(c, rowNum, toStr(headRow[c]), titlecf);
+					sheet.addCell(label);
+				}
+			}
+
+			//纵向合并
+			int [] previousNotBlank = null;
+			for (int[] nb : notBlank){
+				//纵向合并情况 ： 前一个非空元素 不在当前列(即前一个是叶子节点)，则合并前一个元素所在坐标 到列末
+				if (previousNotBlank != null && previousNotBlank[1] != nb[1] ){
+					sheet.mergeCells(previousNotBlank[1], previousNotBlank[0], previousNotBlank[1], row -1);
+				}
+				previousNotBlank = nb;
+			}
+			//默认最后一个元素一定是叶子节点
+			sheet.mergeCells(previousNotBlank[1], previousNotBlank[0], previousNotBlank[1], row -1);
+			//横向合并
+			notBlank.sort((arr1, arr2)->{
+				if (arr1[0] != arr2[0]) return arr1[0] - arr2[0];
+				else return arr1[1] - arr2[1];
+			});
+			previousNotBlank = null;
+			for (int[] nb : notBlank){
+				//横向合并情况1 ： 前一个非空元素 不在当前行，则合并前一个元素所在坐标 到行末
+				if (previousNotBlank != null && previousNotBlank[0] != nb[0] ){
+					sheet.mergeCells(previousNotBlank[1], previousNotBlank[0], column-1, previousNotBlank[0]);
+				}
+				//横向合并情况2 ： 前一个非空元素 在当前行 且距离当前格大于1，则合并前一个元素所在坐标 到 当前坐标的前一格
+				if (previousNotBlank != null && previousNotBlank[0] == nb[0] && nb[1] - previousNotBlank[1] > 1){
+					sheet.mergeCells(previousNotBlank[1], previousNotBlank[0], nb[1] -1, previousNotBlank[0]);
+				}
+				previousNotBlank = nb;
+			}//最后一个默认是最右边
+
+			//填充数据
+			for (int n = 0; n < model.getData().size(); n++) {
+
+				Map bean = model.getData().get(n);
+				for (int i = 0; i < singleFields.size(); i++) {
+
+					WritableCell label = createCell(i, rowNum, bean.get(singleFields.get(i).getMark()) == null ? "" :
+							bean.get(singleFields.get(i).getMark()).toString());
+					sheet.addCell(label);
+				}
+				rowNum++;
+			}
+		}
+
+		book.write();
+		book.close();
+	}
+
 }
 

@@ -200,12 +200,20 @@
 	<!-- 获取学生答题信息,有点慢，但是至少比在循环内不断查询要强很多倍 -->
 	<select id="qryStudentQuestionScore" resultType="java.util.HashMap">
 		select user_id,sum(std_score) as total,sum(decode(qst_tipy,4,std_score,0)) as subjective
-		,sum(decode(trunc(qst_tipy/4),0,std_score,0)) as objective 
+		,sum(decode(trunc(qst_tipy/4),0,std_score,0)) as objective,
+        <if test="orderList != null">
 		<foreach collection="orderList" index="index" item="question_order"
-			open="," separator="," close=",">
+			open=" " separator="," close=",">
 			sum(decode(question_order,#{question_order},std_score,0)) as Q${question_order}
 		</foreach>
-		sch_id,cls_id,area_id,name, nvl(tmp_sequence,sequence) as sequence <!--decode(tmp_sequence,'null',sequence,tmp_sequence) as sequence-->
+        </if>
+        <if test="orderList2 != null"><!-- 湖北版需求-->
+        <foreach collection="orderList2" index="index" item="question_order"
+                 open=" " separator="," close=",">
+            wm_concat(case when question_order= #{question_order} then answer end) as Q${question_order}
+        </foreach>
+        </if>
+		sch_id,cls_id,area_id,name, <!--nvl(tmp_sequence,sequence) as sequence--> decode(tmp_sequence,'null',sequence,tmp_sequence) as sequence
         ,schoolname as schname,classname as clsname,areaname as areaname
 		from RPT_EXP_STUDENT_QUESTION
 		where exambatch_id = #{exambatchId} and subject like #{subject} and paper_id = #{paperId}

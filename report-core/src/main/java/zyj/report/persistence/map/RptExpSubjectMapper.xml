@@ -43,12 +43,14 @@
 	<sql id="Area_Subject_Column_List">
     FULL_RANK,AVG_SCORE_RANK,BEYOND_AVG_RATE,COMPARE_AVG_RATE,AREA_ID ,AREA_NAME
   </sql>
-
+	<sql id="City_Subject_Column_List">
+		FULL_RANK,SUB_AVG_SCORE,OBJ_AVG_SCORE,STU_SCORE_SD,STU_SCORE_DIFFICUT,STU_SCORE_RELIABILITY,STU_SCORE_DIFFERENT
+	</sql>
 	<select id="findRptExpSubject" resultType="map" parameterType="map">
 		select
 		<include refid="Common_Subject_Column_List"/>
 		<if test="level == 'city'">
-			,FULL_RANK
+			,<include refid="City_Subject_Column_List"/>
 			from RPT_EXP_CITY_SUBJECT
 		</if>
 		<if test="level == 'area'">

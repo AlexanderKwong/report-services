@@ -28,4 +28,6 @@ public interface RptExpQuestionMapper {
 	public List qryQuestionSuitable(Map conditions);
 	
 	public Map qryTotalWithoutListening(Map conditions);
+
+	public List<Map<String, Object>> qryObjectiveNullRightMissWrong(Map<String, Object> param);
 }

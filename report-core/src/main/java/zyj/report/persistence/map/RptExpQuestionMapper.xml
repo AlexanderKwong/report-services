@@ -43,7 +43,7 @@
     AREA_ID 
   </sql>
   <sql id="QuestionItem_Column_List" >
-    EXAMBATCH_ID,PAPER_ID,SUBJECT,QUESTION_ORDER,QUESTION_NO,OPT_DETAIL,CITY_CODE
+    EXAMBATCH_ID,PAPER_ID,SUBJECT,QUESTION_ORDER,QUESTION_NO,OPT_DETAIL,CITY_CODE,QST_TIPY
   </sql>
   
   <select id="findRptExpQuestion" resultType="map"  parameterType="map" >
@@ -284,6 +284,65 @@ FROM rpt_exp_student_question  where subject = 'YY' and exambatch_id=#{exambatch
  </if>
 GROUP BY subject,paperScore,user_id)a)group by stu_other_avg,stu_other_num,subject
 </select>
+
+    <select id="qryObjectiveNullRightMissWrong" resultType="java.util.HashMap" >
+ <![CDATA[
+        select exambatch_id,
+        paper_id,
+        subject,
+        question_order,
+        question_no,
+        qst_tipy,
+        sum(case
+        when is_rihgt = '1' then
+        1
+        else
+        0
+        end) as right_num,
+        sum(case
+        when std_score > 0 and std_score < qst_score then
+        1
+        else
+        0
+        end) as miss_num,
+        sum(case
+        when std_score = 0 then
+        1
+        else
+        0
+        end) as wrong_num,
+        sum(case
+        when answer is null then
+        1
+        else
+        0
+        end) as null_num ]]>
+        <if test="GroupBy != null"> ,${GroupBy} </if>
+        from rpt_exp_student_question
+        <where> exambatch_id = #{exambatchId}
+            and subject = #{subject}
+            and qst_tipy != 4
+            <if test="paperId != null">
+                and paper_id = #{paperId}
+            </if>
+            <if test="areaId != null">
+                and area_id = #{areaId}
+            </if>
+            <if test="schoolId != null">
+                and sch_id = #{schoolId}
+            </if>
+            <if test="classesId != null">
+                and cls_id = #{classesId}
+            </if>
+        </where>
+        group by exambatch_id,
+        paper_id,
+        subject,
+        question_order,
+        question_no,
+        qst_tipy
+        <if test="GroupBy != null"> ,${GroupBy} </if>
+    </select>
   
   <sql id="OracleDialectPrefix" >
     <if test="page != null" >

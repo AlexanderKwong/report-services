@@ -648,10 +648,10 @@ public class RptTaskFactoryImpl implements RptTaskFactory {
 
 			RptTaskSeries rpttaskseries = new RptTaskSeries(r.getExambatchId(), schoolPath);
 
-			rpttaskseries.add(new RptTaskBase(r, "expStudentScoreService", "classes", multiSubject,
-					null, schoolId));
+//			rpttaskseries.add(new RptTaskBase(r, "expStudentScoreService", "classes", multiSubject,
+//					null, schoolId));
 
-			rpttaskseries.add(new RptTaskBase(r, "expTotalScoreEachSegService", "classes", multiSubject,
+			rpttaskseries.add(new RptTaskBase(r, "expTotalScoreEachSegService", "school", multiSubject,
 					null, schoolId));
 
 			this.add(rpttaskseries);

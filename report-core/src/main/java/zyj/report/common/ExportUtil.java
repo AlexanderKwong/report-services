@@ -444,10 +444,10 @@ public class ExportUtil {
 				WritableCell label = new Label(i, rowNum, model.getFields().get(i).getTitle(), titlecf);
 
 				if (model.getFields().get(i).getTitle().length() > 5) {
+					//根据内容自动设置列宽
 					cellView.setSize(model.getFields().get(i).getTitle().length() * 512);
-					sheet.setColumnView(i, cellView);//根据内容自动设置列宽
+					sheet.setColumnView(i, cellView);
 				}
-
 				sheet.addCell(label);
 			}
 			rowNum++;

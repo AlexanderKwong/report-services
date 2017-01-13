@@ -1,174 +1,202 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="zyj.report.persistence.client.RptExpStudetScoreMapper" >
-  <sql id="Example_Where_Clause" >
-    <where >
-      <foreach collection="oredCriteria" item="criteria" separator="or" >
-        <if test="criteria.valid" >
-          <trim prefix="(" suffix=")" prefixOverrides="and" >
-            <foreach collection="criteria.criteria" item="criterion" >
-              <choose >
-                <when test="criterion.noValue" >
-                  and ${criterion.condition}
-                </when>
-                <when test="criterion.singleValue" >
-                  and ${criterion.condition} #{criterion.value}
-                </when>
-                <when test="criterion.betweenValue" >
-                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
-                </when>
-                <when test="criterion.listValue" >
-                  and ${criterion.condition}
-                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
-                    #{listItem}
-                  </foreach>
-                </when>
-              </choose>
-            </foreach>
-          </trim>
-        </if>
-      </foreach>
-    </where>
-  </sql>
-  <sql id="Base_Column_List" >
+<mapper namespace="zyj.report.persistence.client.RptExpStudetScoreMapper">
+	<sql id="Example_Where_Clause">
+		<where>
+			<foreach collection="oredCriteria" item="criteria" separator="or">
+				<if test="criteria.valid">
+					<trim prefix="(" suffix=")" prefixOverrides="and">
+						<foreach collection="criteria.criteria" item="criterion">
+							<choose>
+								<when test="criterion.noValue">
+									and ${criterion.condition}
+								</when>
+								<when test="criterion.singleValue">
+									and ${criterion.condition} #{criterion.value}
+								</when>
+								<when test="criterion.betweenValue">
+									and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+								</when>
+								<when test="criterion.listValue">
+									and ${criterion.condition}
+									<foreach collection="criterion.value" item="listItem" open="(" close=")"
+											 separator=",">
+										#{listItem}
+									</foreach>
+								</when>
+							</choose>
+						</foreach>
+					</trim>
+				</if>
+			</foreach>
+		</where>
+	</sql>
+	<sql id="Base_Column_List">
     AREA_ID,EXAMBATCH_ID,SCH_ID,CLS_ID,USER_ID,SEQUENCE,NAME,TMP_SEQUENCE,FULL_SCORE,ALL_TOTAL,CLS_RANKING,GRD_RANKING,CITY_RANKING,AB_RANK,FINE_RANK,CITY_CODE,TYPE
   </sql>
-  <select id="findRptExpStudetAllScore"  resultType="map"  parameterType="map" >
-    select 
-    USER_ID,AREA_ID,EXAMBATCH_ID,SCH_ID,CLS_ID,ALL_TOTAL,CITY_CODE,TYPE,CLS_RANK,CITY_RANK,GRD_RANK,FULL_SCORE ,areaname as area_name,schoolname as sch_name, classname as cls_name
-    from RPT_EXP_STUDENT_ALLSCORE
-    where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
-    <if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  	</if>
-    <if test="areaId != null" >
-        and AREA_ID = #{areaId,jdbcType=VARCHAR}
-    </if>
-    <if test="schoolId != null" >
-        and SCH_ID = #{schoolId,jdbcType=VARCHAR}
-    </if>
-    <if test="classesId != null" >
-        and CLS_ID = #{classesId,jdbcType=VARCHAR}
-    </if>
-    <if test="flag != null" >
-        and TYPE = #{flag,jdbcType=NUMERIC}
-    </if>
-  </select>
-  
-  <select id="findAllSchoolForRptExpStudetAllScore"  resultType="map"  parameterType="map" >
-    select 
-    distinct SCH_ID,schoolname as sch_name ,area_id ,areaname as area_name
-    from RPT_EXP_STUDENT_ALLSCORE
-    where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
-    <if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  	</if>
-    <if test="areaId != null" >
-        and AREA_ID = #{areaId,jdbcType=VARCHAR}
-    </if>
-    <if test="schoolId != null" >
-        and SCH_ID = #{schoolId,jdbcType=VARCHAR}
-    </if>
-    <if test="classesId != null" >
-        and CLS_ID = #{classesId,jdbcType=VARCHAR}
-    </if>
-    <if test="flag != null" >
-        and TYPE = #{flag,jdbcType=NUMERIC}
-    </if>
-    order by sch_id
-  </select>
-   <select id="findAllAreaForRptExpStudetAllScore"  resultType="map"  parameterType="map" >
-    select 
-    distinct AREA_ID,areaname
-    from RPT_EXP_STUDENT_ALLSCORE
-    where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
-    <if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  	</if>
-    <if test="areaId != null" >
-        and AREA_ID = #{areaId,jdbcType=VARCHAR}
-    </if>
-    <if test="schoolId != null" >
-        and SCH_ID = #{schoolId,jdbcType=VARCHAR}
-    </if>
-    <if test="classesId != null" >
-        and CLS_ID = #{classesId,jdbcType=VARCHAR}
-    </if>
-    <if test="flag != null" >
-        and TYPE = #{flag,jdbcType=NUMERIC}
-    </if>
-    order by area_id
-  </select>
-  
-  
-  <select id="findRptExpStudetScore"  resultType="map"  parameterType="map" >
-    select 
-    AREA_ID,EXAMBATCH_ID,SCH_ID,CLS_ID,SUBJECT,SIGN_TOTAL,CITY_CODE,TYPE,SCHOOLNAME AS SCH_NAME,AREANAME AS AREA_NAME,CLASSNAME AS CLS_NAME
-    from RPT_EXP_STUDENT_SUBJECT
-    where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
-    and SUBJECT = #{subject,jdbcType=VARCHAR} and paper_id = #{paperId}
-    <if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  	</if>
-    <if test="areaId != null" >
-        and AREA_ID = #{areaId,jdbcType=VARCHAR}
-    </if>
-    <if test="schoolId != null" >
-        and SCH_ID = #{schoolId,jdbcType=VARCHAR}
-    </if>
-    <if test="classesId != null" >
-        and CLS_ID = #{classesId,jdbcType=VARCHAR}
-    </if>
-  </select>
-  
-  <select id="findAllSchoolForRptExpStudetScore"  resultType="map"  parameterType="map" >
-    select 
-    distinct SCH_ID,SCHOOLNAME AS SCH_NAME,AREA_ID,AREANAME AS AREA_NAME
-    from RPT_EXP_STUDENT_SUBJECT
-    where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
-    and SUBJECT = #{subject,jdbcType=VARCHAR} and paper_id = #{paperId}
-    <if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  	</if>
-    <if test="areaId != null" >
-        and AREA_ID = #{areaId,jdbcType=VARCHAR}
-    </if>
-    <if test="schoolId != null" >
-        and SCH_ID = #{schoolId,jdbcType=VARCHAR}
-    </if>
-    <if test="classesId != null" >
-        and CLS_ID = #{classesId,jdbcType=VARCHAR}
-    </if>
-    order by sch_id
-  </select>
-  <select id="findAllAreaForRptExpStudetScore"  resultType="map"  parameterType="map" >
-    select 
-    distinct AREA_ID,areaname as area_name
-    from RPT_EXP_STUDENT_SUBJECT
-    where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
-    and SUBJECT = #{subject,jdbcType=VARCHAR} and paper_id = #{paperId}
-    <if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  	</if>
-    <if test="areaId != null" >
-        and AREA_ID = #{areaId,jdbcType=VARCHAR}
-    </if>
-    <if test="schoolId != null" >
-        and SCH_ID = #{schoolId,jdbcType=VARCHAR}
-    </if>
-    <if test="classesId != null" >
-        and CLS_ID = #{classesId,jdbcType=VARCHAR}
-    </if>
-    order by area_id
-  </select>
-  <sql id="OracleDialectPrefix" >
-    <if test="page != null" >
-      select * from ( select row_.*, rownum rownum_ from ( 
-    </if>
-  </sql>
-  <sql id="OracleDialectSuffix" >
-    <if test="page != null" >
-      <![CDATA[ ) row_ ) where rownum_ >= #{page.begin} and rownum_ <= #{page.end} ]]>
-    </if>
-  </sql>
+	<select id="findRptExpStudetAllScore" resultType="map" parameterType="map">
+		select
+		USER_ID,AREA_ID,EXAMBATCH_ID,SCH_ID,CLS_ID,ALL_TOTAL,CITY_CODE,TYPE,CLS_RANK,CITY_RANK,GRD_RANK,FULL_SCORE
+		,areaname as area_name,schoolname as sch_name, classname as cls_name
+		from RPT_EXP_STUDENT_ALLSCORE
+		where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		<if test="areaId != null">
+			and AREA_ID = #{areaId,jdbcType=VARCHAR}
+		</if>
+		<if test="schoolId != null">
+			and SCH_ID = #{schoolId,jdbcType=VARCHAR}
+		</if>
+		<if test="classesId != null">
+			and CLS_ID = #{classesId,jdbcType=VARCHAR}
+		</if>
+		<if test="flag != null">
+			and TYPE = #{flag,jdbcType=NUMERIC}
+		</if>
+	</select>
+
+
+	<select id="findAllSchoolForRptExpStudetAllScore" resultType="map" parameterType="map">
+		select
+		distinct SCH_ID,schoolname as sch_name ,area_id ,areaname as area_name
+		from RPT_EXP_STUDENT_ALLSCORE
+		where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		<if test="areaId != null">
+			and AREA_ID = #{areaId,jdbcType=VARCHAR}
+		</if>
+		<if test="schoolId != null">
+			and SCH_ID = #{schoolId,jdbcType=VARCHAR}
+		</if>
+		<if test="classesId != null">
+			and CLS_ID = #{classesId,jdbcType=VARCHAR}
+		</if>
+		<if test="flag != null">
+			and TYPE = #{flag,jdbcType=NUMERIC}
+		</if>
+		order by sch_id
+	</select>
+	<select id="findAllAreaForRptExpStudetAllScore" resultType="map" parameterType="map">
+		select
+		distinct AREA_ID,areaname
+		from RPT_EXP_STUDENT_ALLSCORE
+		where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		<if test="areaId != null">
+			and AREA_ID = #{areaId,jdbcType=VARCHAR}
+		</if>
+		<if test="schoolId != null">
+			and SCH_ID = #{schoolId,jdbcType=VARCHAR}
+		</if>
+		<if test="classesId != null">
+			and CLS_ID = #{classesId,jdbcType=VARCHAR}
+		</if>
+		<if test="flag != null">
+			and TYPE = #{flag,jdbcType=NUMERIC}
+		</if>
+		order by area_id
+	</select>
+
+
+	<select id="findRptExpStudetScore" resultType="map" parameterType="map">
+		select
+		AREA_ID,EXAMBATCH_ID,SCH_ID,CLS_ID,SUBJECT,SIGN_TOTAL,CITY_CODE,TYPE,SCHOOLNAME AS SCH_NAME,AREANAME
+		AS AREA_NAME,CLASSNAME AS CLS_NAME
+		from RPT_EXP_STUDENT_SUBJECT
+		where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
+		and SUBJECT = #{subject,jdbcType=VARCHAR} and paper_id = #{paperId}
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		<if test="areaId != null">
+			and AREA_ID = #{areaId,jdbcType=VARCHAR}
+		</if>
+		<if test="schoolId != null">
+			and SCH_ID = #{schoolId,jdbcType=VARCHAR}
+		</if>
+		<if test="classesId != null">
+			and CLS_ID = #{classesId,jdbcType=VARCHAR}
+		</if>
+	</select>
+
+	<select id="findAllSchoolForRptExpStudetScore" resultType="map" parameterType="map">
+		select
+		distinct SCH_ID,SCHOOLNAME AS SCH_NAME,AREA_ID,AREANAME AS AREA_NAME
+		from RPT_EXP_STUDENT_SUBJECT
+		where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
+		and SUBJECT = #{subject,jdbcType=VARCHAR} and paper_id = #{paperId}
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		<if test="areaId != null">
+			and AREA_ID = #{areaId,jdbcType=VARCHAR}
+		</if>
+		<if test="schoolId != null">
+			and SCH_ID = #{schoolId,jdbcType=VARCHAR}
+		</if>
+		<if test="classesId != null">
+			and CLS_ID = #{classesId,jdbcType=VARCHAR}
+		</if>
+		order by sch_id
+	</select>
+	<select id="findAllAreaForRptExpStudetScore" resultType="map" parameterType="map">
+		select
+		distinct AREA_ID,areaname as area_name
+		from RPT_EXP_STUDENT_SUBJECT
+		where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
+		and SUBJECT = #{subject,jdbcType=VARCHAR} and paper_id = #{paperId}
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		<if test="areaId != null">
+			and AREA_ID = #{areaId,jdbcType=VARCHAR}
+		</if>
+		<if test="schoolId != null">
+			and SCH_ID = #{schoolId,jdbcType=VARCHAR}
+		</if>
+		<if test="classesId != null">
+			and CLS_ID = #{classesId,jdbcType=VARCHAR}
+		</if>
+		order by area_id
+	</select>
+	<sql id="OracleDialectPrefix">
+		<if test="page != null">
+			select * from ( select row_.*, rownum rownum_ from (
+		</if>
+	</sql>
+	<sql id="OracleDialectSuffix">
+		<if test="page != null">
+			<![CDATA[ ) row_ ) where rownum_ >= #{page.begin} and rownum_ <= #{page.end} ]]>
+		</if>
+	</sql>
+
+	<!-- 查询个人总分数据-->
+	<select id="findTotalScoreEachSegment" resultType="map" parameterType="map">
+		select FULL_SCORE,ALL_TOTAL from RPT_EXP_STUDENT_ALLSCORE
+		where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		<if test="areaId != null">
+			and AREA_ID = #{areaId,jdbcType=VARCHAR}
+		</if>
+		<if test="schoolId != null">
+			and SCH_ID = #{schoolId,jdbcType=VARCHAR}
+		</if>
+		<if test="classesId != null">
+			and CLS_ID = #{classesId,jdbcType=VARCHAR}
+		</if>
+		<if test="type != null">
+			and TYPE = #{type,jdbcType=NUMERIC}
+		</if>
+
+	</select>
+
+
 </mapper>

@@ -1,5 +1,6 @@
 package zyj.main;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -15,10 +16,13 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import zyj.report.common.SpringUtil;
 import zyj.report.configuration.AppConfig;
+import zyj.report.service.redis.RedisService;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author 邝晓林
@@ -87,5 +91,14 @@ public class BaseExportTest  {
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    @After
+    public  void clearCache(){
+        //清缓存
+        RedisService redisService = (RedisService) SpringUtil.getSpringBean(null,"redisService");
+        Set<String> keys = redisService.keys( parmter.get("exambatchId") + "*");
+        redisService.del(keys.toArray(new String[keys.size()]));
+        System.out.println("清理缓存结束");
     }
 }

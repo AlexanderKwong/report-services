@@ -25,7 +25,7 @@ import zyj.report.service.BaseDataService;
 
 @Service
 public class ExpShangXianShu2Service extends BaseRptService {
-	
+
 	@Autowired
 	JyjRptExtMapper jyjRptExtMapper;
 	@Autowired
@@ -79,7 +79,7 @@ public class ExpShangXianShu2Service extends BaseRptService {
 		parmter.put("rankList",  rankLine);
 		Map  scoreLineMap = rptExpAllscoreMapper.getScoreLineOfAllscoreByRank(parmter);
 		for(int i =0;i< rankLine.length;i++){
-			scoreLine[i] = Double.parseDouble(scoreLineMap.get("SCOREOFHEAD"+rankLine[i]).toString());			
+			scoreLine[i] = Double.parseDouble(scoreLineMap.get("SCOREOFHEAD"+rankLine[i]).toString());
 		}
 		if(scoreLine != null)
 			beanList.addAll(getBeansFromModel(scoreLine, parmter));
@@ -89,16 +89,17 @@ public class ExpShangXianShu2Service extends BaseRptService {
 		Map conditions = new HashMap<String, Object>(parmter);
 		for(SubjectInfo s : subjectList){
 			conditions.put("subject", s);
+			conditions.put("paperId",s.getPaperId());
 			rankLine = CalToolUtil.getSubjectRankLine(s.getSubject());
 			conditions.put("rankList", rankLine);
 			scoreLineMap = rptExpSubjectMapper.getScoreLineOfSubjectByRank(conditions);
 			for(int i =0;i< rankLine.length;i++){
-				scoreLine[i] = Double.parseDouble(scoreLineMap.get("SCOREOFHEAD"+rankLine[i]).toString());			
+				scoreLine[i] = Double.parseDouble(scoreLineMap.get("SCOREOFHEAD"+rankLine[i]).toString());
 			}
 			if(scoreLine != null)
 				beanList.addAll(getBeansFromModel(scoreLine, conditions));
 		}
-		
+
 			int num =scoreLine.length;
 			List<Integer> rows =(List)conditions.get("rowIsTitle");
 			int[][] mgArray = new int[2000][];
@@ -118,14 +119,14 @@ public class ExpShangXianShu2Service extends BaseRptService {
 			ExportUtil.createExpExcel(rows, beanList, pathFile+"上线数"+((("WK".equals(subject)||"LK".equals(subject))?"_"+subjects.get(subject).substring(0,2)+".xls":".xls")), mgArray);
 	}
 	/**
-	 * 
+	 *
 	 * @param scoreLine 分数线数组
 	 * @param conditions 通用参数，包括科目， 考次，cityCode, stuType
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
 	private List<List<Object>> getBeansFromModel(double[] scoreLine ,Map conditions) throws ReportExportException {
-		// 获取学校地区名		
+		// 获取学校地区名
 //		Map<String,Map<String,Object>> schNameMap = getSchoolCache();
 		List<List<Object>>  beanList = new ArrayList<List<Object>>();
 		// 1.1 获得元数据
@@ -139,7 +140,7 @@ public class ExpShangXianShu2Service extends BaseRptService {
 		String subject = conditions.get("subject").toString();
 		List<Map<String,Object>> numsOfScore = null;
 		List<Map<String,Object>> numsOfExam =null;
-		if("WK".equals(subject) && "LK".equals(subject) && "NWL".equals(subject)){
+		if("WK".equals(subject) || "LK".equals(subject) || "NWL".equals(subject)){
 			//总分
 			numsOfScore = rptExpAllscoreMapper.qryScorePersonNumBySchoolAllscore(conditions);
 //			String prefix = subject.substring(0, 1);

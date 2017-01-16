@@ -355,7 +355,7 @@
     
     <!-- 获取参加这次考试的所有学校总分的分数段人数-->
  		<select id="qryScorePersonNumBySchoolAllscore" resultType="java.util.HashMap" >
- 				select sch_id, sch_name as schname,
+ 				select sch_id, schoolname as schname,
  				<if test="scoreList!=null">
 				<foreach collection="scoreList" index="index" item="score"
 						open=" " separator="," close="  ">
@@ -414,7 +414,7 @@
   				<if test="schoold!=null">
   					and SCH_id = #{schoolId}
   				</if>
-				group by sch_id,sch_name
+				group by sch_id,schoolname
 				order by sch_id
  		</select>
  		<!-- 获取参加这次考试的所有全市总分的分数段人数-->

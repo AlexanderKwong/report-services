@@ -47,7 +47,7 @@ public class ExpShangXianShuService extends BaseRptService {
 // List<Map<String,Object>> subjects_cur = getSubjectCache();
 
 		List<SubjectInfo> subjectInfoList = subjects_cur.stream()
-				.map(subjectInfo -> new SubjectInfo(subjectInfo.get("PAPER_ID").toString(), subjectInfo.get("SUBJECT").toString(), subjectInfo.get("SUBJECT_NAME").toString(),(Integer)subjectInfo.get("TYPE")))
+				.map(subjectInfo -> new SubjectInfo(subjectInfo.get("PAPER_ID").toString(), subjectInfo.get("SUBJECT").toString(), subjectInfo.get("SUBJECT_NAME").toString(),Integer.parseInt(subjectInfo.get("TYPE").toString())))
 				.sorted((subject1,subject2)->{
 					return CalToolUtil.indexOf(CalToolUtil.getSubjectOrder(),subject1.getSubject())- CalToolUtil.indexOf(CalToolUtil.getSubjectOrder(),subject2.getSubject());
 				})
@@ -82,9 +82,11 @@ public class ExpShangXianShuService extends BaseRptService {
 		for(SubjectInfo s : subjectList){
 			conditions.put("subject", s.getSubject());
 			conditions.put("paperId",s.getPaperId());
-			scoreLine = CalToolUtil.getSubjectScoreLine(s.getSubject());
-			if(scoreLine != null)
+			double[] setup =  zyj.report.common.CalToolUtil.getSubjectScoreLine(s.getSubject());
+			if(setup != null) {
+				scoreLine = setup;
 				beanList.addAll(getBeansFromModel(scoreLine, conditions));
+			}
 		}
 		
 			int num =scoreLine.length;
@@ -127,7 +129,7 @@ public class ExpShangXianShuService extends BaseRptService {
 		String subject = conditions.get("subject").toString();
 		List<Map<String,Object>> numsOfScore = null;
 		List<Map<String,Object>> numsOfExam =null;
-		if("WK".equals(subject) && "LK".equals(subject) && "NWL".equals(subject)){
+		if("WK".equals(subject) || "LK".equals(subject) || "NWL".equals(subject)){
 			//总分
 			numsOfScore = rptExpAllscoreMapper.qryScorePersonNumBySchoolAllscore(conditions);
 //			String prefix = subject.substring(0, 1);
@@ -147,6 +149,8 @@ public class ExpShangXianShuService extends BaseRptService {
 		//2.2 计算
 		int sumTakeExamNum = 0;
 		int[] sumCompletedNum = new int[num];
+		//临时 ++
+		//++++
 		for(Map sch : numsOfScore){
 			List<Object>  bean = new ArrayList<Object>();
 			String schid = sch.get("SCH_ID").toString();

@@ -43,8 +43,8 @@
         and type = #{flag,jdbcType=NUMERIC}
     </if>
     <if test = "stuType!=null">
-        	and student_type = #{stuType}        
-  			</if>
+        and student_type = #{stuType}
+  	</if>
     <if test="areaId != null" >
         and AREA_ID = #{areaId,jdbcType=VARCHAR}
     </if>
@@ -53,6 +53,12 @@
     </if>
     <if test="classesId != null" >
         and CLS_ID = #{classesId,jdbcType=VARCHAR}
+    </if>
+    <if test="subject != null">
+      and subject = #{subject}
+    </if>
+    <if test="paperId != null">
+      and paper_id = #{paperId}
     </if>
     order by SIGN_TOTAL desc
   </select>

@@ -41,12 +41,11 @@ public class Sheet {
 	private Integer freeze;
 
 	/**
-	 *  数据为 list 转化为 二维数组
+	 * 数据为 list 转化为 二维数组
 	 *
 	 * @return
 	 */
 	public String[][] getDataOnArray() {
-
 		String[][] objArrList = new String[datas.size()][];
 		for (int j = 0; j < datas.size(); j++) {
 
@@ -72,7 +71,7 @@ public class Sheet {
 		this.name = name;
 		this.level1Title = level1Title;
 		fields = new ArrayList<>();
-		datas =new ArrayList<>();
+		datas = new ArrayList<>();
 	}
 
 	public String getId() {

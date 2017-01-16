@@ -238,7 +238,6 @@ public class BaseRptService {
 
 	}
 
-
 	public class Param {
 
 		private String level;

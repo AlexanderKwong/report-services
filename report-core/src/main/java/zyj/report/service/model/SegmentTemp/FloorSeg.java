@@ -9,6 +9,6 @@ public class FloorSeg implements ScoreSegment {
 
 	@Override
 	public Integer doSegment(EnmSegmentType enmSegmentType, Float score) {
-		return (int) score.floatValue() + 1;
+		return (int) score.floatValue();
 	}
 }

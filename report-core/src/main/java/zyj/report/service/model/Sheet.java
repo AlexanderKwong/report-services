@@ -1,5 +1,7 @@
 package zyj.report.service.model;
 
+import zyj.report.service.model.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,32 +22,37 @@ public class Sheet {
 	private String name;
 
 	/**
-	 * 一级标题
-	 */
-	private String level1Title;
-
-	/**
 	 * 字段列表
 	 */
-	private List<Field> fields;
+	private List<zyj.report.service.model.Field> fields;
 
 	/**
 	 * 字段对应的数据
 	 */
-	private List<Map> datas;
+	private List<Map> datas = new ArrayList<>();
 
+
+	public Integer getFreeze() {
+		return freeze;
+	}
+
+	public void setFreeze(Integer freeze) {
+		this.freeze = freeze;
+	}
 
 	/**
 	 * 冻结表头
 	 */
 	private Integer freeze;
 
+
 	/**
-	 * 数据为 list 转化为 二维数组
+	 *  数据为 list 转化为 二维数组
 	 *
 	 * @return
 	 */
 	public String[][] getDataOnArray() {
+
 		String[][] objArrList = new String[datas.size()][];
 		for (int j = 0; j < datas.size(); j++) {
 
@@ -66,14 +73,6 @@ public class Sheet {
 		fields = new ArrayList<>();
 	}
 
-	public Sheet(String id, String name, String level1Title) {
-		this.id = id;
-		this.name = name;
-		this.level1Title = level1Title;
-		fields = new ArrayList<>();
-		datas = new ArrayList<>();
-	}
-
 	public String getId() {
 		return id;
 	}
@@ -90,11 +89,11 @@ public class Sheet {
 		this.name = name;
 	}
 
-	public List<Field> getFields() {
+	public List<zyj.report.service.model.Field> getFields() {
 		return fields;
 	}
 
-	public void setFields(List<Field> fields) {
+	public void setFields(List<zyj.report.service.model.Field> fields) {
 		this.fields = fields;
 	}
 
@@ -106,21 +105,6 @@ public class Sheet {
 		this.datas = data;
 	}
 
-	public String getLevel1Title() {
-		return level1Title;
-	}
-
-	public void setLevel1Title(String level1Title) {
-		this.level1Title = level1Title;
-	}
-
-	public Integer getFreeze() {
-		return freeze;
-	}
-
-	public void setFreeze(Integer freeze) {
-		this.freeze = freeze;
-	}
 
 }
 

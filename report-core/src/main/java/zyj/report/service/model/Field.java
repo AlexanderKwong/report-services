@@ -1,39 +1,17 @@
 package zyj.report.service.model;
 
+import java.util.Iterator;
+
 /**
- * Created by CXinZhi on 2017/1/5.
+ * @author 邝晓林
+ * @Description
+ * @date 2017/1/9
  */
-public class Field {
+public interface Field {
 
+	String getTitle();
 
-	/**
-	 * 字段标示
-	 */
-	private String mark;
+	String getMark();
 
-	/**
-	 * 字段标题
-	 */
-	private String title;
-
-	public Field(String mark, String title) {
-		this.mark = mark;
-		this.title = title;
-	}
-
-	public String getMark() {
-		return mark;
-	}
-
-	public void setMark(String mark) {
-		this.mark = mark;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
+	Iterator<Field> createIterator();
 }

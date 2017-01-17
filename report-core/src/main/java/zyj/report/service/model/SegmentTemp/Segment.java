@@ -48,10 +48,11 @@ public class Segment {
 	 * @param minScore
 	 * @param maxScore
 	 */
-	public Segment(Integer step, Integer minScore, Integer maxScore, Integer totalCount, EnmSegmentType type) {
+	public Segment(Integer step, Integer minScore, Float maxScore, Integer totalCount, EnmSegmentType type) {
 		this.step = step;
 		this.minScore = minScore;
-		this.maxScore = maxScore;
+		ScoreSegment segment = SegmentFactor.getInstance().creator(type.getCode());
+		this.maxScore = segment.doSegment(type, maxScore);
 		this.enmSegmentType = type;
 		this.totalCount = totalCount;
 		initSegmentList();
@@ -78,7 +79,7 @@ public class Segment {
 		objectMap.forEach(model -> {
 			ScoreSegment segment = SegmentFactor.getInstance().creator(enmSegmentType.getCode());
 			Integer score = segment.doSegment(enmSegmentType, Float.parseFloat(model.get(key).toString()));
-			scoreSet.put(score, scoreSet.ceilingEntry(score).getValue() + 1);
+			scoreSet.put(score-1, scoreSet.ceilingEntry(score-1).getValue() + 1);
 		});
 	}
 
@@ -98,8 +99,10 @@ public class Segment {
 		Integer total = 0;
 		Integer accTotal = 0;
 
-		int lest = maxScore % step;
-		int counter = maxScore / step;
+
+
+		Integer lest = maxScore % step;
+		Integer counter = maxScore / step;
 
 		// 对最后一个 闭区间 或者 余数 值进行特别处理
 		if (lest == 0) {
@@ -167,9 +170,9 @@ public class Segment {
 		Map<String, Object> field = new HashMap<>();
 		field.put("SCORE_SEG", scoreSeg);
 		field.put("FREQUENCY", frequency);
-		field.put("FREQUENCY_CENT", df.format((float) frequency / total * 100)+"%");
+		field.put("FREQUENCY_CENT", df.format((float) frequency / total * 100) + "%");
 		field.put("ACC_FREQUENCY", accFrequency);
-		field.put("ACC_FREQUENCY_CENT", df.format((float) accFrequency / total * 100)+"%");
+		field.put("ACC_FREQUENCY_CENT", df.format((float) accFrequency / total * 100) + "%");
 		return field;
 	}
 
@@ -184,7 +187,6 @@ public class Segment {
 	public void setStep(Integer step) {
 		this.step = step;
 	}
-
 
 
 }

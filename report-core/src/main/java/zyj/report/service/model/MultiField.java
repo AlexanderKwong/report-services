@@ -8,7 +8,7 @@ import java.util.Iterator;
  * @Description
  * @date 2017/1/9
  */
-public class MultiField implements zyj.report.service.model2.Field {
+public class MultiField implements zyj.report.service.model.Field {
 
     ArrayList<zyj.report.service.model.Field> fields = new ArrayList<>();
 
@@ -25,7 +25,7 @@ public class MultiField implements zyj.report.service.model2.Field {
         this.mark = mark;
     }
 
-    public void add(zyj.report.service.model2.Field field){
+    public void add(zyj.report.service.model.Field field){
         fields.add(field);
     }
 
@@ -40,7 +40,7 @@ public class MultiField implements zyj.report.service.model2.Field {
     }
 
     @Override
-    public Iterator<zyj.report.service.model2.Field> createIterator() {
+    public Iterator<zyj.report.service.model.Field> createIterator() {
         return new CompositionIterator(fields.iterator());
     }
 

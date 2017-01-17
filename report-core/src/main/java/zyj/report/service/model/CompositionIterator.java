@@ -8,7 +8,7 @@ import java.util.Stack;
  * @Description
  * @date 2017/1/10
  */
-public class CompositionIterator implements Iterator<zyj.report.service.model2.Field> {
+public class CompositionIterator implements Iterator<zyj.report.service.model.Field> {
     Stack<Iterator> stack = new Stack();
 
     public CompositionIterator(Iterator iterator){
@@ -31,10 +31,10 @@ public class CompositionIterator implements Iterator<zyj.report.service.model2.F
     }
 
     @Override
-    public zyj.report.service.model2.Field next() {
+    public zyj.report.service.model.Field next() {
         if (hasNext()){
-            Iterator<zyj.report.service.model2.Field> iterator = stack.peek();
-            zyj.report.service.model2.Field field = iterator.next();
+            Iterator<zyj.report.service.model.Field> iterator = stack.peek();
+            zyj.report.service.model.Field field = iterator.next();
             if (field instanceof MultiField){
                 stack.push(field.createIterator());
             }

@@ -17,11 +17,10 @@ import org.slf4j.LoggerFactory;
 import zyj.report.common.excel.file.impl.ModelToExcelUtil;
 import zyj.report.exception.report.ReportExportException;
 import zyj.report.service.export.BaseRptService;
-import zyj.report.service.model.Excel;
+import zyj.report.service.model.CompositionIterator;
+import zyj.report.service.model.Field;
 import zyj.report.service.model.Sheet;
-import zyj.report.service.model2.CompositionIterator;
-import zyj.report.service.model2.Field;
-import zyj.report.service.model2.SingleField;
+import zyj.report.service.model.SingleField;
 
 import java.io.File;
 import java.util.*;
@@ -383,13 +382,93 @@ public class ExportUtil {
 	}
 
 
-	/**
-	 * 新增加 导出 Excel 方法
-	 *
-	 * @param excel
-	 * @throws Exception
-	 */
-	public static void createExcel(Excel excel) throws Exception {
+//	/**
+//	 * 新增加 导出 Excel 方法
+//	 *
+//	 * @param excel
+//	 * @throws Exception
+//	 */
+//	public static void createExcel(Excel excel) throws Exception {
+//		// 生成XLS报表
+//		WritableFont titlefont = new WritableFont(WritableFont.createFont("宋体"), 10);
+//		WritableCellFormat titlecf = new WritableCellFormat(titlefont);
+//
+//		titlecf.setAlignment(Alignment.CENTRE);
+//		titlecf.setBackground(Colour.GRAY_25);
+//		titlecf.setBorder(Border.ALL, BorderLineStyle.THIN);
+//		titlecf.setVerticalAlignment(VerticalAlignment.CENTRE);
+//
+//		WritableFont headfont = new WritableFont(WritableFont.createFont("宋体"), 16);
+//		WritableCellFormat headcf = new WritableCellFormat(titlecf);
+//
+//		WritableCellFormat cellcf = new WritableCellFormat(titlefont);
+//		cellcf.setWrap(true);
+//		cellcf.setAlignment(Alignment.CENTRE);
+//
+//		headcf.setFont(headfont);
+//
+//		String fileName = excel.getPath() + excel.getName();
+//
+//		// 创建报表文件
+//		WritableWorkbook book = Workbook.createWorkbook(new File(fileName));
+//
+//		CellView cellView = new CellView();
+//
+//		// 循环报表 Sheet
+//		for (Sheet model : excel.getSheets()) {
+//
+//			// 创建报表页
+//			WritableSheet sheet = book.createSheet(model.getName(), 0);
+//			sheet.getSettings().setVerticalFreeze(model.getFreeze());
+//
+//			// 设置标题
+//			int rowNum = 0;
+//			if (model.getLevel1Title() != null && !"".equals(model.getLevel1Title())) {
+//				WritableCell label = new Label(0, 0, model.getLevel1Title(), headcf);
+//				try {
+//					sheet.addCell(label);
+//				} catch (WriteException e) {
+//					e.printStackTrace();
+//				}
+//
+//				for (int i = 1; i < model.getFields().size(); i++) {
+//					sheet.addCell(new Label(i, 0, ""));
+//				}
+//				sheet.mergeCells(0, 0, model.getFields().size() - 1, 0);
+//				rowNum++;
+//			}
+//
+//			//设置表头
+//			for (int i = 0; i < model.getFields().size(); i++) {
+//				WritableCell label = new Label(i, rowNum, model.getFields().get(i).getTitle(), titlecf);
+//
+//				if (model.getFields().get(i).getTitle().length() > 5) {
+//					//根据内容自动设置列宽
+//					cellView.setSize(model.getFields().get(i).getTitle().length() * 512);
+//					sheet.setColumnView(i, cellView);
+//				}
+//				sheet.addCell(label);
+//			}
+//			rowNum++;
+//
+//			//填充数据
+//			for (int n = 0; n < model.getData().size(); n++) {
+//				Map bean = model.getData().get(n);
+//				for (int i = 0; i < model.getFields().size(); i++) {
+//					WritableCell label = createCell(i, rowNum, bean.get(model.getFields().get(i).getMark()) == null ? "" :
+//							bean.get(model.getFields().get(i).getMark()).toString(), cellcf);
+//
+//					sheet.addCell(label);
+//				}
+//				rowNum++;
+//			}
+//		}
+//
+//		book.write();
+//		book.close();
+//	}
+
+	public static void createExcel(zyj.report.service.model.Excel excel) throws Exception {
 		// 生成XLS报表
 		WritableFont titlefont = new WritableFont(WritableFont.createFont("宋体"), 10);
 		WritableCellFormat titlecf = new WritableCellFormat(titlefont);
@@ -401,100 +480,24 @@ public class ExportUtil {
 
 		WritableFont headfont = new WritableFont(WritableFont.createFont("宋体"), 16);
 		WritableCellFormat headcf = new WritableCellFormat(titlecf);
+
+		headcf.setFont(headfont);
+
+		String fileName = excel.getPath() + excel.getName();
 
 		WritableCellFormat cellcf = new WritableCellFormat(titlefont);
 		cellcf.setWrap(true);
 		cellcf.setAlignment(Alignment.CENTRE);
 
-		headcf.setFont(headfont);
-
-		String fileName = excel.getPath() + excel.getName();
-
 		// 创建报表文件
 		WritableWorkbook book = Workbook.createWorkbook(new File(fileName));
 
 		CellView cellView = new CellView();
+		//cellView.setAutosize(true); //设置自动大小
+
 
 		// 循环报表 Sheet
 		for (Sheet model : excel.getSheets()) {
-
-			// 创建报表页
-			WritableSheet sheet = book.createSheet(model.getName(), 0);
-			sheet.getSettings().setVerticalFreeze(model.getFreeze());
-
-			// 设置标题
-			int rowNum = 0;
-			if (model.getLevel1Title() != null && !"".equals(model.getLevel1Title())) {
-				WritableCell label = new Label(0, 0, model.getLevel1Title(), headcf);
-				try {
-					sheet.addCell(label);
-				} catch (WriteException e) {
-					e.printStackTrace();
-				}
-
-				for (int i = 1; i < model.getFields().size(); i++) {
-					sheet.addCell(new Label(i, 0, ""));
-				}
-				sheet.mergeCells(0, 0, model.getFields().size() - 1, 0);
-				rowNum++;
-			}
-
-			//设置表头
-			for (int i = 0; i < model.getFields().size(); i++) {
-				WritableCell label = new Label(i, rowNum, model.getFields().get(i).getTitle(), titlecf);
-
-				if (model.getFields().get(i).getTitle().length() > 5) {
-					//根据内容自动设置列宽
-					cellView.setSize(model.getFields().get(i).getTitle().length() * 512);
-					sheet.setColumnView(i, cellView);
-				}
-				sheet.addCell(label);
-			}
-			rowNum++;
-
-			//填充数据
-			for (int n = 0; n < model.getData().size(); n++) {
-				Map bean = model.getData().get(n);
-				for (int i = 0; i < model.getFields().size(); i++) {
-					WritableCell label = createCell(i, rowNum, bean.get(model.getFields().get(i).getMark()) == null ? "" :
-							bean.get(model.getFields().get(i).getMark()).toString(), cellcf);
-
-					sheet.addCell(label);
-				}
-				rowNum++;
-			}
-		}
-
-		book.write();
-		book.close();
-	}
-
-	public static void createExcel(zyj.report.service.model2.Excel excel) throws Exception {
-		// 生成XLS报表
-		WritableFont titlefont = new WritableFont(WritableFont.createFont("宋体"), 10);
-		WritableCellFormat titlecf = new WritableCellFormat(titlefont);
-
-		titlecf.setAlignment(Alignment.CENTRE);
-		titlecf.setBackground(Colour.GRAY_25);
-		titlecf.setBorder(Border.ALL, BorderLineStyle.THIN);
-		titlecf.setVerticalAlignment(VerticalAlignment.CENTRE);
-
-		WritableFont headfont = new WritableFont(WritableFont.createFont("宋体"), 16);
-		WritableCellFormat headcf = new WritableCellFormat(titlecf);
-
-		headcf.setFont(headfont);
-
-		String fileName = excel.getPath() + excel.getName();
-
-		// 创建报表文件
-		WritableWorkbook book = Workbook.createWorkbook(new File(fileName));
-
-		CellView cellView = new CellView();
-		cellView.setAutosize(true); //设置自动大小
-
-
-		// 循环报表 Sheet
-		for (zyj.report.service.model2.Sheet model : excel.getSheets()) {
 
 			// 创建报表页
 			WritableSheet sheet = book.createSheet(model.getName(), 0);
@@ -532,10 +535,11 @@ public class ExportUtil {
 				row = Math.max(rowIndex,row);
 
 				Field field = iterator.next();
-//				System.out.println("title:" + field.getTitle() + "\trow:"+rowIndex+"\tcolumn:"+columnIndex);
+
 				tmp[rowIndex][columnIndex] = field.getTitle();
 				if (field instanceof SingleField) {
 					singleFields.add((SingleField)field);
+
 					column ++ ;
 				}
 			}
@@ -546,6 +550,8 @@ public class ExportUtil {
 			head = Arrays.copyOf( tmp, row );
 			for (int i = 0 ; i< head .length; i++) head[i] = Arrays.copyOf( head[i], column );
 
+			//设置冻结行数
+			sheet.getSettings().setVerticalFreeze(row);
 
 			//设置表头
 			for (; rowNum < head.length; rowNum++) {
@@ -553,6 +559,18 @@ public class ExportUtil {
 				for (int c = 0; c < headRow.length ; c++){
 					WritableCell label = new Label(c, rowNum, toStr(headRow[c]), titlecf);
 					sheet.addCell(label);
+				}
+
+				// 以标题做宽度
+				if(rowNum==head.length-1)
+				{
+					for (int c = 0; c < headRow.length ; c++) {
+						if (headRow[c].length() > 5) {
+							//根据内容自动设置列宽
+							cellView.setSize(headRow[c].length() * 512);
+							sheet.setColumnView(c, cellView);
+						}
+					}
 				}
 			}
 
@@ -592,7 +610,7 @@ public class ExportUtil {
 				for (int i = 0; i < singleFields.size(); i++) {
 
 					WritableCell label = createCell(i, rowNum, bean.get(singleFields.get(i).getMark()) == null ? "" :
-							bean.get(singleFields.get(i).getMark()).toString());
+							bean.get(singleFields.get(i).getMark()).toString(),cellcf);
 					sheet.addCell(label);
 				}
 				rowNum++;

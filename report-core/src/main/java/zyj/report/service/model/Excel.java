@@ -1,5 +1,7 @@
 package zyj.report.service.model;
 
+import zyj.report.service.model.Sheet;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +34,7 @@ public class Excel {
 	public Excel(String name, String path) {
 		this.name = name;
 		this.path = path;
-		this.sheets = new ArrayList<>();
+		sheets = new ArrayList<>();
 	}
 
 	/**
@@ -46,6 +48,7 @@ public class Excel {
 		this.path = path;
 		this.sheets = sheets;
 	}
+
 
 	public List<Sheet> getSheets() {
 		return sheets;
@@ -70,5 +73,4 @@ public class Excel {
 	public void setPath(String path) {
 		this.path = path;
 	}
-
 }

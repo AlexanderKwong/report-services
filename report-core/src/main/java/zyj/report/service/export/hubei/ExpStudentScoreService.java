@@ -7,9 +7,10 @@ import zyj.report.common.ExportUtil;
 import zyj.report.persistence.client.JyjRptExtMapper;
 import zyj.report.service.BaseDataService;
 import zyj.report.service.export.BaseRptService;
-import zyj.report.service.model.Excel;
-import zyj.report.service.model.Field;
+import zyj.report.service.model.MultiField;
 import zyj.report.service.model.Sheet;
+import zyj.report.service.model.SingleField;
+import zyj.report.service.model.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +19,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
+ * Created by CXinZhi on 2017/1/1.
+ * <p>
  * 导出 湖北版 学生各科成绩和总分（班级） 服务
  */
 @Service
@@ -55,29 +58,35 @@ public class ExpStudentScoreService extends BaseRptService {
 	/**
 	 * 初始化 Fields
 	 */
-	private List<Field> getFields(Map<String, Object> claModel) {
+	private List<Field> getFields(Map<String, Object> claModel, String rootName) {
 
 		//获取 本次考试科目列表
 		List<SubjectInfo> subjects = getSubjectList(p.getExamBatchId());
 
 		List<Field> fields = new ArrayList<>();
 
-		fields.add(new Field("SEQUENCE", "考号"));
-		fields.add(new Field("NAME", "姓名"));
-		fields.add(new Field("CLS_NAME", "班级"));
+		MultiField root = new MultiField(rootName);
+
+		root.add(new SingleField("考号", "SEQUENCE"));
+		root.add(new SingleField("姓名", "NAME"));
+		root.add(new SingleField("班级", "CLS_NAME"));
 
 		subjects.forEach(model -> {
 			if (claModel.get("CLS_TYPE").toString().equals(model.getType() + "")) {
-				fields.add(new Field(model.getSubjectName() + "_SCORE", model.getSubjectName() + "分数"));
-				fields.add(new Field(model.getSubjectName() + "_RANK_CLS", model.getSubjectName() + "班名"));
-				fields.add(new Field(model.getSubjectName() + "_RANK_SCH", model.getSubjectName() + "校名"));
+				root.add(new SingleField(model.getSubjectName() + "分数", model.getSubjectName() + "_SCORE"));
+				root.add(new SingleField(model.getSubjectName() + "班名", model.getSubjectName() +
+						"_RANK_CLS"));
+				root.add(new SingleField(model.getSubjectName() + "校名", model.getSubjectName() +
+						"_RANK_SCH"));
 			}
 		});
 
-		fields.add(new Field("ALL_SCORE", "总分分数"));
-		fields.add(new Field("ALL_RANK", "标准分"));
-		fields.add(new Field("ALL_RANK_CLS", "总分班名"));
-		fields.add(new Field("ALL_RANK_SCH", "总分校名"));
+		root.add(new SingleField("总分分数", "ALL_SCORE"));
+		root.add(new SingleField("标准分", "ALL_RANK"));
+		root.add(new SingleField("总分班名", "ALL_RANK_CLS"));
+		root.add(new SingleField("总分校名", "ALL_RANK_SCH"));
+
+		fields.add(root);
 
 		return fields;
 	}
@@ -106,13 +115,10 @@ public class ExpStudentScoreService extends BaseRptService {
 		// 加载 各个班级的 sheet
 		classList.forEach(model -> {
 
-			Sheet sheet = new Sheet(model.get("CLS_ID").toString(), model.get("CLS_NAME").toString(), String
-					.format(excelName, model.get("CLS_NAME").toString()));
+			Sheet sheet = new Sheet(model.get("CLS_ID").toString(), model.get("CLS_NAME").toString());
 
-			sheet.getFields().addAll(getFields(model));
-
-			// 锁定表头2行
-			sheet.setFreeze(2);
+			sheet.getFields().addAll(getFields(model, String
+					.format(excelName, model.get("CLS_NAME").toString())));
 
 			conditions.put("classesId", p.getClassesId());
 			List<Map<String, Object>> data = baseDataService.getStudentSubjectsAndAllscore(p.getExamBatchId(),

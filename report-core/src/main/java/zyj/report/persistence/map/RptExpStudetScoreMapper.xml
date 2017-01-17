@@ -195,7 +195,7 @@
 		<if test="type != null">
 			and TYPE = #{type,jdbcType=NUMERIC}
 		</if>
-
+		ORDER BY ALL_TOTAL DESC
 	</select>
 
 

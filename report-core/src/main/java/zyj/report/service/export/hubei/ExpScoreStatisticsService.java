@@ -5,15 +5,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import zyj.report.common.CalToolUtil;
 import zyj.report.common.ExportUtil;
-import zyj.report.common.util.CollectionsUtil;
 import zyj.report.exception.report.ReportExportException;
 import zyj.report.persistence.client.RptExpSubjectMapper;
 import zyj.report.service.export.BaseRptService;
-import zyj.report.service.model2.Excel;
-import zyj.report.service.model2.Sheet;
-import zyj.report.service.model2.Field;
-import zyj.report.service.model2.MultiField;
-import zyj.report.service.model2.SingleField;
+import zyj.report.service.model.MultiField;
+import zyj.report.service.model.Sheet;
+import zyj.report.service.model.SingleField;
+import zyj.report.service.model.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -86,6 +84,7 @@ public class ExpScoreStatisticsService extends BaseRptService {
         MultiField top70 = new MultiField(top70line + "以上");
         top70.add(new SingleField("人数","TOP70"));
         top70.add(new SingleField("%","TOP%70"));
+
         MultiField top60 = new MultiField(top60line + "以上");
         top60.add(new SingleField("人数","TOP60"));
         top60.add(new SingleField("%","TOP%60"));

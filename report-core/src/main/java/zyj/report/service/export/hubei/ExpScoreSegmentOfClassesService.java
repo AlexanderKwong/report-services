@@ -11,7 +11,7 @@ import zyj.report.persistence.client.RptExpSubjectMapper;
 import zyj.report.service.BaseDataService;
 import zyj.report.service.export.BaseRptService;
 import zyj.report.service.model.SegmentTemp.Segment;
-import zyj.report.service.model2.*;
+import zyj.report.service.model.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -90,13 +90,13 @@ public class ExpScoreSegmentOfClassesService extends BaseRptService {
         Map condition = new HashMap(params);
         condition.put("level","city");
         List<Map<String, Object>> citySubject =  rptExpSubjectMapper.findRptExpSubject(condition);
-        double full = Double.parseDouble(citySubject.get(0).get("FULL_SCORE").toString());
+        Float full = Float.parseFloat(citySubject.get(0).get("FULL_SCORE").toString());
 
         String key = params.get("subjectName").toString()+ "_SCORE";
         List<Map<String,Object>> result1 = baseDataService.getStudentSubjectsAndAllscore(params.get("exambatchId").toString(),params.get("schoolId").toString(),params.get("level").toString(),(Integer)params.get("stuType")).
                 stream().filter(m->m.get(key) != null).collect(Collectors.toList());
 
-        Segment segment = new Segment(step,0,(int)full,result1.size(), EnmSegmentType.ROUNDED);
+        Segment segment = new Segment(step,0,full,result1.size(), EnmSegmentType.ROUNDED);
         //学校汇总
         List<Map<String, Object>> schResult = segment.getStepSegment(result1,key);
         //班级数据

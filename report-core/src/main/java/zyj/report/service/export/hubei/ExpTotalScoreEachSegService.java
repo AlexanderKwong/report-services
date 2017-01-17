@@ -9,10 +9,11 @@ import zyj.report.common.constant.EnmSubjectType;
 import zyj.report.persistence.client.RptExpStudetScoreMapper;
 import zyj.report.service.BaseDataService;
 import zyj.report.service.export.BaseRptService;
-import zyj.report.service.model.Excel;
-import zyj.report.service.model.Field;
+import zyj.report.service.model.MultiField;
 import zyj.report.service.model.SegmentTemp.Segment;
 import zyj.report.service.model.Sheet;
+import zyj.report.service.model.SingleField;
+import zyj.report.service.model.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Created by CXinZhi on 2017/1/1.
+ * <p>
  * 导出 湖北版 总分各分数段人数 服务
  */
 @Service
@@ -58,15 +61,22 @@ public class ExpTotalScoreEachSegService extends BaseRptService {
 	}
 
 	/**
-	 * 初始化 Fields
+	 * 初始化 SingleFields
 	 */
-	private List<Field> getFields() {
+	private List<Field> getSingleFields() {
+
 		List<Field> fields = new ArrayList<>();
-		fields.add(new Field("SCORE_SEG", "分数段"));
-		fields.add(new Field("FREQUENCY", "频数"));
-		fields.add(new Field("FREQUENCY_CENT", "频率"));
-		fields.add(new Field("ACC_FREQUENCY", "累计频数"));
-		fields.add(new Field("ACC_FREQUENCY_CENT", "累计频率"));
+
+		MultiField root = new MultiField(excelName);
+
+		//step1:加载固定标题
+		for (String t : new String[]{"分数段,SCORE_SEG", "频数,FREQUENCY", "频率,FREQUENCY_CENT",
+				"累计频数,ACC_FREQUENCY", "累计频率,ACC_FREQUENCY_CENT"}) {
+			String[] args = t.split(",");
+			root.add(new SingleField(args[0], args[1]));
+		}
+
+		fields.add(root);
 		return fields;
 	}
 
@@ -76,7 +86,7 @@ public class ExpTotalScoreEachSegService extends BaseRptService {
 	private List<Sheet> getSheets() {
 
 		// 初始化 fields
-		List<Field> fields = getFields();
+		List<Field> fields = getSingleFields();
 		List<Sheet> sheets = new ArrayList<>();
 
 		// 添加文科 sheet
@@ -97,8 +107,7 @@ public class ExpTotalScoreEachSegService extends BaseRptService {
 	 */
 	private Sheet getSheet(EnmSubjectType subjectType, List<Field> fields) {
 
-		Sheet sheet = new Sheet(subjectType.getCode() + "", subjectType.getName(), excelName);
-
+		Sheet sheet = new Sheet(subjectType.getCode() + "", subjectType.getName());
 		Map conditions = new HashMap<String, Object>();
 		conditions.put("exambatchId", p.getExamBatchId());
 		conditions.put("cityCode", p.getCityCode());
@@ -129,7 +138,9 @@ public class ExpTotalScoreEachSegService extends BaseRptService {
 	 */
 	private List<Map<String, Object>> getSegmentData(List<Map<String, Object>> data) {
 
-		Segment segment = new Segment(step, 0, 780, data.size(), EnmSegmentType.ROUNDED);
+		Float maxScore = Float.parseFloat(data.get(0).get("ALL_TOTAL").toString());
+
+		Segment segment = new Segment(step, 0, maxScore, data.size(), EnmSegmentType.ROUNDED);
 
 		return segment.getStepSegment(data, "ALL_TOTAL");
 	}

@@ -1,4 +1,4 @@
-package zyj.report.service.model.SegmentTemp;
+package zyj.report.service.model.segment;
 
 import zyj.report.common.constant.EnmSegmentType;
 

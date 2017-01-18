@@ -1,4 +1,4 @@
-package zyj.report.service.model.SegmentTemp;
+package zyj.report.service.model.segment;
 
 import zyj.report.common.constant.EnmSegmentType;
 
@@ -104,7 +104,7 @@ public class Segment {
 		Integer lest = maxScore % step;
 		Integer counter = maxScore / step;
 
-		// 对最后一个 闭区间 或者 余数 值进行特别处理
+		// 对第一个 闭区间 或者 余数 值进行特别处理
 		if (lest == 0) {
 
 			//对闭区间 值进行特别处理

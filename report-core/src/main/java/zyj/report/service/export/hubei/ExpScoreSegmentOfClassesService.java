@@ -10,7 +10,7 @@ import zyj.report.exception.report.ReportExportException;
 import zyj.report.persistence.client.RptExpSubjectMapper;
 import zyj.report.service.BaseDataService;
 import zyj.report.service.export.BaseRptService;
-import zyj.report.service.model.SegmentTemp.Segment;
+import zyj.report.service.model.segment.Segment;
 import zyj.report.service.model.*;
 
 import java.util.*;

@@ -3,13 +3,16 @@ package zyj.report.common.constant;
 /**
  * Created by CXinZhi on 2017/1/10.
  * <p>
- * 分区类别
+ *  学生类别
  */
-public enum EnmSegmentType {
+public enum EnmStudentType {
 
-	ROUNDED(0, "四舍五入"),
-	CEILING(1, "向上取整"),
-	FLOOR(2, "向下取整");
+	CURRSTU(0, "应届学生"),
+	RESTU(1, "往届学生"),
+	STUTYPE2(2, "类型2"),
+	STUTYPE3(3, "类型3"),
+	STUTYPE4(4, "类型4"),
+	STUTYPE5(5, "类型5");
 
 	private Integer code;
 	private String name;
@@ -30,7 +33,7 @@ public enum EnmSegmentType {
 		this.name = name;
 	}
 
-	EnmSegmentType(int code, String name) {
+	EnmStudentType(int code, String name) {
 		this.code = code;
 		this.name = name;
 	}
@@ -45,7 +48,7 @@ public enum EnmSegmentType {
 		if ((name == null) || name.equals(""))
 			return null;
 
-		for (EnmSegmentType e : values()) {
+		for (EnmStudentType e : values()) {
 			if (e.name.equals(name)) {
 				return e.getCode();
 			}
@@ -61,7 +64,7 @@ public enum EnmSegmentType {
 	 */
 	public static String getName(Integer v) {
 
-		for (EnmSegmentType e : values()) {
+		for (EnmStudentType e : values()) {
 			if (e.code == v) {
 				return e.name;
 			}

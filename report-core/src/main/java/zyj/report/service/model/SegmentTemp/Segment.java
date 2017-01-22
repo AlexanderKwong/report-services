@@ -1,9 +1,12 @@
 package zyj.report.service.model.SegmentTemp;
 
 import zyj.report.common.constant.EnmSegmentType;
+import zyj.report.common.util.CollectionsUtil;
 
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * Created by CXinZhi on 2017/1/11.
@@ -61,7 +64,7 @@ public class Segment {
 	/**
 	 * 初始化分数段数据
 	 */
-	private void initSegmentList() {
+	public void initSegmentList() {
 		// 分数阶梯集合 排序
 		scoreSet = new TreeMap<Integer, Integer>();
 		for (int i = minScore; i < maxScore; i++) {
@@ -186,6 +189,32 @@ public class Segment {
 
 	public void setStep(Integer step) {
 		this.step = step;
+	}
+
+	public List<Map<String, Object>> getPartitionStepSegmentVertical(List<Map<String, Object>> objectMap, String key, String[] partitionKeys) {
+
+		Map<String, List<Map<String, Object>>> partitions = CollectionsUtil.partitionBy(objectMap, partitionKeys);
+
+		Map<String,Map<String,Object>> resultMap = new ConcurrentHashMap<>();
+
+		partitions.entrySet().stream().forEach( entry ->{
+			String partitionKey = entry.getKey();
+			this.initSegmentList();
+			List<Map<String, Object>> partitionResult = this.getStepSegment(entry.getValue(),key);
+			partitionResult.forEach(m->{
+				resultMap.computeIfAbsent(m.get("SCORE_SEG").toString(), (value1) -> {
+					HashMap hm = new HashMap();
+					hm.put("SCORE_SEG", value1);
+					hm.put("index",value1.split(",")[0].substring(1));
+					return hm;
+				});
+				resultMap.get(m.get("SCORE_SEG")).put(partitionKey,m.get("FREQUENCY"));
+			});
+		});
+		List<Map<String, Object>> result = new ArrayList<>(resultMap.values());
+		CollectionsUtil.orderByIntValueDesc(result,"index" );
+
+		return result;
 	}
 
 

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import zyj.report.common.CalToolUtil;
 import zyj.report.common.ExportUtil;
 import zyj.report.common.constant.EnmSegmentType;
+import zyj.report.common.util.CollectionsUtil;
 import zyj.report.exception.report.ReportExportException;
 import zyj.report.persistence.client.RptExpSubjectMapper;
 import zyj.report.service.BaseDataService;
@@ -98,27 +99,15 @@ public class ExpScoreSegmentOfClassesService extends BaseRptService {
 
         Segment segment = new Segment(step,0,full,result1.size(), EnmSegmentType.ROUNDED);
         //学校汇总
-        List<Map<String, Object>> schResult = segment.getStepSegment(result1,key);
-        //班级数据
-        List<Map<String, Object>> classesInSchool = (List<Map<String, Object>>)params.get("classes");
-        Map<String,List<Map<String, Object>>> classesMap = new HashMap<>();
-        classesInSchool.forEach(c->{
-            classesMap.putIfAbsent(c.get("CLS_ID").toString(), new ArrayList<>());
-        });
-        result1.forEach(stu->{
-            classesMap.computeIfPresent(stu.get("CLS_ID").toString(),(cls_id, list)->{list.add(stu);return list;});
-        });
-        Iterator<Map.Entry<String,List<Map<String,Object>>>> it =  classesMap.entrySet().iterator();
-        while(it.hasNext()){
-            Map.Entry<String,List<Map<String,Object>>> entry = it.next();
-            entry.getKey();
+        List<Map<String, Object>> result = segment.getStepSegment(result1,key);
 
-            List<Map<String, Object>> clsResult = segment.getStepSegment(entry.getValue(),key);
-        }
+        List<Map<String, Object>> result2 = segment.getPartitionStepSegmentVertical(result1,key,new String[]{"CLS_ID"});
+        result = CollectionsUtil.leftjoinMapByKey(result, result2,"SCORE_SEG");
+        CollectionsUtil.orderByIntValueDesc(result, "index");
 
         Sheet sheet = new Sheet("",excelName);
         sheet.setFields(fields);
-//        sheet.getData().addAll(result);
+        sheet.getData().addAll(result);
 
         sheets.add(sheet);
         return sheets;

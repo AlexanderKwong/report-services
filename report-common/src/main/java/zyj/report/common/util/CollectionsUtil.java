@@ -4,6 +4,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.lang.ObjectUtils;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class CollectionsUtil {
 	
@@ -74,5 +75,142 @@ public class CollectionsUtil {
 			m.putAll(otherParams);
 		}
 		return new_map;
+	}
+
+	public static Map<String, List<Map<String, Object>>> partitionBy(List<Map<String,Object>> source,String[] keys){
+		if	(source == null) return null;
+		else{
+			Map<String, List<Map<String, Object>>> mapping = new ConcurrentHashMap();
+
+			source.parallelStream().forEach(m ->{
+				StringBuffer sb = new StringBuffer();
+				for (String k : keys){
+					sb.append(m.getOrDefault(k,"")) ;
+				}
+				final String newKey = sb.toString();
+				mapping.putIfAbsent(newKey, new ArrayList<>());
+				mapping.computeIfPresent(newKey, (k, list)->{list.add(m); return list;});
+			});
+			return mapping;
+		}
+
+
+	}
+
+	/**
+	 * Map.get(key)的String值按指定String数组来排序
+	 * @param d
+	 * @param key
+	 * @param value
+	 */
+	@SuppressWarnings("unchecked")
+	public static void orderBySpecifiedValue(List<Map<String,Object>> d, final String key, final Object[] value) {
+		if (d != null) {
+			Collections.sort(d, new Comparator<Object>() {
+				public int compare(Object o1, Object o2) {
+					Map<String, Object> m1 = (Map<String, Object>) o1;
+					Map<String, Object> m2 = (Map<String, Object>) o2;
+					Object k1 = m1.get(key);
+					Object k2 = m2.get(key);
+					int i1 = indexOf(value, k1);
+					int i2 = indexOf(value, k2);
+					return i1 - i2;
+				}
+			});
+		}
+
+	}
+	/**
+	 * 按Map.get(key)的String值来排序
+	 * @param d
+	 * @param key
+	 */
+	@SuppressWarnings("unchecked")
+	public static void orderByStringValue(List<Map<String,Object>> d ,final String key){
+		if(d!= null){
+			Collections.sort(d,new Comparator<Object>() {
+				public int compare(Object o1,Object o2) {
+					Map<String,Object> m1 = (Map<String,Object>)o1;
+					Map<String,Object> m2 = (Map<String,Object>)o2;
+					String k1 = m1.get(key).toString();
+					String k2 = m2.get(key).toString();
+					return k1.compareTo(k2);
+				}
+			});
+		}
+	}
+
+	/**
+	 * 按Map.get(key)的String值来排序
+	 * @param d
+	 * @param keys
+	 */
+	@SuppressWarnings("unchecked")
+	public static void orderByMultiStringValue(List<Map<String,Object>> d ,final String[] keys){
+		if(d!= null){
+			Collections.sort(d,new Comparator<Object>() {
+				public int compare(Object o1,Object o2) {
+					Map<String,Object> m1 = (Map<String,Object>)o1;
+					Map<String,Object> m2 = (Map<String,Object>)o2;
+					String k1 = "";
+					String k2 = "";
+					for(int i = 0; i < keys.length;i++){
+						k1 += m1.get(keys[i]).toString();
+						k2 += m2.get(keys[i]).toString();
+
+					}
+					return k1.compareTo(k2);
+				}
+			});
+		}
+	}
+	/**
+	 * 按Map.get(key)的int值来排序
+	 * @param d
+	 * @param key
+	 */
+	@SuppressWarnings("unchecked")
+	public static void orderByIntValue(List<Map<String,Object>> d ,final String key){
+		if(d!= null){
+			Collections.sort(d,new Comparator<Object>() {
+				public int compare(Object o1,Object o2) {
+					Map<String,Object> m1 = (Map<String,Object>)o1;
+					Map<String,Object> m2 = (Map<String,Object>)o2;
+					int k1 = Integer.parseInt(m1.get(key).toString());
+					int k2 = Integer.parseInt(m2.get(key).toString());
+					return k1-k2;
+				}
+			});
+		}
+	}
+	/**
+	 * 按Map.get(key)的int值来倒序排序
+	 * @param d
+	 * @param key
+	 */
+	@SuppressWarnings("unchecked")
+	public static void orderByIntValueDesc(List<Map<String,Object>> d ,final String key){
+		if(d!= null){
+			Collections.sort(d,new Comparator<Object>() {
+				public int compare(Object o1,Object o2) {
+					Map<String,Object> m1 = (Map<String,Object>)o1;
+					Map<String,Object> m2 = (Map<String,Object>)o2;
+					int k1 = Integer.parseInt(m1.get(key).toString());
+					int k2 = Integer.parseInt(m2.get(key).toString());
+					return k2-k1;
+				}
+			});
+		}
+	}
+
+	public static int indexOf(Object[] f, Object o){
+		if(o != null){
+			for(int i=0;i<f.length;i++){
+				if(f[i].toString().equals(o.toString())){
+					return i;
+				}
+			}
+		}
+		return -1;
 	}
 }

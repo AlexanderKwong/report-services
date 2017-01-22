@@ -1,18 +1,15 @@
-package zyj.report.service.export.hubei;
+package zyj.report.service.export.hubei.city;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import zyj.report.common.ExportUtil;
 import zyj.report.common.constant.EnmSegmentType;
-import zyj.report.common.constant.EnmSubjectType;
 import zyj.report.persistence.client.RptExpStudetScoreMapper;
-import zyj.report.service.BaseDataService;
-import zyj.report.service.export.BaseRptService;
+import zyj.report.service.export.hubei.ExpTotalScoreEachSegService;
 import zyj.report.service.model.Excel;
 import zyj.report.service.model.Sheet;
 import zyj.report.service.model.report.RptTemplate;
-import zyj.report.service.model.segment.Segment;
 import zyj.report.service.model.segment.SegmentTemplate;
 
 import java.util.ArrayList;
@@ -21,21 +18,18 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by CXinZhi on 2017/1/1.
+ * Created by CXinZhi on 2017/1/17.
  * <p>
- * 导出 湖北版 总分各分数段人数 服务
+ * 市级报表--总分个分数段
  */
 @Service
-public class ExpTotalScoreEachSegService extends BaseRptService {
+public class ExpCitySubTotalScoreEachSegService extends ExpTotalScoreEachSegService {
 
 	@Autowired
 	RptExpStudetScoreMapper rptExpStudetScoreMapper;
 
-	@Autowired
-	BaseDataService baseDataService;
-
-	@Value("${hb.score.10step}")
-	public int step;
+	@Value("${hb.score.1step}")
+	int step;
 
 	private static String excelName = "总分各分数段人数";
 
@@ -45,15 +39,14 @@ public class ExpTotalScoreEachSegService extends BaseRptService {
 		// 设置 参数信息
 		super.initParam(params);
 
-		//校验参数
+		//校验参数,暂不校验cityCode
 		if (p.getExamBatchId() == null || p.getPath() == null || p.getCityCode() == null)
 			return;
 
-		// 设置标题模板
-		SegmentTemplate segmentTemplate = new SegmentTemplate(step);
+		RptTemplate rptTemplate = new SegmentTemplate(step);
 
 		// 初始化 sheet
-		List<Sheet> sheets = getSheets(segmentTemplate);
+		List<Sheet> sheets = getSheets(rptTemplate);
 
 		// 初始化 excel
 		Excel excel = new Excel(excelName + ".xls", p.getPath(), sheets);
@@ -71,30 +64,19 @@ public class ExpTotalScoreEachSegService extends BaseRptService {
 		List<Sheet> sheets = new ArrayList<>();
 
 		// 添加文科 sheet
-		sheets.add(getSheet(EnmSubjectType.WEN, rptTemplate));
-
-		// 添加理科 sheet
-		sheets.add(getSheet(EnmSubjectType.LI, rptTemplate));
+		sheets.add(getSheet(rptTemplate));
 
 		return sheets;
 	}
 
-	/**
-	 * 加载文理科数据
-	 *
-	 * @param subjectType
-	 * @param rptTemplate
-	 * @return
-	 */
-	public Sheet getSheet(EnmSubjectType subjectType, RptTemplate rptTemplate) {
+	public Sheet getSheet(RptTemplate rptTemplate) {
 
-		Sheet sheet = new Sheet(subjectType.getCode() + "", subjectType.getName());
-
+		Sheet sheet = new Sheet(p.getSubject(),p.getSubjectName());
 		Map conditions = new HashMap<String, Object>();
+
 		conditions.put("exambatchId", p.getExamBatchId());
 		conditions.put("cityCode", p.getCityCode());
-		conditions.put("schoolId", p.getSchoolId());
-		conditions.put("type", subjectType.getCode());
+		conditions.put("subject", p.getSubject());
 		conditions.put("stuType", p.getStuType());
 
 		//读取源数据
@@ -104,25 +86,10 @@ public class ExpTotalScoreEachSegService extends BaseRptService {
 		sheet.getFields().addAll(rptTemplate.createTitle(excelName));
 
 		// 加载 各行的字段的数据
-		sheet.getData().addAll(getSegmentData(data,((SegmentTemplate)rptTemplate).getStep(),EnmSegmentType
-				.ROUNDED));
+		sheet.getData().addAll(getSegmentData(data, ((SegmentTemplate) rptTemplate).getStep(),
+				EnmSegmentType.ROUNDED));
 
 		return sheet;
-	}
-
-	/**
-	 * 将 总分数据 转化为 各分数段数据
-	 *
-	 * @param data
-	 * @return
-	 */
-	public List<Map<String, Object>> getSegmentData(List<Map<String, Object>> data, Integer step, EnmSegmentType
-			type) {
-		Float maxScore = Float.parseFloat(data.get(0).get("ALL_TOTAL").toString());
-
-		Segment segment = new Segment(step, 0, maxScore, data.size(), type);
-
-		return segment.getStepSegment(data, "ALL_TOTAL");
 	}
 
 

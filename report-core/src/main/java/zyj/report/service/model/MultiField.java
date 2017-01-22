@@ -40,7 +40,7 @@ public class MultiField implements zyj.report.service.model.Field {
     }
 
     @Override
-    public Iterator<zyj.report.service.model.Field> createIterator() {
+    public Iterator<Field> createIterator() {
         return new CompositionIterator(fields.iterator());
     }
 

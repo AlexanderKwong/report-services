@@ -621,9 +621,23 @@ public class RptTaskFactoryImpl implements RptTaskFactory {
 	 */
 	private class RptTaskQueueHB extends RptTaskQueue {
 
+		@SuppressWarnings({"unchecked", "rawtypes"})
 		@Override
 		public boolean addCityTask(RptParameter parameter) throws Exception {
+			RptParameterBase r = (RptParameterBase) parameter;
+			String rootPath = r.getPathFile();
 
+
+			String cityPath = rootPath + "/" + "全市报表/多科";
+
+			RptTaskSeries rpttaskseries = new RptTaskSeries(r.getExambatchId(), cityPath);
+
+			rpttaskseries.add(new RptTaskBase(r, "expCityTotalScoreEachSegService", "city", cityPath,
+					null, null));
+
+			this.add(rpttaskseries);
+
+			this.add(rpttaskseries);
 			return true;
 		}
 
@@ -643,13 +657,13 @@ public class RptTaskFactoryImpl implements RptTaskFactory {
 			String schoolId = otherParams.get("schoolId").toString();
 			String schoolName = otherParams.get("schoolName").toString();
 			String areaName = otherParams.get("areaName").toString();
-			String schoolPath = rootPath + "/" + areaName + "/" + schoolName;
-			String multiSubject = rootPath + "/" + areaName + "/" + schoolName + "/多科";
+			String schoolPath = rootPath + "/学校报表/" + areaName + "/" + schoolName;
+			String multiSubject = rootPath + "/学校报表/" + areaName + "/" + schoolName + "/多科";
 
 			RptTaskSeries rpttaskseries = new RptTaskSeries(r.getExambatchId(), schoolPath);
 
-//			rpttaskseries.add(new RptTaskBase(r, "expStudentScoreService", "classes", multiSubject,
-//					null, schoolId));
+			rpttaskseries.add(new RptTaskBase(r, "expStudentScoreService", "classes", multiSubject,
+					null, schoolId));
 
 			rpttaskseries.add(new RptTaskBase(r, "expTotalScoreEachSegService", "school", multiSubject,
 					null, schoolId));

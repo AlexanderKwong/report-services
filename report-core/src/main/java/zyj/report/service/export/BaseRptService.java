@@ -3,6 +3,7 @@ package zyj.report.service.export;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import zyj.report.exception.report.ReportExportException;
+import zyj.report.service.model.RptParam;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,14 +14,14 @@ public class BaseRptService {
 
 	private Logger logger = LoggerFactory.getLogger(BaseRptService.class);
 
-	// excel 导出参数
-	public Param p;
+	public RptParam p;
 
-	private static String[][] grades = new String[][] { { "x1", "小学1年级" },
-			{ "x2", "小学2年级" }, { "x3", "小学3年级" }, { "x4", "小学4年级" },
-			{ "x5", "小学5年级" }, { "x6", "小学6年级" }, { "c1", "初中1年级" },
-			{ "c2", "初中2年级" }, { "c3", "初中3年级" }, { "c4", "初中4年级" },
-			{ "g1", "高中1年级" }, { "g2", "高中2年级" }, { "g3", "高中3年级" } };
+	private static String[][] grades = new String[][]{{"x1", "小学1年级"},
+			{"x2", "小学2年级"}, {"x3", "小学3年级"}, {"x4", "小学4年级"},
+			{"x5", "小学5年级"}, {"x6", "小学6年级"}, {"c1", "初中1年级"},
+			{"c2", "初中2年级"}, {"c3", "初中3年级"}, {"c4", "初中4年级"},
+			{"g1", "高中1年级"}, {"g2", "高中2年级"}, {"g3", "高中3年级"}};
+
 	public static String getGradeName(String id) {
 		for (String[] grade : grades) {
 			if (id.equals(grade[0])) {
@@ -31,8 +32,9 @@ public class BaseRptService {
 	}
 
 	// 科目
-	public static final Map<String,String> subjects = new HashMap<String, String>();
-	static{
+	public static final Map<String, String> subjects = new HashMap<String, String>();
+
+	static {
 		initSubjectName();
 	}
 
@@ -43,7 +45,7 @@ public class BaseRptService {
 	//拆科的科目
 //	public static final String[] subjects_s=  new String[]{"WYW_S","WYY_S","LYW_S","LYY_S","WSX_S","S_ZH_DL","S_ZH_LS","S_ZH_ZS","LSX_S","S_ZH_WL","S_ZH_HX","S_ZH_SW"};
 
-	public static void initSubjectName(){
+	public static void initSubjectName() {
 		subjects.put("YW", "语文");
 		subjects.put("SX", "数学");
 		subjects.put("YY", "英语");
@@ -66,7 +68,7 @@ public class BaseRptService {
 //		subjects.put("WZ", "政史综合");///////////////////为了宿迁那傻逼
 //		subjects.put( "LZ", "理化综合");////////////////////为了宿迁那傻逼
 		subjects.put("WZ", "文科综合");///////////正常
-		subjects.put( "LZ", "理科综合");///////////正常
+		subjects.put("LZ", "理科综合");///////////正常
 		subjects.put("WSX", "文科数学");
 		subjects.put("LSX", "理科数学");
 		subjects.put("RY", "日语");
@@ -88,59 +90,63 @@ public class BaseRptService {
 		subjects.put("S_ZH_ZS", "政治");
 		subjects.put("S_ZH_LS", "历史");
 		subjects.put("S_ZH_SP", "思想品德");
-		subjects.put("NWL","");
+		subjects.put("NWL", "");
 	}
 
 
-	public List<Map<String,Object>> fetchExportData(Map<String,Object> parmter) throws Exception{
+	public List<Map<String, Object>> fetchExportData(Map<String, Object> parmter) throws Exception {
 		return null;
 	}
-	public String getXlsFileName(){
+
+	public String getXlsFileName() {
 		return null;
 	}
-	
-	public void exportData(Map<String,Object> parmter) throws Exception {
-		this.p = new Param(parmter);
+
+	public void exportData(Map<String, Object> parmter) throws Exception {
+
 	}
+
 
 	/**
 	 * 将查询得到的List<Map>转为String[][]
+	 *
 	 * @param fieldMap beanList中MAP的每个字段与titles映射到Object[]对应titles下标的元素
 	 * @param titleArr EXCEL中每个字段的标题
 	 * @param beanList 查询数据库得到map组成的list
 	 * @return
 	 */
-	protected String[][] map2objects(Map<String,String> fieldMap,String[] titleArr,List<Map<String,Object>> beanList){
+	protected String[][] map2objects(Map<String, String> fieldMap, String[] titleArr, List<Map<String, Object>> beanList) {
 		String[][] objArrList = new String[beanList.size()][];
-		for(int j = 0;j<beanList.size();j++){
+		for (int j = 0; j < beanList.size(); j++) {
 			String[] row = new String[titleArr.length];
 			Map bean = beanList.get(j);
-			for(int i = 0;i<titleArr.length;i++){
+			for (int i = 0; i < titleArr.length; i++) {
 				row[i] = toStr(bean.get(fieldMap.get(titleArr[i])));
 			}
 			//System.out.println(Arrays.asList(row));
 			objArrList[j] = row;
 		}
-		return  objArrList;
+		return objArrList;
 	}
 
 
-	private  String toStr(Object value) {
+	private String toStr(Object value) {
 		if (value == null)
 			return "";
 		else
 			return value.toString();
 	}
-	
+
 
 	/**
 	 * 在按AREA_ID排序的学校的LIST中，每个地区段的学校的下一行插入一行地区的统计。
+	 *
 	 * @param schoolList
 	 * @param areaMap
 	 * @return
 	 */
-	protected List<Map<String,Object>>  addAreaInfo(List<Map<String,Object>> schoolList,Map<String,Map> areaMap) throws ReportExportException {
-		List<Map<String,Object>> beanList = new ArrayList<Map<String,Object>>();
+	protected List<Map<String, Object>> addAreaInfo(List<Map<String, Object>> schoolList, Map<String, Map> areaMap) throws ReportExportException {
+		List<Map<String, Object>> beanList = new ArrayList<Map<String, Object>>();
 	/*	Optional<Map<String,Map<String,Object>>> areaCache = DataCacheUtil.getAreaNameMap();
 		Optional<Map<String,Map<String,Object>>> schoolCache = DataCacheUtil.getSchNameMap();
 		if(!areaCache.isPresent() || !schoolCache.isPresent()){
@@ -152,229 +158,101 @@ public class BaseRptService {
 		Map<String,Map<String,Object>> areaNameMap = areaCache.get();
 		Map<String,Map<String,Object>> schNameMap = getSchoolCache();*/
 //		BaseDataService baseDataService = (BaseDataService)SpringUtil.getSpringBean(null,"baseDataService");
-	//在每个镇区的学校末加上一行统计镇区数据
-	String areaId_buf = null;
-	String areaId_cur = null;
-	for(Map sch : schoolList){
+		//在每个镇区的学校末加上一行统计镇区数据
+		String areaId_buf = null;
+		String areaId_cur = null;
+		for (Map sch : schoolList) {
 //		Map schInfo = schNameMap.get(sch.get("SCH_ID").toString());
 //		Map schInfo = baseDataService.getSchool(exambatchId, sch.get("SCH_ID").toString());
 //		sch.put("SCHNAME", schInfo==null?"匿名学校":schInfo.get("SCHNAME"));
-		areaId_cur = (String)sch.get("AREA_ID");
-		if(areaId_cur == null ){
-			if(areaId_buf == null){
-				beanList.add(sch);						
-			}
-			else{
-				Map area = areaMap.get(areaId_buf);
+			areaId_cur = (String) sch.get("AREA_ID");
+			if (areaId_cur == null) {
+				if (areaId_buf == null) {
+					beanList.add(sch);
+				} else {
+					Map area = areaMap.get(areaId_buf);
 //				Map areaInfo = areaNameMap.get(areaId_buf);
 //				Map areaInfo = baseDataService.getArea(exambatchId, areaId_buf);
 //				area.put("SCHNAME", areaInfo==null?"市直":areaInfo.get("AREANAME"));
+					beanList.add(area);
+					beanList.add(sch);
+					areaId_buf = areaId_cur;
+				}
+			} else if (areaId_cur.equals(areaId_buf)) {
+				beanList.add(sch);
+			} else if (areaId_buf == null) {
+				beanList.add(sch);
+				areaId_buf = areaId_cur;
+			} else {
+				Map area = areaMap.get(areaId_buf);
+//			Map areaInfo = areaNameMap.get(areaId_buf);
+//			Map areaInfo = baseDataService.getArea(exambatchId, areaId_buf);
+//			area.put("SCHNAME", areaInfo==null?"市直":areaInfo.get("AREANAME"));
+				area.put("SCH_NAME", area.get("AREA_NAME"));
 				beanList.add(area);
 				beanList.add(sch);
 				areaId_buf = areaId_cur;
 			}
 		}
-		else if(areaId_cur.equals(areaId_buf)){
-			beanList.add(sch);				
-		}
-		else if (areaId_buf == null){
-			beanList.add(sch);				
-			areaId_buf = areaId_cur;
-		}
-		else {
-			Map area = areaMap.get(areaId_buf);
+		//加上最后一个地区
+		if (areaId_cur != null)
+			if (areaId_cur.equals(areaId_buf)) {
+				Map area = areaMap.get(areaId_buf);
 //			Map areaInfo = areaNameMap.get(areaId_buf);
 //			Map areaInfo = baseDataService.getArea(exambatchId, areaId_buf);
 //			area.put("SCHNAME", areaInfo==null?"市直":areaInfo.get("AREANAME"));
-			area.put("SCH_NAME",area.get("AREA_NAME"));
-			beanList.add(area);
-			beanList.add(sch);
-			areaId_buf = areaId_cur;
-		}
+				area.put("SCH_NAME", area.get("AREA_NAME"));
+				beanList.add(area);
+			}
+		return beanList;
 	}
-	//加上最后一个地区
-	if(areaId_cur !=null )
-		if(areaId_cur.equals(areaId_buf)){
-			Map area = areaMap.get(areaId_buf);
-//			Map areaInfo = areaNameMap.get(areaId_buf);
-//			Map areaInfo = baseDataService.getArea(exambatchId, areaId_buf);
-//			area.put("SCHNAME", areaInfo==null?"市直":areaInfo.get("AREANAME"));
-			area.put("SCH_NAME",area.get("AREA_NAME"));
-			beanList.add(area);
-		}
-	return beanList;
-	}
+
 	/**
 	 * 将学校的LIST和地区的LIST和在一起，地区加在相同学校区间的下一行
+	 *
 	 * @param schoolList
 	 * @param allarea
 	 * @return
 	 */
-	protected List getBeanList(List<Map<String,Object>> schoolList,List<Map<String, Object>> allarea) throws ReportExportException {
-		Map<String ,Map> areaMap = new HashMap<String, Map>();
-		for(Map area : allarea){
-			String areaId = (String)area.get("AREA_ID");
+	protected List getBeanList(List<Map<String, Object>> schoolList, List<Map<String, Object>> allarea) throws ReportExportException {
+		Map<String, Map> areaMap = new HashMap<String, Map>();
+		for (Map area : allarea) {
+			String areaId = (String) area.get("AREA_ID");
 			areaMap.put(areaId, area);
 		}
 		return addAreaInfo(schoolList, areaMap);
 	}
-	
+
 	/**
 	 * 让Map中对应key的value自增，限数字
+	 *
 	 * @param count
 	 * @param key
 	 */
-	protected  void getValueIncrease(Map count,String key){
-		try{
-			int value = (Integer)count.get(key);
-			value = value +1;
+	protected void getValueIncrease(Map count, String key) {
+		try {
+			int value = (Integer) count.get(key);
+			value = value + 1;
 			count.put(key, value);
-		}catch(Exception e ){
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException("字段自增失败，请检查该字段是否为数字");
 		}
 	}
+
 	public static void main(String[] args) {
 
 	}
 
-	public class Param {
-
-		private String level;
-		private String examBatchId;
-		private String cityCode;
-		private String path;
-		private String areaId;
-		private String schoolId;
-		private String classesId;
-		private Integer stuType;
-		private String subject;
-		private String subjectName;
-		private String paperId;
-		private Integer type;
-
-		public Param(Map<String, Object> objectMap) {
-			level = (String) objectMap.get("level");
-			examBatchId = (String) objectMap.get("exambatchId");
-			cityCode = (String) objectMap.get("cityCode");
-			path = (String) objectMap.get("pathFile");
-			stuType = (Integer) objectMap.get("stuType");
-			areaId = (String) objectMap.get("areaId");
-			schoolId = (String) objectMap.get("schoolId");
-			classesId = (String) objectMap.get("classesId");
-			subject = (String) objectMap.get("subject");
-			subjectName = (String) objectMap.get("subjectName");
-			paperId = (String) objectMap.get("paperId");
-			type = (Integer) objectMap.get("type");
-		}
-
-		/**
-		 * 导出级别: city,area,school,classes
-		 *
-		 * @return
-		 */
-		public String getLevel() {
-			return level;
-		}
-
-		/**
-		 * 考试科目ID
-		 *
-		 * @return
-		 */
-		public String getExamBatchId() {
-			return examBatchId;
-		}
-
-		/**
-		 * 城市ID
-		 *
-		 * @return
-		 */
-		public String getCityCode() {
-			return cityCode;
-		}
-
-		/**
-		 * excel 地址
-		 *
-		 * @return
-		 */
-		public String getPath() {
-			return path;
-		}
-
-		/**
-		 * 区县ID
-		 *
-		 * @return
-		 */
-		public String getAreaId() {
-			return areaId;
-		}
-
-		/**
-		 * 学校ID
-		 *
-		 * @return
-		 */
-		public String getSchoolId() {
-			return schoolId;
-		}
-
-		/**
-		 * 班级ID
-		 *
-		 * @return
-		 */
-		public String getClassesId() {
-			return classesId;
-		}
-
-		/**
-		 * 学生类型 用于过滤应往届
-		 *
-		 * @return
-		 */
-		public Integer getStuType() {
-			return stuType;
-		}
-
-
-		/**
-		 * 科目简称: 如 WL : 物理
-		 *
-		 * @return
-		 */
-		public String getSubject() {
-			return subject;
-		}
-
-		/**
-		 * 科目中文名字
-		 *
-		 * @return
-		 */
-		public String getSubjectName() {
-			return subjectName;
-		}
-
-		/**
-		 * 考试科目ID
-		 *
-		 * @return
-		 */
-		public String getPaperId() {
-			return paperId;
-		}
-
-		/**
-		 * 文理类别: 0 不分文理，1 文 2 理科
-		 *
-		 * @return
-		 */
-		public Integer getType() {
-			return type;
-		}
+	public void initParam(Map<String, Object> param) {
+		this.p = threadLocal.get();
+		this.p.initParam(param);
 	}
+
+	private static ThreadLocal<RptParam> threadLocal = new ThreadLocal<RptParam>() {
+		@Override
+		protected RptParam initialValue() {
+			return new RptParam();
+		}
+	};
 }

@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import zyj.report.common.ExportUtil;
 import zyj.report.common.constant.EnmSegmentType;
-import zyj.report.common.constant.EnmSubjectType;
 import zyj.report.persistence.client.RptExpStudetScoreMapper;
 import zyj.report.service.export.hubei.ExpTotalScoreEachSegService;
 import zyj.report.service.model.Excel;
@@ -13,6 +12,7 @@ import zyj.report.service.model.Sheet;
 import zyj.report.service.model.report.RptTemplate;
 import zyj.report.service.model.segment.SegmentTemplate;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +23,7 @@ import java.util.Map;
  * 市级报表--总分个分数段
  */
 @Service
-public class ExpCityTotalScoreEachSegService extends ExpTotalScoreEachSegService {
+public class ExpCitySubTotalScoreEachSegService extends ExpTotalScoreEachSegService {
 
 	@Autowired
 	RptExpStudetScoreMapper rptExpStudetScoreMapper;
@@ -35,8 +35,9 @@ public class ExpCityTotalScoreEachSegService extends ExpTotalScoreEachSegService
 
 	@Override
 	public void exportData(Map<String, Object> params) throws Exception {
+
 		// 设置 参数信息
-		super.exportData(params);
+		super.initParam(params);
 
 		//校验参数,暂不校验cityCode
 		if (p.getExamBatchId() == null || p.getPath() == null || p.getCityCode() == null)
@@ -45,7 +46,7 @@ public class ExpCityTotalScoreEachSegService extends ExpTotalScoreEachSegService
 		RptTemplate rptTemplate = new SegmentTemplate(step);
 
 		// 初始化 sheet
-		List<Sheet> sheets =super.getSheets(rptTemplate);
+		List<Sheet> sheets = getSheets(rptTemplate);
 
 		// 初始化 excel
 		Excel excel = new Excel(excelName + ".xls", p.getPath(), sheets);
@@ -55,16 +56,27 @@ public class ExpCityTotalScoreEachSegService extends ExpTotalScoreEachSegService
 
 	}
 
+	/**
+	 * 初始化 sheet
+	 */
+	public List<Sheet> getSheets(RptTemplate rptTemplate) {
 
-	@Override
-	public Sheet getSheet(EnmSubjectType subjectType, RptTemplate rptTemplate) {
+		List<Sheet> sheets = new ArrayList<>();
 
-		Sheet sheet = new Sheet(subjectType.getCode() + "", subjectType.getName());
+		// 添加文科 sheet
+		sheets.add(getSheet(rptTemplate));
 
+		return sheets;
+	}
+
+	public Sheet getSheet(RptTemplate rptTemplate) {
+
+		Sheet sheet = new Sheet(p.getSubject(),p.getSubjectName());
 		Map conditions = new HashMap<String, Object>();
+
 		conditions.put("exambatchId", p.getExamBatchId());
 		conditions.put("cityCode", p.getCityCode());
-		conditions.put("type", subjectType.getCode());
+		conditions.put("subject", p.getSubject());
 		conditions.put("stuType", p.getStuType());
 
 		//读取源数据
@@ -74,9 +86,8 @@ public class ExpCityTotalScoreEachSegService extends ExpTotalScoreEachSegService
 		sheet.getFields().addAll(rptTemplate.createTitle(excelName));
 
 		// 加载 各行的字段的数据
-		sheet.getData().addAll(getSegmentData(data,((SegmentTemplate)rptTemplate).getStep(),
-				EnmSegmentType
-				.ROUNDED));
+		sheet.getData().addAll(getSegmentData(data, ((SegmentTemplate) rptTemplate).getStep(),
+				EnmSegmentType.ROUNDED));
 
 		return sheet;
 	}

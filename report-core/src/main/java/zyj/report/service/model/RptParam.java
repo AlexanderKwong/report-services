@@ -20,7 +20,11 @@ public class RptParam {
 	private String paperId;
 	private Integer type;
 
-	public RptParam(Map<String, Object> objectMap) {
+	public RptParam() {
+
+	}
+
+	public void initParam(Map<String, Object> objectMap) {
 		level = (String) objectMap.get("level");
 		examBatchId = (String) objectMap.get("exambatchId");
 		cityCode = (String) objectMap.get("cityCode");

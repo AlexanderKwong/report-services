@@ -195,6 +195,9 @@
 		<if test="type != null">
 			and TYPE = #{type,jdbcType=NUMERIC}
 		</if>
+		<if test="subject != null">
+			and subject = #{subject,jdbcType=VARCHAR}
+		</if>
 		ORDER BY ALL_TOTAL DESC
 	</select>
 

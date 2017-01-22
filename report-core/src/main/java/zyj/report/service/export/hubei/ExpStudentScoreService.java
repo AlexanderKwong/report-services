@@ -38,7 +38,7 @@ public class ExpStudentScoreService extends BaseRptService {
 	public void exportData(Map<String, Object> params) throws Exception {
 
 		// 设置 参数信息
-		super.exportData(params);
+		super.initParam(params);
 
 		//校验参数,暂不校验cityCode
 		if (p.getExamBatchId() == null || p.getPath() == null || p.getLevel() == null)

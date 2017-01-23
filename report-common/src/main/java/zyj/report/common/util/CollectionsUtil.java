@@ -213,4 +213,25 @@ public class CollectionsUtil {
 		}
 		return -1;
 	}
+
+	public static void rank( List<Map<String,Object>> d ,final String key,final String rankKey ){
+
+		orderByIntValueDesc(d, key);
+
+		Integer previousValue = null;
+		int rankValue = 0 ;
+		int sameValue = 0;
+		for (Map<String, Object> m :d){
+			Integer value = Integer.parseInt(m.get(key).toString());
+			if( value != null && value.equals(previousValue)){
+				m.put(rankKey, rankValue);
+				sameValue++;
+			}else if (value != null && !value.equals(previousValue)){
+				rankValue = rankValue + sameValue + 1;
+				m.put(rankKey, rankValue);
+				sameValue = 0;
+			}
+			previousValue = value;
+		}
+	}
 }

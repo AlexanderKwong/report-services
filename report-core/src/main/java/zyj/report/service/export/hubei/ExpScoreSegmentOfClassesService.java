@@ -103,7 +103,10 @@ public class ExpScoreSegmentOfClassesService extends BaseRptService {
 
         List<Map<String, Object>> result2 = segment.getPartitionStepSegmentVertical(result1,key,new String[]{"CLS_ID"});
         result = CollectionsUtil.leftjoinMapByKey(result, result2,"SCORE_SEG");
-        CollectionsUtil.orderByIntValueDesc(result, "index");
+//        CollectionsUtil.orderByIntValueDesc(result, "index");
+        CollectionsUtil.orderBySpecifiedValue(result, "SCORE_SEG", segment.generateSegment().toArray());
+//        List<String> segments = segment.generateSegment();
+//        List<Map<String, Object>> result3 = segment.getPartitionStepSegmentTransverse(result1,key,new String[]{"CLS_ID"});
 
         Sheet sheet = new Sheet("",excelName);
         sheet.setFields(fields);

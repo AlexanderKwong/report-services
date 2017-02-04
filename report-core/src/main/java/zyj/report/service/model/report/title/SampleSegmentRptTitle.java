@@ -7,6 +7,7 @@ import zyj.report.service.model.SingleField;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by CXinZhi on 2017/1/18.
@@ -29,5 +30,10 @@ public class SampleSegmentRptTitle implements RptTitle {
 		fields.add(root);
 
 		return fields;
+	}
+
+	@Override
+	public List<Field> getTitle(String excelName, List<Map<String, Object>> exFields) {
+		return null;
 	}
 }

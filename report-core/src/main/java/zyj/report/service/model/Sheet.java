@@ -1,7 +1,5 @@
 package zyj.report.service.model;
 
-import zyj.report.service.model.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +27,7 @@ public class Sheet {
 	/**
 	 * 字段对应的数据
 	 */
-	private List<Map> datas = new ArrayList<>();
+	private List<Map<String,Object>> datas = new ArrayList<>();
 
 
 	public Integer getFreeze() {
@@ -97,11 +95,11 @@ public class Sheet {
 		this.fields = fields;
 	}
 
-	public List<Map> getData() {
+	public List<Map<String, Object>> getData() {
 		return datas;
 	}
 
-	public void setData(List<Map> data) {
+	public void setData(List<Map<String, Object>> data) {
 		this.datas = data;
 	}
 

@@ -84,7 +84,7 @@ public class ExpObjectiveAnswerService extends BaseRptService{
 
         List<Sheet> sheets = new ArrayList<>();
 
-        List<Map> result = rptExpQuestionMapper.qryStudentQuestionScore(params);
+        List<Map<String,Object>> result = rptExpQuestionMapper.qryStudentQuestionScore(params);
 
         Sheet sheet = new Sheet("",excelName);
         sheet.setFields(fields);

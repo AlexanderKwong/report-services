@@ -1,4 +1,4 @@
-package zyj.report.service.export.hubei;
+package zyj.report.service.export.hubei.school;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -7,9 +7,6 @@ import zyj.report.common.ExportUtil;
 import zyj.report.persistence.client.JyjRptExtMapper;
 import zyj.report.service.BaseDataService;
 import zyj.report.service.export.BaseRptService;
-import zyj.report.service.model.MultiField;
-import zyj.report.service.model.Sheet;
-import zyj.report.service.model.SingleField;
 import zyj.report.service.model.*;
 
 import java.util.ArrayList;
@@ -24,7 +21,7 @@ import java.util.stream.Collectors;
  * 导出 湖北版 学生各科成绩和总分（班级） 服务
  */
 @Service
-public class ExpStudentScoreService extends BaseRptService {
+public class ExpHBSchStudentScoreService extends BaseRptService {
 
 	@Autowired
 	JyjRptExtMapper jyjRptExtMapper;
@@ -61,7 +58,7 @@ public class ExpStudentScoreService extends BaseRptService {
 	private List<Field> getFields(Map<String, Object> claModel, String rootName) {
 
 		//获取 本次考试科目列表
-		List<SubjectInfo> subjects = getSubjectList(p.getExamBatchId());
+		List<SubjectInfo> subjects = getSubjectList();
 
 		List<Field> fields = new ArrayList<>();
 
@@ -74,10 +71,8 @@ public class ExpStudentScoreService extends BaseRptService {
 		subjects.forEach(model -> {
 			if (claModel.get("CLS_TYPE").toString().equals(model.getType() + "")) {
 				root.add(new SingleField(model.getSubjectName() + "分数", model.getSubjectName() + "_SCORE"));
-				root.add(new SingleField(model.getSubjectName() + "班名", model.getSubjectName() +
-						"_RANK_CLS"));
-				root.add(new SingleField(model.getSubjectName() + "校名", model.getSubjectName() +
-						"_RANK_SCH"));
+				root.add(new SingleField(model.getSubjectName() + "班名", model.getSubjectName() + "_RANK_CLS"));
+				root.add(new SingleField(model.getSubjectName() + "校名", model.getSubjectName() + "_RANK_SCH"));
 			}
 		});
 
@@ -97,7 +92,7 @@ public class ExpStudentScoreService extends BaseRptService {
 	private List<Sheet> getSheet() {
 
 		//获取 本次考试科目列表
-		List<SubjectInfo> subjectList = getSubjectList(p.getExamBatchId());
+		List<SubjectInfo> subjectList = getSubjectList();
 
 		// 查询出当前有多少个班级参与
 		List<Map<String, Object>> classList = jyjRptExtMapper.qryClassesInfo(p.getExamBatchId());
@@ -137,10 +132,9 @@ public class ExpStudentScoreService extends BaseRptService {
 	/**
 	 * 获取 本次考试科目列表
 	 *
-	 * @param batchId
 	 * @return
 	 */
-	private List<SubjectInfo> getSubjectList(String batchId) {
+	private List<SubjectInfo> getSubjectList() {
 
 		List<Map<String, Object>> subjects_cur = baseDataService.getSubjectByExamid(p.getExamBatchId());
 

@@ -36,7 +36,7 @@ public class RptParam {
 		subject = (String) objectMap.get("subject");
 		subjectName = (String) objectMap.get("subjectName");
 		paperId = (String) objectMap.get("paperId");
-		type = (Integer) objectMap.get("type");
+		type = objectMap.get("type") != null ? Integer.parseInt(objectMap.get("type") + "") : null;
 	}
 
 	/**

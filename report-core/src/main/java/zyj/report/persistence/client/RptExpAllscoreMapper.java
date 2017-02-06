@@ -3,8 +3,6 @@ package zyj.report.persistence.client;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.ibatis.annotations.Param;
-
 
 public interface RptExpAllscoreMapper {
 	public List qryStudentSubjectAllScore(Map conditions);
@@ -41,5 +39,22 @@ public interface RptExpAllscoreMapper {
 	public Map getScoreLineOfAllscoreByRank(Map conditions);
 
 	public List qryAllscoreStuNum(Map conditions);
-	
+
+	/**
+	 *
+	 * 文理分科学校最高数量
+	 *
+	 * @param conditions
+	 * @return
+	 */
+	public Float qryStudentSubjectTopScore(Map conditions);
+
+	/**
+	 *
+	 * 文理分科学校参加人数量
+	 *
+	 * @param conditions
+	 * @return
+	 */
+	public Integer qryStudentSubjectCountScore(Map conditions);
 }

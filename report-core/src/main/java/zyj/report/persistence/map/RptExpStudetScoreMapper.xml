@@ -176,9 +176,9 @@
 		</if>
 	</sql>
 
-	<!-- 查询个人总分数据-->
+	<!-- 查询个人总分数据 ： 区域-->
 	<select id="findTotalScoreEachSegment" resultType="map" parameterType="map">
-		select FULL_SCORE,ALL_TOTAL from RPT_EXP_STUDENT_ALLSCORE
+		select FULL_SCORE,ALL_TOTAL,CLS_ID,TYPE from RPT_EXP_STUDENT_ALLSCORE
 		where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
 		<if test="stuType!=null">
 			and student_type = #{stuType}
@@ -195,11 +195,28 @@
 		<if test="type != null">
 			and TYPE = #{type,jdbcType=NUMERIC}
 		</if>
+		ORDER BY ALL_TOTAL DESC
+	</select>
+
+	<!-- 查询个人总分数据 ： 科目-->
+	<select id="findSubTotalScoreEachSegment" resultType="map" parameterType="map">
+		select FULL_SCORE,SIGN_TOTAL from RPT_EXP_STUDENT_SUBJECT
+		where EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR} and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
 		<if test="subject != null">
 			and subject = #{subject,jdbcType=VARCHAR}
 		</if>
-		ORDER BY ALL_TOTAL DESC
+		<if test="type != null">
+			and TYPE = #{type,jdbcType=NUMERIC}
+		</if>
+		ORDER BY SIGN_TOTAL DESC
 	</select>
+
+
+
+
 
 
 </mapper>

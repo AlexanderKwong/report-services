@@ -16,7 +16,7 @@ public enum EnmSubjectType {
 	private Integer code;
 	private String name;
 
-	public int getCode() {
+	public Integer getCode() {
 		return code;
 	}
 

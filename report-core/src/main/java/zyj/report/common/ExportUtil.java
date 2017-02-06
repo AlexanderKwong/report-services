@@ -539,7 +539,11 @@ public class ExportUtil {
 				tmp[rowIndex][columnIndex] = field.getTitle();
 				if (field instanceof SingleField) {
 					singleFields.add((SingleField)field);
-
+					if (field.getTitle().length() > 5) {
+						//根据内容自动设置列宽
+						cellView.setSize(field.getTitle().length() * 512);
+						sheet.setColumnView(columnIndex, cellView);
+					}
 					column ++ ;
 				}
 			}
@@ -562,16 +566,16 @@ public class ExportUtil {
 				}
 
 				// 以标题做宽度
-				if(rowNum==head.length-1)
-				{
-					for (int c = 0; c < headRow.length ; c++) {
-						if (headRow[c].length() > 5) {
-							//根据内容自动设置列宽
-							cellView.setSize(headRow[c].length() * 512);
-							sheet.setColumnView(c, cellView);
-						}
-					}
-				}
+//				if(rowNum==head.length-1)
+//				{
+//					for (int c = 0; c < headRow.length ; c++) {
+//						if (headRow[c].length() > 5) {
+//							//根据内容自动设置列宽
+//							cellView.setSize(headRow[c].length() * 512);
+//							sheet.setColumnView(c, cellView);
+//						}
+//					}
+//				}
 			}
 
 			//纵向合并

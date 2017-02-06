@@ -9,7 +9,7 @@ import zyj.report.business.task.RptTask;
 import zyj.report.business.task.RptTaskQueue;
 import zyj.report.service.JyjRptExtService;
 
-import java.util.*;
+import java.util.Arrays;
 
 /**
  * @author 邝晓林
@@ -23,22 +23,23 @@ import java.util.*;
 @Import({CommonConfiguration.class, DatabaseConfiguration.class, RedisCacheConfiguration.class})
 public class AppConfig {
 
-    public static void main(String[] args) throws  Exception{
+	public static void main(String[] args) throws Exception {
 
-        AbstractApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+		AbstractApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
 
-        final String examId = "7943ec7c-956c-4cd1-8ada-65e35097aa95";
+		final String examId = "7943ec7c-956c-4cd1-8ada-65e35097aa95";
 //        final String examId = args[0];
 //        final Integer stuType = Integer.valueOf(args[1]);
 //        final Integer rptType = Integer.valueOf(args[2]);
 
-        JyjRptExtService jyjRptExtService = (JyjRptExtService) context.getBean("jyjRptExtService");
+		JyjRptExtService jyjRptExtService = (JyjRptExtService) context.getBean("jyjRptExtService");
 
-        RptTaskQueue<RptTask> rptTaskQueue = jyjRptExtService.getRptTaskQueue(examId, 1, 0, Arrays.asList(new String[]{"all"}));
-        //单机模式
-        JyjRptExtService.MainTaskThread mainTaskThread = new JyjRptExtService.MainTaskThread(examId,examId ,rptTaskQueue);
+		RptTaskQueue<RptTask> rptTaskQueue = jyjRptExtService.getRptTaskQueue(examId, 1, 3, Arrays.asList(new String[]{"all"}));
 
-        mainTaskThread.start();
-    }
+		//单机模式
+		JyjRptExtService.MainTaskThread mainTaskThread = new JyjRptExtService.MainTaskThread(examId, examId, rptTaskQueue);
+
+		mainTaskThread.start();
+	}
 
 }

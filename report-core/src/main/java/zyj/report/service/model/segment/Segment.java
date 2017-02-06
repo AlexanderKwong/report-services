@@ -6,7 +6,6 @@ import zyj.report.common.util.CollectionsUtil;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 
 /**
  * Created by CXinZhi on 2017/1/11.
@@ -84,9 +83,13 @@ public class Segment {
 	 */
 	public void doSegment(List<Map<String, Object>> objectMap, String key) {
 		objectMap.forEach(model -> {
-			ScoreSegment segment = SegmentFactor.getInstance().creator(enmSegmentType.getCode());
-			Integer score = segment.doSegment(enmSegmentType, Float.parseFloat(model.get(key).toString()));
-			scoreSet.put(score-1, scoreSet.ceilingEntry(score-1).getValue() + 1);
+			try {
+				ScoreSegment segment = SegmentFactor.getInstance().creator(enmSegmentType.getCode());
+				Integer score = segment.doSegment(enmSegmentType, Float.parseFloat(model.get(key).toString()));
+				scoreSet.put(score - 1, scoreSet.ceilingEntry(score - 1).getValue() + 1);
+			} catch (Exception ex) {
+				throw ex;
+			}
 		});
 	}
 
@@ -125,9 +128,10 @@ public class Segment {
 	}
 
 	/**
-	 *  横向转置的分组统计矩阵，结果每一行是一个分段的频数 累计 统计，Map中多个列以partitionKey串接 为Key
-	 * @param objectMap 数据集
-	 * @param key 成绩所在列名
+	 * 横向转置的分组统计矩阵，结果每一行是一个分段的频数 累计 统计，Map中多个列以partitionKey串接 为Key
+	 *
+	 * @param objectMap     数据集
+	 * @param key           成绩所在列名
 	 * @param partitionKeys 分组根据列名
 	 * @return
 	 */
@@ -135,20 +139,53 @@ public class Segment {
 
 		Map<String, List<Map<String, Object>>> partitions = CollectionsUtil.partitionBy(objectMap, partitionKeys);
 
-		Map<String,Map<String,Object>> resultMap = new HashMap<>();
+		Map<String, Map<String, Object>> resultMap = new HashMap<>();
 
-		partitions.entrySet().forEach( entry ->{
+		partitions.entrySet().forEach(entry -> {
 			String partitionKey = entry.getKey();
 			this.initSegmentList();
-			List<Map<String, Object>> partitionResult = this.getStepSegment(entry.getValue(),key);
-			partitionResult.forEach(m->{
+			List<Map<String, Object>> partitionResult = this.getStepSegment(entry.getValue(), key);
+			partitionResult.forEach(m -> {
 				resultMap.computeIfAbsent(m.get("SCORE_SEG").toString(), (value1) -> {
 					HashMap hm = new HashMap();
 					hm.put("SCORE_SEG", value1);
 //					hm.put("index",value1.split(",")[0].substring(1));
 					return hm;
 				});
-				resultMap.get(m.get("SCORE_SEG")).put(partitionKey,m.get("FREQUENCY"));
+				resultMap.get(m.get("SCORE_SEG")).put(partitionKey, m.get("FREQUENCY"));
+			});
+		});
+		List<Map<String, Object>> result = new ArrayList<>(resultMap.values());
+		CollectionsUtil.orderByIntValueDesc(result, "index");
+
+		return result;
+	}
+
+	public List<Map<String, Object>> getPartitionStepSegmentVertical2(List<Map<String, Object>> objectMap, String key, String[] partitionKeys, String[] newKeys) {
+
+		Map<String, List<Map<String, Object>>> partitions = CollectionsUtil.partitionBy(objectMap, partitionKeys);
+
+		Map<String, Map<String, Object>> resultMap = new ConcurrentHashMap<>();
+
+		partitions.entrySet().stream().forEach(entry -> {
+
+			String partitionKey = entry.getKey();
+
+			this.initSegmentList();
+			List<Map<String, Object>> partitionResult = this.getStepSegment(entry.getValue(), key);
+
+			partitionResult.forEach(m -> {
+				resultMap.computeIfAbsent(m.get("SCORE_SEG").toString(), (value1) -> {
+					HashMap hm = new HashMap();
+					hm.put("SCORE_SEG", value1);
+					hm.put("index", value1.split(",")[0].substring(1));
+					return hm;
+				});
+
+				for (int i = 0; i < newKeys.length; i++) {
+					resultMap.get(m.get("SCORE_SEG")).put(partitionKey + "_" + newKeys[i], m.get(newKeys[i]));
+				}
+
 			});
 		});
 		List<Map<String, Object>> result = new ArrayList<>(resultMap.values());
@@ -157,33 +194,34 @@ public class Segment {
 		return result;
 	}
 
-    /**
-     * 横向转置的分组统计矩阵，结果每一行（Map）是一个分组内 所有分段的频数累计 统计，partitionKey 以及 各个分段的 SCORE_SEG 的值 作为map的key
-     * @param objectMap
-     * @param key
-     * @param partitionKeys
-     * @return
-     */
+	/**
+	 * 横向转置的分组统计矩阵，结果每一行（Map）是一个分组内 所有分段的频数累计 统计，partitionKey 以及 各个分段的 SCORE_SEG 的值 作为map的key
+	 *
+	 * @param objectMap
+	 * @param key
+	 * @param partitionKeys
+	 * @return
+	 */
 	public List<Map<String, Object>> getPartitionStepSegmentAccTransverse(List<Map<String, Object>> objectMap, String key, String[] partitionKeys) {
 
 		Map<String, List<Map<String, Object>>> partitions = CollectionsUtil.partitionBy(objectMap, partitionKeys);
 
 //		Map<String,Map<String,Object>> resultMap = new HashMap<>();
-		List<Map<String,Object>> resultList = new ArrayList<>();
+		List<Map<String, Object>> resultList = new ArrayList<>();
 		StringBuffer sb = new StringBuffer();
-		for (String k : partitionKeys){
-			sb.append(k) ;
+		for (String k : partitionKeys) {
+			sb.append(k);
 		}
 		final String newKey = sb.toString();
 
-		partitions.entrySet().stream().forEach( entry ->{
+		partitions.entrySet().stream().forEach(entry -> {
 			String partitionKey = entry.getKey();
 			this.initSegmentList();
-			List<Map<String, Object>> partitionResult = this.getStepSegment(entry.getValue(),key);
+			List<Map<String, Object>> partitionResult = this.getStepSegment(entry.getValue(), key);
 			Map<String, Object> row = new HashMap<String, Object>();
-			row.put(newKey,partitionKey );
-			partitionResult.forEach(m->{
-				row.put(m.get("SCORE_SEG").toString(),m.get("ACC_FREQUENCY"));
+			row.put(newKey, partitionKey);
+			partitionResult.forEach(m -> {
+				row.put(m.get("SCORE_SEG").toString(), m.get("ACC_FREQUENCY"));
 			});
 			resultList.add(row);
 		});
@@ -191,33 +229,34 @@ public class Segment {
 		return resultList;
 	}
 
-    /**
-     * 横向转置的分组统计矩阵，结果每一行（Map）是一个分组内 所有分段的频数 统计，partitionKey 以及 各个分段的 SCORE_SEG 的值 作为map的key
-     * @param objectMap
-     * @param key
-     * @param partitionKeys
-     * @return
-     */
+	/**
+	 * 横向转置的分组统计矩阵，结果每一行（Map）是一个分组内 所有分段的频数 统计，partitionKey 以及 各个分段的 SCORE_SEG 的值 作为map的key
+	 *
+	 * @param objectMap
+	 * @param key
+	 * @param partitionKeys
+	 * @return
+	 */
 	public List<Map<String, Object>> getPartitionStepSegmentTransverse(List<Map<String, Object>> objectMap, String key, String[] partitionKeys) {
 
 		Map<String, List<Map<String, Object>>> partitions = CollectionsUtil.partitionBy(objectMap, partitionKeys);
 
 //		Map<String,Map<String,Object>> resultMap = new HashMap<>();
-		List<Map<String,Object>> resultList = new ArrayList<>();
+		List<Map<String, Object>> resultList = new ArrayList<>();
 		StringBuffer sb = new StringBuffer();
-		for (String k : partitionKeys){
-			sb.append(k) ;
+		for (String k : partitionKeys) {
+			sb.append(k);
 		}
 		final String newKey = sb.toString();
 
-		partitions.entrySet().stream().forEach( entry ->{
+		partitions.entrySet().stream().forEach(entry -> {
 			String partitionKey = entry.getKey();
 			this.initSegmentList();
-			List<Map<String, Object>> partitionResult = this.getStepSegment(entry.getValue(),key);
+			List<Map<String, Object>> partitionResult = this.getStepSegment(entry.getValue(), key);
 			Map<String, Object> row = new HashMap<String, Object>();
-			row.put(newKey,partitionKey );
-			partitionResult.forEach(m->{
-				row.put(m.get("SCORE_SEG").toString(),m.get("FREQUENCY"));
+			row.put(newKey, partitionKey);
+			partitionResult.forEach(m -> {
+				row.put(m.get("SCORE_SEG").toString(), m.get("FREQUENCY"));
 			});
 			resultList.add(row);
 		});
@@ -225,10 +264,11 @@ public class Segment {
 		return resultList;
 	}
 
-    /**
-     * 产生对应步长的分数段
-     * @return
-     */
+	/**
+	 * 产生对应步长的分数段
+	 *
+	 * @return
+	 */
 	public List<String> generateSegment() {
 		if (segmentNames == null) {
 
@@ -259,6 +299,7 @@ public class Segment {
 		}
 		return segmentNames;
 	}
+
 	/**
 	 * 进行分段计算
 	 *
@@ -270,17 +311,17 @@ public class Segment {
 
 		doSegment(objectMap, key);
 
-		if (segmentNames == null || segmentNames.isEmpty())  generateSegment();
+		if (segmentNames == null || segmentNames.isEmpty()) generateSegment();
 
 		List<Map<String, Object>> stepSegment = new ArrayList<>();
 
 		Integer total = 0;
 		Integer accTotal = 0;
 
-		for (String s : segmentNames)  {
-			String[] fromTo = s.substring(1,s.length()-1).split(",");
-			Integer from = segmentNames.indexOf(s) == 0 ? Integer.parseInt(fromTo[1]):Integer.parseInt(fromTo[1])-1;
-			Integer to = Integer.parseInt(fromTo[0]) -1  ;
+		for (String s : segmentNames) {
+			String[] fromTo = s.substring(1, s.length() - 1).split(",");
+			Integer from = segmentNames.indexOf(s) == 0 ? Integer.parseInt(fromTo[1]) : Integer.parseInt(fromTo[1]) - 1;
+			Integer to = Integer.parseInt(fromTo[0]) - 1;
 
 			SortedMap<Integer, Integer> subMap = scoreSet.descendingMap().subMap(from, to);
 			Iterator iterator = subMap.entrySet().iterator();

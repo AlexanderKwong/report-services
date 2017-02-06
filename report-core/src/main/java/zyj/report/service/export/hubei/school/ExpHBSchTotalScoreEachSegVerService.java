@@ -1,4 +1,4 @@
-package zyj.report.service.export.hubei;
+package zyj.report.service.export.hubei.school;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -6,7 +6,10 @@ import org.springframework.stereotype.Service;
 import zyj.report.common.ExportUtil;
 import zyj.report.common.constant.EnmSegmentType;
 import zyj.report.common.constant.EnmSubjectType;
+import zyj.report.common.util.CollectionsUtil;
+import zyj.report.persistence.client.JyjRptExtMapper;
 import zyj.report.persistence.client.RptExpStudetScoreMapper;
+import zyj.report.persistence.client.RptExpSubjectMapper;
 import zyj.report.service.BaseDataService;
 import zyj.report.service.export.BaseRptService;
 import zyj.report.service.model.Excel;
@@ -15,18 +18,22 @@ import zyj.report.service.model.report.RptTemplate;
 import zyj.report.service.model.segment.Segment;
 import zyj.report.service.model.segment.SegmentTemplate;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by CXinZhi on 2017/1/1.
  * <p>
- * 导出 湖北版 总分各分数段人数 服务
+ * 导出 湖北版 总分各分数段人数_横 服务
  */
 @Service
-public class ExpTotalScoreEachSegService extends BaseRptService {
+public class ExpHBSchTotalScoreEachSegVerService extends BaseRptService {
+
+	@Autowired
+	RptExpSubjectMapper rptExpSubjectMapper;
+
+	@Autowired
+	JyjRptExtMapper jyjRptExtMapper;
 
 	@Autowired
 	RptExpStudetScoreMapper rptExpStudetScoreMapper;
@@ -37,7 +44,7 @@ public class ExpTotalScoreEachSegService extends BaseRptService {
 	@Value("${hb.score.10step}")
 	public int step;
 
-	private static String excelName = "总分各分数段人数";
+	private static String excelName = "总分各分数段人数_横";
 
 	@Override
 	public void exportData(Map<String, Object> params) throws Exception {
@@ -70,41 +77,45 @@ public class ExpTotalScoreEachSegService extends BaseRptService {
 
 		List<Sheet> sheets = new ArrayList<>();
 
+		// 查询出当前有多少个班级参与
+		List<Map<String, Object>> classList = baseDataService.getClassesInSchool(p.getExamBatchId(),p.getSchoolId());
+
 		// 添加文科 sheet
-		sheets.add(getSheet(EnmSubjectType.WEN, rptTemplate));
+		sheets.add(getSheet(EnmSubjectType.WEN, rptTemplate, classList));
 
 		// 添加理科 sheet
-		sheets.add(getSheet(EnmSubjectType.LI, rptTemplate));
+		sheets.add(getSheet(EnmSubjectType.LI, rptTemplate, classList));
 
 		return sheets;
 	}
 
+
 	/**
 	 * 加载文理科数据
 	 *
-	 * @param subjectType
+	 * @param type
 	 * @param rptTemplate
 	 * @return
 	 */
-	public Sheet getSheet(EnmSubjectType subjectType, RptTemplate rptTemplate) {
+	public Sheet getSheet(EnmSubjectType type, RptTemplate rptTemplate, List<Map<String, Object>> classList) {
 
-		Sheet sheet = new Sheet(subjectType.getCode() + "", subjectType.getName());
+		Sheet sheet = new Sheet(type.getCode() + "", type.getName());
 
 		Map conditions = new HashMap<String, Object>();
 		conditions.put("exambatchId", p.getExamBatchId());
 		conditions.put("cityCode", p.getCityCode());
 		conditions.put("schoolId", p.getSchoolId());
-		conditions.put("type", subjectType.getCode());
+		conditions.put("type", type.getCode());
 		conditions.put("stuType", p.getStuType());
 
 		//读取源数据
 		List<Map<String, Object>> data = rptExpStudetScoreMapper.findTotalScoreEachSegment(conditions);
 
 		// 加载 字段
-		sheet.getFields().addAll(rptTemplate.createTitle(excelName));
+		sheet.getFields().addAll(rptTemplate.createTitle(excelName, filterClassListByType(classList, type)));
 
 		// 加载 各行的字段的数据
-		sheet.getData().addAll(getSegmentData(data,((SegmentTemplate)rptTemplate).getStep(),EnmSegmentType
+		sheet.getData().addAll(getSegmentData(data, ((SegmentTemplate) rptTemplate).getStep(), EnmSegmentType
 				.ROUNDED));
 
 		return sheet;
@@ -118,11 +129,39 @@ public class ExpTotalScoreEachSegService extends BaseRptService {
 	 */
 	public List<Map<String, Object>> getSegmentData(List<Map<String, Object>> data, Integer step, EnmSegmentType
 			type) {
+
+		//拿到总分
 		Float maxScore = Float.parseFloat(data.get(0).get("ALL_TOTAL").toString());
 
+		//汇总分数段
 		Segment segment = new Segment(step, 0, maxScore, data.size(), type);
 
-		return segment.getStepSegment(data, "ALL_TOTAL");
+		//学校汇总
+		List<Map<String, Object>> result = segment.getStepSegment(data,"ALL_TOTAL");
+
+		List<Map<String, Object>> result2 = segment.getPartitionStepSegmentVertical2(data, "ALL_TOTAL", new String[]{"CLS_ID"},new String[]{"FREQUENCY","ACC_FREQUENCY"});
+		result = CollectionsUtil.leftjoinMapByKey(result, result2, "SCORE_SEG");
+		CollectionsUtil.orderByIntValueDesc(result, "index");
+
+		return result;
+
+	}
+
+	/**
+	 * 对 班级列表进行 文理科目类别进行 过滤
+	 *
+	 * @param classList
+	 * @param type
+	 * @return
+	 */
+	private List<Map<String, Object>> filterClassListByType(List<Map<String, Object>> classList,
+															EnmSubjectType type) {
+		return classList.stream().filter(m -> {
+			if (type.getCode().toString().equals(m.get("CLS_TYPE").toString()))
+				return true;
+			return false;
+
+		}).collect(Collectors.toList());
 	}
 
 

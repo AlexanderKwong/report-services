@@ -29,7 +29,7 @@ public class Sheet {
 	/**
 	 * 字段对应的数据
 	 */
-	private List<Map<String, Object>> datas = new ArrayList<>();
+	private List<Map<String,Object>> datas = new ArrayList<>();
 
 
 	public Integer getFreeze() {

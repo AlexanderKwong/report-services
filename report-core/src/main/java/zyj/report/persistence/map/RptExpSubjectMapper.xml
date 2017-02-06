@@ -31,26 +31,33 @@
 			</foreach>
 		</where>
 	</sql>
+
 	<sql id="Common_Subject_Column_List">
     EXAMBATCH_ID,PAPER_ID,SUBJECT,FULL_SCORE,TAKE_EXAM_NUM,AVG_SCORE,TOP_SCORE,UP_SCORE,LEVEL_A_NUM,LEVEL_B_NUM,LEVEL_C_NUM,LEVEL_D_NUM,LEVEL_E_NUM,LEVEL_GD_NUM,LEVEL_FN_NUM,LEVEL_PS_NUM,LEVEL_FL_NUM,CITY_CODE,SUB_DIFFICULT,OBJ_DIFFICULT,SUB_DIFFENCE,OBJ_DIFFENCE,SUB_RELIABILITY,OBJ_RELIABILITY,SUB_SD,OBJ_SD,SUB_AVG_SCORE,OBJ_AVG_SCORE,STU_SCORE_SD,CANDIDATES_NUM,MODELS
   </sql>
+
 	<sql id="School_Subject_Column_List">
     FULL_SCORE_RATE as FULL_RANK,AVG_SCORE_RANK,BEYOND_AVG_RATE,COMPARE_AVG_RATE,SCH_ID,AREA_ID ,SCH_NAME
   </sql>
+
 	<sql id="Class_Subject_Column_List">
     FULL_RANK,BEYOND_AVG_RATE,AVG_SCH_ORDER,COMPARE_AVG_RATE,SCH_ID,AREA_ID,CLS_ID,CLS_NAME
   </sql>
+
 	<sql id="Area_Subject_Column_List">
     FULL_RANK,AVG_SCORE_RANK,BEYOND_AVG_RATE,COMPARE_AVG_RATE,AREA_ID ,AREA_NAME
   </sql>
+
 	<sql id="City_Subject_Column_List">
 		FULL_RANK,SUB_AVG_SCORE,OBJ_AVG_SCORE,STU_SCORE_SD,STU_SCORE_DIFFICUT,STU_SCORE_RELIABILITY,STU_SCORE_DIFFERENT
 	</sql>
+
 	<select id="findRptExpSubject" resultType="map" parameterType="map">
 		select
 		<include refid="Common_Subject_Column_List"/>
 		<if test="level == 'city'">
-			,<include refid="City_Subject_Column_List"/>
+			,
+			<include refid="City_Subject_Column_List"/>
 			from RPT_EXP_CITY_SUBJECT
 		</if>
 		<if test="level == 'area'">
@@ -736,7 +743,7 @@
 		<if test="scoreList != null">
 			<foreach collection="scoreList" index="index" item="score"
 					 open="" separator="," close=" ">
- 				<!--sum(decode(trunc(sign_total/${score}),0,0,1)) as HE${score} -->
+				<!--sum(decode(trunc(sign_total/${score}),0,0,1)) as HE${score} -->
 				sum(case when sign_total>= replace('${score}','_','.') then 1 end) as HE${score}
 			</foreach>
 		</if>
@@ -998,7 +1005,8 @@ nvl(min(case when order_3 < zf3_num*0.65 and order_3 >=zf3_num*0.3 then zongfen3
 nvl(min(case when order_3 < zf3_num*0.9 and order_3 >=zf3_num*0.65 then zongfen3 end),0) as zf3_c,]]>
 		round(avg(zongfen1),2) as zf1_avg ,round(avg(zongfen2),2) as zf2_avg ,round(avg(zongfen3),2) as
 		zf3_avg,
-		zf1_num,zf2_num,zf3_num <if test="GroupBy=='class'">,cls_id</if>
+		zf1_num,zf2_num,zf3_num
+		<if test="GroupBy=='class'">,cls_id</if>
 		<if test="GroupBy=='school'">,sch_id</if>
 		<if test="GroupBy=='area'">,area_id</if>
 		from(
@@ -1017,13 +1025,20 @@ nvl(min(case when order_3 < zf3_num*0.9 and order_3 >=zf3_num*0.65 then zongfen3
 		and student_type = #{stuType}
 		group by user_id,cls_id,sch_id,area_id
 		)a
-		)group by zf1_num,zf2_num,zf3_num <if test="GroupBy=='class'">,cls_id</if>
+		)group by zf1_num,zf2_num,zf3_num
+		<if test="GroupBy=='class'">,cls_id</if>
 		<if test="GroupBy=='school'">,sch_id</if>
 		<if test="GroupBy=='area'">,area_id</if>
 
 	</select>
 	<select id="qryZSkmrptABCD" resultType="java.util.HashMap">
 		<![CDATA[
+
+
+
+
+
+
 
 select SUBJECT,PAPER_ID,
 nvl(min(case when city_rank < take_exam_num*0.3 then sign_total end ),0) as A ,
@@ -1071,7 +1086,8 @@ group by subject,PAPER_ID
 	concat(to_char(round(sum(case when order_3 >=zf3_num*0.9 then  1 else 0    end)/count(1),4)*100),'%') as zf3_d_RATE, ]]>
 		round(avg(zongfen1),2) as zf1_avg ,round(avg(zongfen2),2) as zf2_avg ,round(avg(zongfen3),2) as
 		zf3_avg,
-		zf1_num,zf2_num,zf3_num<if test="GroupBy=='class'">,cls_id</if>
+		zf1_num,zf2_num,zf3_num
+		<if test="GroupBy=='class'">,cls_id</if>
 		<if test="GroupBy=='school'">,sch_id</if>
 		<if test="GroupBy=='area'">,area_id</if>
 		from(
@@ -1090,7 +1106,8 @@ group by subject,PAPER_ID
 		and student_type = #{stuType}
 		group by user_id ,cls_id,sch_id,area_id
 		)a
-		)group by zf1_num,zf2_num,zf3_num<if test="GroupBy=='class'">,cls_id</if>
+		)group by zf1_num,zf2_num,zf3_num
+		<if test="GroupBy=='class'">,cls_id</if>
 		<if test="GroupBy=='school'">,sch_id</if>
 		<if test="GroupBy=='area'">,area_id</if>
 	</select>

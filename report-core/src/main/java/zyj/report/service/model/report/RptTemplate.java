@@ -3,6 +3,7 @@ package zyj.report.service.model.report;
 import zyj.report.service.model.Field;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by CXinZhi on 2017/1/18.
@@ -17,5 +18,7 @@ public interface RptTemplate {
 	 * @return
 	 */
 	List<Field> createTitle(String excelName);
+
+	List<Field> createTitle(String excelName, List<Map<String, Object>> exTitle);
 
 }

@@ -27,9 +27,9 @@ import java.util.stream.Collectors;
  * @date 2017/1/12
  */
 @Service
-public class ExpClassAvgAndScoresService extends BaseRptService{
+public class ExpPaperStatisticService extends BaseRptService{
 
-    private static String excelName = "均分及各分数段人数";
+    private static String excelName = "试卷整体分析";
 
     @Value("${hubei.subject.score.step}")
     int step;
@@ -119,7 +119,7 @@ public class ExpClassAvgAndScoresService extends BaseRptService{
             String exambatchId = ObjectUtils.toString(m.get("EXAMBATCH_ID"));
             String subject = ObjectUtils.toString(m.get("SUBJECT"));
             String  questionOrder = ObjectUtils.toString(m.get("QUESTION_ORDER"));
-            double takeExamNum = Double.parseDouble(ObjectUtils.toString(m.get("TAKE_EXAM_NUM")));
+//            double takeExamNum = Double.parseDouble(ObjectUtils.toString(m.get("TAKE_EXAM_NUM")));
             String k = exambatchId + subject + questionOrder;
 
             Map<String,Object> item = questionitemtrans.get(k);
@@ -136,7 +136,7 @@ public class ExpClassAvgAndScoresService extends BaseRptService{
                             if (value.equals("0")){
                                 m.put(t1[i], "") ;
                             }else {
-                                m.put(t1[i], zyj.report.common.CalToolUtil.decimalFormat2(Double.parseDouble(value) * 100 / takeExamNum)+"%");
+                                m.put(t1[i], value);
                                 chosen.add(t1[i]);
                             }
                         }

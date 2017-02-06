@@ -13,7 +13,7 @@ import java.util.Map;
  * @Description
  * @date 2017/1/11
  */
-public class ExpClassAvgAndScoresServiceTest extends BaseExportTest{
+public class ExpPaperStatisticServiceTest extends BaseExportTest{
 
     @Before
     public void setUp(){
@@ -22,7 +22,7 @@ public class ExpClassAvgAndScoresServiceTest extends BaseExportTest{
         subject.put("SUBJECT_NAME","生物");
         subject.put("PAPER_ID","045cdafc-e85b-4496-a8fe-faa4363f5314");
         subject.put("TYPE",2);
-        setParmter("expClassAvgAndScoresService",
+        setParmter("expPaperStatisticService",
                 "7943ec7c-956c-4cd1-8ada-65e35097aa95",
                 "130100",
                 subject,

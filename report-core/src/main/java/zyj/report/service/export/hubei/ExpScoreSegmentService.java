@@ -83,11 +83,14 @@ public class ExpScoreSegmentService  extends BaseRptService {
         Map condition = new HashMap(params);
         condition.put("level","city");
         List<Map<String, Object>> citySubject =  rptExpSubjectMapper.findRptExpSubject(condition);
+        if (citySubject.isEmpty()) throw new ReportExportException("没有查到源数据，请核查！");
+
         Float full = Float.parseFloat(citySubject.get(0).get("FULL_SCORE").toString());
 
         String key = params.get("subjectName").toString()+ "_SCORE";
         List<Map<String,Object>> result1 = baseDataService.getStudentSubjectsAndAllscore(params.get("exambatchId").toString(),params.get("schoolId").toString(),params.get("level").toString(),(Integer)params.get("stuType")).
                 stream().filter(m->m.get(key) != null).collect(Collectors.toList());
+        if (result1.isEmpty()) throw new ReportExportException("没有查到源数据，请核查！");
 
         Segment segment = new Segment(step,0,full,result1.size(), EnmSegmentType.ROUNDED);
         List<Map<String, Object>> result = segment.getStepSegment(result1,key);

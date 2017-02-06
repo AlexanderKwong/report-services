@@ -7,7 +7,7 @@ import java.util.Iterator;
  * @Description
  * @date 2017/1/9
  */
-public interface Field {
+public interface Field extends Cloneable{
 
 	String getTitle();
 

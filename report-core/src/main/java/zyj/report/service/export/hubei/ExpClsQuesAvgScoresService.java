@@ -87,6 +87,7 @@ public class ExpClsQuesAvgScoresService extends BaseRptService{
         Map condition = new HashMap(params);
         condition.put("level","classes");
         List<Map<String,Object>> clsQuestions =  rptExpQuestionMapper.findRptExpQuestion(condition);
+        if (clsQuestions.isEmpty()) throw new ReportExportException("没有查到源数据，请核查！");
 
         List<Map<String,Object>> result =  clsQuestions.stream().map(m-> {
             Map<String,Object> row = new HashMap<>();

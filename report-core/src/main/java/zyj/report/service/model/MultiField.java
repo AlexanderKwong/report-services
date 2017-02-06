@@ -44,5 +44,17 @@ public class MultiField implements zyj.report.service.model.Field {
         return new CompositionIterator(fields.iterator());
     }
 
-
+    public MultiField copy(String rename) {
+        MultiField object = null;
+        String tmp = this.title;
+        try {
+            this.title = rename;
+            object = (MultiField)super.clone();
+        } catch (CloneNotSupportedException exception) {
+            System.err.println("MultiField is not Cloneable");
+        }finally {
+            this.title = tmp;
+        }
+        return object;
+    }
 }

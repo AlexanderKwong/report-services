@@ -96,6 +96,7 @@ public class ExpScoreSegmentOfClassesService extends BaseRptService {
         String key = params.get("subjectName").toString()+ "_SCORE";
         List<Map<String,Object>> result1 = baseDataService.getStudentSubjectsAndAllscore(params.get("exambatchId").toString(),params.get("schoolId").toString(),params.get("level").toString(),(Integer)params.get("stuType")).
                 stream().filter(m->m.get(key) != null).collect(Collectors.toList());
+        if (result1.isEmpty()) throw new ReportExportException("没有查到源数据，请核查！");
 
         Segment segment = new Segment(step,0,full,result1.size(), EnmSegmentType.ROUNDED);
         //学校汇总
@@ -103,10 +104,7 @@ public class ExpScoreSegmentOfClassesService extends BaseRptService {
 
         List<Map<String, Object>> result2 = segment.getPartitionStepSegmentVertical(result1,key,new String[]{"CLS_ID"});
         result = CollectionsUtil.leftjoinMapByKey(result, result2,"SCORE_SEG");
-//        CollectionsUtil.orderByIntValueDesc(result, "index");
         CollectionsUtil.orderBySpecifiedValue(result, "SCORE_SEG", segment.generateSegment().toArray());
-//        List<String> segments = segment.generateSegment();
-//        List<Map<String, Object>> result3 = segment.getPartitionStepSegmentTransverse(result1,key,new String[]{"CLS_ID"});
 
         Sheet sheet = new Sheet("",excelName);
         sheet.setFields(fields);

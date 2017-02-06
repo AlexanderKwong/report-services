@@ -17,6 +17,7 @@ import zyj.report.service.model.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author 邝晓林
@@ -27,6 +28,7 @@ import java.util.Map;
 public class ExpStuQuestionScoresService extends BaseRptService{
 
     private static String excelName = "学生每题得分";
+
 
     @Autowired
     RptExpQuestionMapper rptExpQuestionMapper;
@@ -53,7 +55,7 @@ public class ExpStuQuestionScoresService extends BaseRptService{
     /**
      * 初始化 Fields
      */
-    private List<Field> getFields(Map<String, Object> params) {
+    protected List<Field> getFields(Map<String, Object> params) {
 
         List<Field> fields = new ArrayList<>();
 
@@ -61,9 +63,9 @@ public class ExpStuQuestionScoresService extends BaseRptService{
 
         String subject_name = params.get("subjectName").toString();
         //step1:加载固定标题
-        for (String t : new String[]{"考号,SEQUENCE","姓名,NAME","文理科,TYPE_NAME","班级,CLSNAME",subject_name+"分数,SIGN_TOTAL",subject_name+"班名,CLS_RANK",subject_name+"校名,GRD_RANK"}){
+        for (String t : getConfirmedTitle()){
             String[] args = t.split(",");
-            root.add(new SingleField(args[0], args[1]));
+            root.add(new SingleField(String.format(args[0] ,subject_name), String.format(args[1] ,subject_name)));
         }
         //step2: 加载动态标题1
         List<Map> questions = rptExpQuestionMapper.qryClassQuestionScore6(params);
@@ -88,13 +90,22 @@ public class ExpStuQuestionScoresService extends BaseRptService{
      *
      * @param fields
      */
-    private List<Sheet> getSheet(List<Field> fields, Map<String, Object> params) throws ReportExportException {
+    protected List<Sheet> getSheet(List<Field> fields, Map<String, Object> params) throws ReportExportException {
 
         List<Sheet> sheets = new ArrayList<>();
 
-        List<Map<String, Object>> result1 = rptExpStudentSubjectMapper.findRptExpStudentSubject(params);
+//        List<Map<String, Object>> result1 = rptExpStudentSubjectMapper.findRptExpStudentSubject(params);
+        String level = params.get("level").toString();
+        String exambatchId = params.get("exambatchId").toString();
+        Integer stuType = (Integer)params.get("stuType");
 
-        List<Map<String, Object>> result2 = baseDataService.getStudentQuestion(params.get("exambatchId").toString(),params.get("schoolId").toString(),"school",(Integer)params.get("stuType"),params.get("paperId").toString(),params.get("subject").toString());
+        String key = params.get("subjectName").toString()+ "_SCORE";
+        List<Map<String, Object>> result1 = baseDataService.getStudentSubjectsAndAllscore(exambatchId, params.get(level + "Id").toString(), level, stuType)
+            .stream().filter(m->m.get(key) != null).collect(Collectors.toList());
+
+        List<Map<String, Object>> result2 = baseDataService.getStudentQuestion(exambatchId,params.get(level + "Id").toString(),level,stuType,params.get("paperId").toString(),params.get("subject").toString());
+
+        if (result1.isEmpty() || result2.isEmpty()) throw new ReportExportException("没有查到源数据，请核查！");
 
         List<Map<String, Object>> result = CollectionsUtil.leftjoinMapByKey(result1,result2,"USER_ID");
 
@@ -111,6 +122,10 @@ public class ExpStuQuestionScoresService extends BaseRptService{
 
         sheets.add(sheet);
         return sheets;
+    }
+
+    protected  String[]  getConfirmedTitle(){
+        return   new String[]{"考号,SEQUENCE","姓名,NAME","文理科,TYPE_NAME","班级,CLS_NAME","%s分数,%s_SCORE","%s班名,%s_RANK_CLS","%s校名,%s_RANK_SCH","客观题,OBJECTIVE"};
     }
 
 }

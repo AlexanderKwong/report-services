@@ -84,7 +84,8 @@ public class ExpObjectiveAnswerService extends BaseRptService{
 
         List<Sheet> sheets = new ArrayList<>();
 
-        List<Map> result = rptExpQuestionMapper.qryStudentQuestionScore(params);
+        List<Map<String, Object>> result = rptExpQuestionMapper.qryStudentQuestionScore(params);
+        if (result.isEmpty()) throw new ReportExportException("没有查到源数据，请核查！");
 
         Sheet sheet = new Sheet("",excelName);
         sheet.setFields(fields);

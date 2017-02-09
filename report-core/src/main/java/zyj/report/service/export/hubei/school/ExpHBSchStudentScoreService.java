@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 /**
  * Created by CXinZhi on 2017/1/1.
- * <p>
+ * <p()>
  * 导出 湖北版 学生各科成绩和总分（班级） 服务
  */
 @Service
@@ -38,14 +38,14 @@ public class ExpHBSchStudentScoreService extends BaseRptService {
 		super.initParam(params);
 
 		//校验参数,暂不校验cityCode
-		if (p.getExamBatchId() == null || p.getPath() == null || p.getLevel() == null)
+		if (p().getExamBatchId() == null || p().getPath() == null || p().getLevel() == null)
 			return;
 
 		// 初始化 sheet
 		List<Sheet> sheets = getSheet();
 
 		// 初始化 excel
-		Excel excel = new Excel(String.format(excelName, "班级") + ".xls", p.getPath(), sheets);
+		Excel excel = new Excel(String.format(excelName, "班级") + ".xls", p().getPath(), sheets);
 
 		// 导出 excel 文件
 		ExportUtil.createExcel(excel);
@@ -95,17 +95,18 @@ public class ExpHBSchStudentScoreService extends BaseRptService {
 		List<SubjectInfo> subjectList = getSubjectList();
 
 		// 查询出当前有多少个班级参与
-		List<Map<String, Object>> classList = jyjRptExtMapper.qryClassesInfo(p.getExamBatchId());
+		List<Map<String, Object>> classList = baseDataService.getClassesInSchool(p().getExamBatchId(),p()
+				.getSchoolId());
 
 		List<Sheet> sheets = new ArrayList<>();
 
 		Map conditions = new HashMap<String, Object>();
 
 		// 查区内的学生列表
-		conditions.put("exambatchId", p.getExamBatchId());
-		conditions.put("cityCode", p.getCityCode());
+		conditions.put("exambatchId", p().getExamBatchId());
+		conditions.put("cityCode", p().getCityCode());
 		conditions.put("subjectList", subjectList);
-		conditions.put("stuType", p.getStuType());
+		conditions.put("stuType", p().getStuType());
 
 		// 加载 各个班级的 sheet
 		classList.forEach(model -> {
@@ -115,9 +116,9 @@ public class ExpHBSchStudentScoreService extends BaseRptService {
 			sheet.getFields().addAll(getFields(model, String
 					.format(excelName, model.get("CLS_NAME").toString())));
 
-			conditions.put("classesId", p.getClassesId());
-			List<Map<String, Object>> data = baseDataService.getStudentSubjectsAndAllscore(p.getExamBatchId(),
-					model.get("CLS_ID").toString(), p.getLevel(), p.getStuType());
+			conditions.put("classesId", p().getClassesId());
+			List<Map<String, Object>> data = baseDataService.getStudentSubjectsAndAllscore(p().getExamBatchId(),
+					model.get("CLS_ID").toString(), "classes", p().getStuType());
 
 			zyj.report.common.CalToolUtil.sortByIndexValue2(data, "ALL_RANK");
 
@@ -136,16 +137,24 @@ public class ExpHBSchStudentScoreService extends BaseRptService {
 	 */
 	private List<SubjectInfo> getSubjectList() {
 
-		List<Map<String, Object>> subjects_cur = baseDataService.getSubjectByExamid(p.getExamBatchId());
+		try{
+			List<Map<String, Object>> subjects_cur = baseDataService.getSubjectByExamid(p().getExamBatchId());
 
-		//产生查询考试科目列表
-		List<SubjectInfo> subjectList = subjects_cur.stream().map(subject -> new SubjectInfo(subject.get
-				("PAPER_ID").toString(), subject.get("SUBJECT").toString(), subject.get("SUBJECT_NAME").toString(), (Integer) subject.get("TYPE"))).sorted(
-				(subject2, subject1) -> {
-					return zyj.report.common.CalToolUtil.indexOf(zyj.report.common.CalToolUtil.getSubjectOrder(), subject1.getSubject()) - zyj.report.common.CalToolUtil.indexOf(zyj.report.common.CalToolUtil.getSubjectOrder(), subject2.getSubject());
-				}).collect(Collectors.toList());
+			//产生查询考试科目列表
+			List<SubjectInfo> subjectList = subjects_cur.stream().map(subject -> new SubjectInfo(subject.get
+					("PAPER_ID").toString(), subject.get("SUBJECT").toString(), subject.get("SUBJECT_NAME")
+					.toString(), Integer.parseInt(subject.get("TYPE").toString()))).sorted(
+					(subject2, subject1) -> {
+						return zyj.report.common.CalToolUtil.indexOf(zyj.report.common.CalToolUtil.getSubjectOrder(), subject1.getSubject()) - zyj.report.common.CalToolUtil.indexOf(zyj.report.common.CalToolUtil.getSubjectOrder(), subject2.getSubject());
+					}).collect(Collectors.toList());
 
-		return subjectList;
+			return subjectList;
+
+		}
+		catch (Exception e){
+			throw e;
+		}
+
 	}
 
 

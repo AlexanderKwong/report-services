@@ -21,7 +21,7 @@ public interface JyjRptExtMapper {
 	public List qryAreaName(@Param("exambatchId") String exambatchId);
 
 	public List qryClassesInfo(@Param("exambatchId") String exambatchId);
-/*用于缓存基础数据*/
+	/*用于缓存基础数据*/
 
 	public List qryAllSchoolByCity(Map conditions);
 

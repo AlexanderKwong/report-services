@@ -647,13 +647,10 @@ public class RptTaskFactoryImpl implements RptTaskFactory {
 
 
 //			for (Map<String, Object> subInfo : subExcZongFen) {
-//
 //				String cSubPath = String.format("%s/%s/%s", rootPath, "全市报表", subInfo.get("SUBJECT_NAME"));
-//
 //				// 全市报表 -- /科目 总分个分数段
 //				rpttaskseries.add(new RptTaskBase(r, "expCitySubTotalScoreEachSegService", "city",
 //						cSubPath, subInfo, null));
-//
 //			}
 
 			this.add(rpttaskseries);
@@ -680,28 +677,53 @@ public class RptTaskFactoryImpl implements RptTaskFactory {
 			String schoolPath = rootPath + "/学校报表/" + areaName + "/" + schoolName;
 			String multiSubject = rootPath + "/学校报表/" + areaName + "/" + schoolName + "/多科";
 
+
+
 			RptTaskSeries rpttaskseries = new RptTaskSeries(r.getExambatchId(), schoolPath);
 
-			// 学校报表 -- 学生各科成绩和总分
-//			rpttaskseries.add(new RptTaskBase(r, "expStudentScoreService", "classes", multiSubject,
+//			// 学校报表 -- 学生各科成绩和总分
+//			rpttaskseries.add(new RptTaskBase(r, "expHBSchStudentScoreService", "school", multiSubject,
 //					null, schoolId));
-
-			// 学校报表 -- 总分各分数段人数_横
+//
+//			// 学校报表 -- 总分各分数段人数_横
 //			rpttaskseries.add(new RptTaskBase(r, "expHBSchTotalScoreEachSegVerService", "school",
 //					multiSubject, null, schoolId));
-
+//
+//			// 学校报表 -- 总分各分数段人数_竖
 //			rpttaskseries.add(new RptTaskBase(r, "expHBSchTotalScoreSegmentHorService", "school",
 //					multiSubject, null, schoolId));
-
-//			rpttaskseries.add(new RptTaskBase(r, "expHBSchAllScoreRankService", "school",
+//
+//			// 学校报表 -- 总分排名服务 （不包含科目名次）
+//			rpttaskseries.add(new RptTaskBase(r, "expHBSchTotalScoreRankService", "school",
+//					multiSubject, null, schoolId));
+//
+//			// 学校报表 -- 总分排名服务（包含科目名次）
+//			rpttaskseries.add(new RptTaskBase(r, "expHBSchTotalScoreRankHaveSubService", "school",
 //					multiSubject, null, schoolId));
 
-			rpttaskseries.add(new RptTaskBase(r, "expHBSchAllScoreRankHaveSubService", "school",
-					multiSubject, null, schoolId));
 
-			// 学校报表 -- 总分各分数段人数
-//			rpttaskseries.add(new RptTaskBase(r, "expTotalScoreEachSegService", "school", multiSubject,
+
+//			// 学校报表 -- 总分各分数段人数
+//			rpttaskseries.add(new RptTaskBase(r, "expHBSchTotalScoreEachSegService", "school", multiSubject,
 //					null, schoolId));
+
+
+			List<Map<String, Object>> subExcZongFen = r.getSubjectList().stream().filter(e -> {
+				if (e.get("SUBJECT_NAME").toString().equals("总分"))
+					return false;
+				return true;
+			}).collect(Collectors.toList());
+
+
+			for(Map<String,Object> subObj : subExcZongFen)
+			{
+				// 学校报表 -- 每题得分情况（含各班）
+				rpttaskseries.add(new RptTaskBase(r, "expHBSchEachQuestionScoreService", "school",
+						schoolPath+"/"+subObj.get("SUBJECT_NAME"), subObj, schoolId));
+
+				break;
+			}
+
 
 			this.add(rpttaskseries);
 			return true;

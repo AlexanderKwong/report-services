@@ -27,7 +27,10 @@ public class AppConfig {
 
 		AbstractApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
 
-		final String examId = "7943ec7c-956c-4cd1-8ada-65e35097aa95";
+//		final String examId = "7943ec7c-956c-4cd1-8ada-65e35097aa95";
+
+		final String examId = "386840d9-bf0c-4086-a762-5ca129521950";
+
 //        final String examId = args[0];
 //        final Integer stuType = Integer.valueOf(args[1]);
 //        final Integer rptType = Integer.valueOf(args[2]);

@@ -19,7 +19,7 @@ import java.util.Map;
 
 /**
  * Created by CXinZhi on 2017/1/17.
- * <p>
+ * <p()>
  * 市级报表--总分个分数段
  */
 @Service
@@ -40,7 +40,7 @@ public class ExpHBCityTotalScoreEachSegService extends ExpHBSchTotalScoreEachSeg
 		super.initParam(params);
 
 		//校验参数,暂不校验cityCode
-		if (p.getExamBatchId() == null || p.getPath() == null || p.getCityCode() == null)
+		if (p().getExamBatchId() == null || p().getPath() == null || p().getCityCode() == null)
 			return;
 
 		RptTemplate rptTemplate = new SegmentTemplate(step);
@@ -49,7 +49,7 @@ public class ExpHBCityTotalScoreEachSegService extends ExpHBSchTotalScoreEachSeg
 		List<Sheet> sheets = getSheets(rptTemplate);
 
 		// 初始化 excel
-		Excel excel = new Excel(excelName + ".xls", p.getPath(), sheets);
+		Excel excel = new Excel(excelName + ".xls", p().getPath(), sheets);
 
 		// 导出 excel 文件
 		ExportUtil.createExcel(excel);
@@ -78,13 +78,13 @@ public class ExpHBCityTotalScoreEachSegService extends ExpHBSchTotalScoreEachSeg
 	 */
 	public Sheet getSheet(RptTemplate rptTemplate) {
 
-		Sheet sheet = new Sheet(p.getSubject(),p.getSubjectName());
+		Sheet sheet = new Sheet(p().getSubject(),p().getSubjectName());
 		Map conditions = new HashMap<String, Object>();
 
-		conditions.put("exambatchId", p.getExamBatchId());
-		conditions.put("cityCode", p.getCityCode());
-		conditions.put("subject", p.getSubject());
-		conditions.put("stuType", p.getStuType());
+		conditions.put("exambatchId", p().getExamBatchId());
+		conditions.put("cityCode", p().getCityCode());
+		conditions.put("subject", p().getSubject());
+		conditions.put("stuType", p().getStuType());
 
 		//读取源数据
 		List<Map<String, Object>> data = rptExpStudetScoreMapper.findSubTotalScoreEachSegment(conditions);

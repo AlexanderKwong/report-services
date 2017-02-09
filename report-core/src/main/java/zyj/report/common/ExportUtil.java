@@ -17,10 +17,7 @@ import org.slf4j.LoggerFactory;
 import zyj.report.common.excel.file.impl.ModelToExcelUtil;
 import zyj.report.exception.report.ReportExportException;
 import zyj.report.service.export.BaseRptService;
-import zyj.report.service.model.CompositionIterator;
-import zyj.report.service.model.Field;
-import zyj.report.service.model.Sheet;
-import zyj.report.service.model.SingleField;
+import zyj.report.service.model.*;
 
 import java.io.File;
 import java.util.*;
@@ -513,7 +510,7 @@ public class ExportUtil {
 			int column = 0;
 			int row = 0;
 			int sameRoot = 1;//有共同的根: 0 ;没有: 1
-			String [][] tmp = new String[20][255];//xls列数无法超过255列
+			String[][] tmp = new String[20][255];//xls列数无法超过255列
 			List<int[]> notBlank = new ArrayList<>();
 
 			if (fields.size() <= 0) return;
@@ -523,36 +520,35 @@ public class ExportUtil {
 				Field field = fields.get(0);
 				tmp[row][column] = field.getTitle();
 				iterator = field.createIterator();
-			}
-			else iterator = new CompositionIterator(fields.iterator());
+			} else iterator = new CompositionIterator(fields.iterator());
 
-			while(iterator.hasNext()){
+			while (iterator.hasNext()) {
 
-				int rowIndex = ((CompositionIterator)iterator).getLevel()-sameRoot;
+				int rowIndex = ((CompositionIterator) iterator).getLevel() - sameRoot;
 				int columnIndex = column;
 				notBlank.add(new int[]{rowIndex, columnIndex});
 
-				row = Math.max(rowIndex,row);
+				row = Math.max(rowIndex, row);
 
 				Field field = iterator.next();
 
 				tmp[rowIndex][columnIndex] = field.getTitle();
 				if (field instanceof SingleField) {
-					singleFields.add((SingleField)field);
+					singleFields.add((SingleField) field);
 					if (field.getTitle().length() > 5) {
 						//根据内容自动设置列宽
 						cellView.setSize(field.getTitle().length() * 512);
 						sheet.setColumnView(columnIndex, cellView);
 					}
-					column ++ ;
+					column++;
 				}
 			}
-			row ++;
+			row++;
 
 			//格式化表头
-			String [][] head = new String[row][column];
-			head = Arrays.copyOf( tmp, row );
-			for (int i = 0 ; i< head .length; i++) head[i] = Arrays.copyOf( head[i], column );
+			String[][] head = new String[row][column];
+			head = Arrays.copyOf(tmp, row);
+			for (int i = 0; i < head.length; i++) head[i] = Arrays.copyOf(head[i], column);
 
 			//设置冻结行数
 			sheet.getSettings().setVerticalFreeze(row);
@@ -560,7 +556,7 @@ public class ExportUtil {
 			//设置表头
 			for (; rowNum < head.length; rowNum++) {
 				String[] headRow = head[rowNum];
-				for (int c = 0; c < headRow.length ; c++){
+				for (int c = 0; c < headRow.length; c++) {
 					WritableCell label = new Label(c, rowNum, toStr(headRow[c]), titlecf);
 					sheet.addCell(label);
 				}
@@ -579,30 +575,30 @@ public class ExportUtil {
 			}
 
 			//纵向合并
-			int [] previousNotBlank = null;
-			for (int[] nb : notBlank){
+			int[] previousNotBlank = null;
+			for (int[] nb : notBlank) {
 				//纵向合并情况 ： 前一个非空元素 不在当前列(即前一个是叶子节点)，则合并前一个元素所在坐标 到列末
-				if (previousNotBlank != null && previousNotBlank[1] != nb[1] ){
-					sheet.mergeCells(previousNotBlank[1], previousNotBlank[0], previousNotBlank[1], row -1);
+				if (previousNotBlank != null && previousNotBlank[1] != nb[1]) {
+					sheet.mergeCells(previousNotBlank[1], previousNotBlank[0], previousNotBlank[1], row - 1);
 				}
 				previousNotBlank = nb;
 			}
 			//默认最后一个元素一定是叶子节点
-			sheet.mergeCells(previousNotBlank[1], previousNotBlank[0], previousNotBlank[1], row -1);
+			sheet.mergeCells(previousNotBlank[1], previousNotBlank[0], previousNotBlank[1], row - 1);
 			//横向合并
-			notBlank.sort((arr1, arr2)->{
+			notBlank.sort((arr1, arr2) -> {
 				if (arr1[0] != arr2[0]) return arr1[0] - arr2[0];
 				else return arr1[1] - arr2[1];
 			});
 			previousNotBlank = null;
-			for (int[] nb : notBlank){
+			for (int[] nb : notBlank) {
 				//横向合并情况1 ： 前一个非空元素 不在当前行，则合并前一个元素所在坐标 到行末
-				if (previousNotBlank != null && previousNotBlank[0] != nb[0] ){
-					sheet.mergeCells(previousNotBlank[1], previousNotBlank[0], column-1, previousNotBlank[0]);
+				if (previousNotBlank != null && previousNotBlank[0] != nb[0]) {
+					sheet.mergeCells(previousNotBlank[1], previousNotBlank[0], column - 1, previousNotBlank[0]);
 				}
 				//横向合并情况2 ： 前一个非空元素 在当前行 且距离当前格大于1，则合并前一个元素所在坐标 到 当前坐标的前一格
-				if (previousNotBlank != null && previousNotBlank[0] == nb[0] && nb[1] - previousNotBlank[1] > 1){
-					sheet.mergeCells(previousNotBlank[1], previousNotBlank[0], nb[1] -1, previousNotBlank[0]);
+				if (previousNotBlank != null && previousNotBlank[0] == nb[0] && nb[1] - previousNotBlank[1] > 1) {
+					sheet.mergeCells(previousNotBlank[1], previousNotBlank[0], nb[1] - 1, previousNotBlank[0]);
 				}
 				previousNotBlank = nb;
 			}//最后一个默认是最右边
@@ -614,7 +610,7 @@ public class ExportUtil {
 				for (int i = 0; i < singleFields.size(); i++) {
 
 					WritableCell label = createCell(i, rowNum, bean.get(singleFields.get(i).getMark()) == null ? "" :
-							bean.get(singleFields.get(i).getMark()).toString(),cellcf);
+							bean.get(singleFields.get(i).getMark()).toString(), cellcf);
 					sheet.addCell(label);
 				}
 				rowNum++;
@@ -625,5 +621,176 @@ public class ExportUtil {
 		book.close();
 	}
 
+
+	public static void createExcel(zyj.report.service.model.MultiExcel excel) throws Exception {
+
+		// 默认多少 叠加的 sheet 之间的空行数
+		int splictNum = 2;
+
+		// 生成XLS报表
+		WritableFont titlefont = new WritableFont(WritableFont.createFont("宋体"), 10);
+		WritableCellFormat titlecf = new WritableCellFormat(titlefont);
+
+		titlecf.setAlignment(Alignment.CENTRE);
+		titlecf.setBackground(Colour.GRAY_25);
+		titlecf.setBorder(Border.ALL, BorderLineStyle.THIN);
+		titlecf.setVerticalAlignment(VerticalAlignment.CENTRE);
+
+		WritableFont headfont = new WritableFont(WritableFont.createFont("宋体"), 16);
+		WritableCellFormat headcf = new WritableCellFormat(titlecf);
+
+		headcf.setFont(headfont);
+
+		String fileName = excel.getPath() + excel.getName();
+
+		WritableCellFormat cellcf = new WritableCellFormat(titlefont);
+		cellcf.setWrap(true);
+		cellcf.setAlignment(Alignment.CENTRE);
+
+		// 创建报表文件
+		WritableWorkbook book = Workbook.createWorkbook(new File(fileName));
+
+		CellView cellView = new CellView();
+
+		// 循环报表 Sheet
+		for (MultiSheet multiSheet : excel.getSheets()) {
+
+			// 创建报表页
+			WritableSheet sheet = book.createSheet(multiSheet.getName(), 0);
+
+			// 设置标题
+			int rowNum = 0;
+
+			for (Sheet model : multiSheet.getSheets()) {
+
+				List<Field> fields = model.getFields();
+				List<SingleField> singleFields = new ArrayList<>();
+				Iterator<Field> iterator = null;
+
+				int row = 0;
+				int column = 0;
+
+				int sameRoot = 1;//有共同的根: 0 ;没有: 1
+
+				//xls 限制 标题行数最大为 20 行，列数无法超过255列
+				String[][] tmp = new String[20][255];
+				List<int[]> notBlank = new ArrayList<>();
+
+				// 加载 sheet 标题内容
+				if (fields.size() <= 0)
+					return;
+				else if (fields.size() == 1) {
+					sameRoot = 0;
+					notBlank.add(new int[]{row, column});
+					Field field = fields.get(0);
+					tmp[row][column] = field.getTitle();
+					iterator = field.createIterator();
+				} else
+					iterator = new CompositionIterator(fields.iterator());
+
+				// 迭代进去标题字段， 加载不为空的
+				while (iterator.hasNext()) {
+
+					int rowIndex = ((CompositionIterator) iterator).getLevel() - sameRoot;
+					int columnIndex = column;
+
+					// 加载非空的行列序号
+					notBlank.add(new int[]{rowIndex, columnIndex});
+
+					row = Math.max(rowIndex, row);
+					Field field = iterator.next();
+
+					tmp[rowIndex][columnIndex] = field.getTitle();
+					if (field instanceof SingleField) {
+						singleFields.add((SingleField) field);
+
+						// 超过5个中文字 设置按内容自增宽度
+						if (field.getTitle().length() > 5) {
+
+							//根据内容自动设置列宽
+							cellView.setSize(field.getTitle().length() * 512);
+
+							sheet.setColumnView(columnIndex, cellView);
+						}
+						column++;
+					}
+				}
+				row++;
+
+				//格式化表头
+				String[][] head = new String[row][column];
+				head = Arrays.copyOf(tmp, row);
+				for (int i = 0; i < head.length; i++) head[i] = Arrays.copyOf(head[i], column);
+
+				//设置表头
+				for (int rowHeadNum = 0; rowHeadNum < head.length; rowHeadNum++) {
+					String[] headRow = head[rowHeadNum];
+					for (int c = 0; c < headRow.length; c++) {
+						WritableCell label = new Label(c, rowNum, toStr(headRow[c]), titlecf);
+						sheet.addCell(label);
+					}
+					rowNum++;
+				}
+
+				//纵向合并
+				int[] previousNotBlank = null;
+				for (int[] nb : notBlank) {
+					//纵向合并情况 ： 前一个非空元素 不在当前列(即前一个是叶子节点)，则合并前一个元素所在坐标 到列末
+					if (previousNotBlank != null && previousNotBlank[1] != nb[1]) {
+						sheet.mergeCells(previousNotBlank[1], previousNotBlank[0] + rowNum - splictNum,
+								previousNotBlank[1], row + rowNum - splictNum- 1);
+					}
+					previousNotBlank = nb;
+				}
+
+				//默认最后一个元素一定是叶子节点
+				sheet.mergeCells(previousNotBlank[1], previousNotBlank[0] + rowNum - splictNum, previousNotBlank[1], row + rowNum - splictNum- 1);
+
+				// 排序
+				notBlank.sort((arr1, arr2) -> {
+					if (arr1[0] != arr2[0])
+						return arr1[0] - arr2[0];
+					else
+						return arr1[1] - arr2[1];
+				});
+
+				//横向合并
+				previousNotBlank = null;
+				for (int[] nb : notBlank) {
+
+					//横向合并情况1 ： 前一个非空元素 不在当前行，则合并前一个元素所在坐标 到行末
+					if (previousNotBlank != null && previousNotBlank[0] != nb[0]) {
+						sheet.mergeCells(previousNotBlank[1], previousNotBlank[0] + rowNum - splictNum, column - 1,
+								previousNotBlank[0]+ rowNum - splictNum);
+					}
+
+					//横向合并情况2 ： 前一个非空元素 在当前行 且距离当前格大于1，则合并前一个元素所在坐标 到 当前坐标的前一格
+					if (previousNotBlank != null && previousNotBlank[0] == nb[0] && nb[1] - previousNotBlank[1] > 1) {
+						sheet.mergeCells(previousNotBlank[1], previousNotBlank[0] + rowNum - splictNum, nb[1] - 1,
+								previousNotBlank[0]+ rowNum - splictNum);
+					}
+					previousNotBlank = nb;
+
+				}//最后一个默认是最右边
+
+				//填充数据
+				for (int n = 0; n < model.getData().size(); n++) {
+
+					Map bean = model.getData().get(n);
+					for (int i = 0; i < singleFields.size(); i++) {
+
+						WritableCell label = createCell(i, rowNum, bean.get(singleFields.get(i).getMark()) == null ? "" :
+								bean.get(singleFields.get(i).getMark()).toString(), cellcf);
+						sheet.addCell(label);
+					}
+					rowNum++;
+				}
+
+				rowNum += splictNum;
+			}
+		}
+		book.write();
+		book.close();
+	}
 }
 

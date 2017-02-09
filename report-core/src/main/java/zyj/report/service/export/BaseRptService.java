@@ -13,9 +13,7 @@ import java.util.Map;
 public class BaseRptService {
 
 	private Logger logger = LoggerFactory.getLogger(BaseRptService.class);
-
-	public RptParam p;
-
+	
 	private static String[][] grades = new String[][]{{"x1", "小学1年级"},
 			{"x2", "小学2年级"}, {"x3", "小学3年级"}, {"x4", "小学4年级"},
 			{"x5", "小学5年级"}, {"x6", "小学6年级"}, {"c1", "初中1年级"},
@@ -245,11 +243,14 @@ public class BaseRptService {
 	}
 
 	public void initParam(Map<String, Object> param) {
-		this.p = threadLocal.get();
-		this.p.initParam(param);
+		paramLocal.get().initParam(param);
 	}
 
-	private static ThreadLocal<RptParam> threadLocal = new ThreadLocal<RptParam>() {
+	public static RptParam p() {
+		return paramLocal.get();
+	}
+
+	private static ThreadLocal<RptParam> paramLocal = new ThreadLocal<RptParam>() {
 		@Override
 		protected RptParam initialValue() {
 			return new RptParam();

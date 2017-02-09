@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 /**
  * Created by CXinZhi on 2017-01-23.
- * <p>
+ * <p()>
  * 导出 湖北版 总分各分数段人数_竖（班级） 服务
  */
 @Service
@@ -73,8 +73,8 @@ public class ExpHBSchTotalScoreSegmentHorService extends BaseRptService {
 		}
 
 		Map<String, Object> params = new HashMap<>();
-		params.put("exambatchId",p.getExamBatchId());
-		params.put("schoolId",p.getSchoolId());
+		params.put("exambatchId",p().getExamBatchId());
+		params.put("schoolId",p().getSchoolId());
 		params.put("type",type.getCode());
 
 
@@ -113,11 +113,21 @@ public class ExpHBSchTotalScoreSegmentHorService extends BaseRptService {
 	private List<Sheet> getSheets() throws ReportExportException {
 		List<Sheet> sheets = new ArrayList<>();
 
-		// 文科
-		sheets.add(getSheet(EnmSubjectType.WEN));
 
-		// 理科
-		sheets.add(getSheet(EnmSubjectType.LI));
+		List<Map<String, Object>> subjects = baseDataService.getSubjectByExamid(p().getExamBatchId());
+
+		if (EnmSubjectType.ALL.getCode() == Integer.parseInt(subjects.get(0).get("TYPE").toString())) {
+			sheets.add(getSheet(EnmSubjectType.ALL));
+		} else {
+			// 文科
+			sheets.add(getSheet(EnmSubjectType.WEN));
+
+			// 理科
+			sheets.add(getSheet(EnmSubjectType.LI));
+		}
+
+
+
 
 		return sheets;
 
@@ -135,8 +145,8 @@ public class ExpHBSchTotalScoreSegmentHorService extends BaseRptService {
 		sheet.setFields((List<Field>)data.get("fields"));
 
 		Map<String, Object> params = new HashMap<>();
-		params.put("exambatchId",p.getExamBatchId());
-		params.put("schoolId",p.getSchoolId());
+		params.put("exambatchId",p().getExamBatchId());
+		params.put("schoolId",p().getSchoolId());
 		params.put("type",type.getCode());
 
 		//数据集1
@@ -145,7 +155,7 @@ public class ExpHBSchTotalScoreSegmentHorService extends BaseRptService {
 		//数据集2
 		Segment segment = (Segment) data.get("segment");
 
-		List<Map<String, Object>> result2 = baseDataService.getStudentSubjectsAndAllscore(p.getExamBatchId(), p.getSchoolId(), p.getLevel(),p.getStuType()).stream().filter(m-> type.getCode()== Integer.parseInt(m.get("TYPE").toString())).collect(Collectors
+		List<Map<String, Object>> result2 = baseDataService.getStudentSubjectsAndAllscore(p().getExamBatchId(), p().getSchoolId(), p().getLevel(),p().getStuType()).stream().filter(m-> type.getCode()== Integer.parseInt(m.get("TYPE").toString())).collect(Collectors
 				.toList());
 
 		List<Map<String, Object>> result3 = segment.getPartitionStepSegmentAccTransverse(result2, "ALL_SCORE",

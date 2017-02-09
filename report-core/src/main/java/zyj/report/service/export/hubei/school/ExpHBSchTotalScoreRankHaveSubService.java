@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  *
  */
 @Service
-public class ExpHBSchAllScoreRankHaveSubService extends BaseRptService {
+public class ExpHBSchTotalScoreRankHaveSubService extends BaseRptService {
 
 	private static String excelName = "总分排名（%s)";
 
@@ -35,14 +35,14 @@ public class ExpHBSchAllScoreRankHaveSubService extends BaseRptService {
 		super.initParam(parmter);
 
 		//校验参数,暂不校验cityCode
-		if (p.getExamBatchId() == null || p.getPath() == null || p.getLevel() == null)
+		if (p().getExamBatchId() == null || p().getPath() == null || p().getLevel() == null)
 			return;
 
 		// 初始化 sheet
 		List<Sheet> sheets = getSheets();
 
 		// 初始化 excel
-		Excel excel = new Excel(String.format(excelName, "含各科名次") + ".xls", p.getPath(), sheets);
+		Excel excel = new Excel(String.format(excelName, "含各科名次") + ".xls", p().getPath(), sheets);
 
 		// 导出 excel 文件
 		ExportUtil.createExcel(excel);
@@ -58,9 +58,16 @@ public class ExpHBSchAllScoreRankHaveSubService extends BaseRptService {
 
 		List<Sheet> sheets = new ArrayList<>();
 
-		sheets.add(getSheet(EnmSubjectType.LI));
+		List<Map<String, Object>> subjects = baseDataService.getSubjectByExamid(p().getExamBatchId());
+		if (EnmSubjectType.ALL.getCode() == Integer.parseInt(subjects.get(0).get("TYPE").toString())) {
+			sheets.add(getSheet(EnmSubjectType.ALL));
+		} else {
 
-		sheets.add(getSheet(EnmSubjectType.WEN));
+			sheets.add(getSheet(EnmSubjectType.LI));
+			sheets.add(getSheet(EnmSubjectType.WEN));
+		}
+
+
 
 		return sheets;
 	}
@@ -77,8 +84,11 @@ public class ExpHBSchAllScoreRankHaveSubService extends BaseRptService {
 
 		sheet.setFields(getFields(type));
 
-		List<Map<String, Object>> data = baseDataService.getStudentSubjectsAndAllscore(p.getExamBatchId(),
-				p.getSchoolId(), p.getLevel(), p.getStuType()).stream().filter(m->Integer.parseInt(m.get
+		List<Map<String, Object>> data2 = baseDataService.getStudentSubjectsAndAllscore(p().getExamBatchId(),
+				p().getSchoolId(), p().getLevel(), p().getStuType()).stream().collect(Collectors.toList());
+
+		List<Map<String, Object>> data = baseDataService.getStudentSubjectsAndAllscore(p().getExamBatchId(),
+				p().getSchoolId(), p().getLevel(), p().getStuType()).stream().filter(m->Integer.parseInt(m.get
 				("TYPE").toString())==type.getCode()).collect(Collectors.toList());
 
 		zyj.report.common.CalToolUtil.sortByIndexValue2(data, "ALL_RANK");
@@ -135,19 +145,23 @@ public class ExpHBSchAllScoreRankHaveSubService extends BaseRptService {
 	 */
 	private List<SubjectInfo> getSubjectList(EnmSubjectType type) {
 
-		List<Map<String, Object>> subjects_cur = baseDataService.getSubjectByExamid(p.getExamBatchId());
+		try {
+			List<Map<String, Object>> subjects_cur = baseDataService.getSubjectByExamid(p().getExamBatchId());
 
-		//产生查询考试科目列表
-		List<SubjectInfo> subjectList = subjects_cur.stream().filter(m -> Integer.parseInt(m.get("TYPE")
-				.toString()) == type.getCode()).map(subject -> new SubjectInfo(subject.get
-				("PAPER_ID").toString(), subject.get("SUBJECT").toString(), subject.get("SUBJECT_NAME").toString(),
-				(Integer) subject.get("TYPE"))).sorted((subject2, subject1) -> {
-			return zyj.report.common.CalToolUtil.indexOf(zyj.report.common.CalToolUtil.getSubjectOrder(),
-					subject1.getSubject()) - zyj.report.common.CalToolUtil.indexOf(zyj.report.common.CalToolUtil.getSubjectOrder(),
-					subject2.getSubject());
-		}).collect(Collectors.toList());
+			//产生查询考试科目列表
+			List<SubjectInfo> subjectList = subjects_cur.stream().filter(m -> Integer.parseInt(m.get("TYPE")
+					.toString()) == type.getCode()).map(subject -> new SubjectInfo(subject.get
+					("PAPER_ID").toString(), subject.get("SUBJECT").toString(), subject.get("SUBJECT_NAME").toString(),
+					Integer.parseInt(subject.get("TYPE").toString()))).sorted((subject2, subject1) -> {
+				return zyj.report.common.CalToolUtil.indexOf(zyj.report.common.CalToolUtil.getSubjectOrder(),
+						subject1.getSubject()) - zyj.report.common.CalToolUtil.indexOf(zyj.report.common.CalToolUtil.getSubjectOrder(),
+						subject2.getSubject());
+			}).collect(Collectors.toList());
 
-		return subjectList;
+			return subjectList;
+		}
+		catch (Exception ex)
+		{ throw ex;}
 	}
 
 }

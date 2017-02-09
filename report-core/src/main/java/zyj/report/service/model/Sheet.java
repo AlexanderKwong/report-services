@@ -1,7 +1,5 @@
 package zyj.report.service.model;
 
-import zyj.report.service.model.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -9,7 +7,7 @@ import java.util.Map;
 /**
  * Created by CXinZhi on 2017/1/5.
  */
-public class Sheet {
+public class Sheet{
 
 	/**
 	 * 表格id
@@ -31,20 +29,10 @@ public class Sheet {
 	 */
 	private List<Map<String,Object>> datas = new ArrayList<>();
 
-
-	public Integer getFreeze() {
-		return freeze;
-	}
-
-	public void setFreeze(Integer freeze) {
-		this.freeze = freeze;
-	}
-
 	/**
 	 * 冻结表头
 	 */
 	private Integer freeze;
-
 
 	/**
 	 *  数据为 list 转化为 二维数组
@@ -65,7 +53,6 @@ public class Sheet {
 		}
 		return objArrList;
 	}
-
 
 	public Sheet(String id, String name) {
 		this.id = id;
@@ -105,6 +92,12 @@ public class Sheet {
 		this.datas = data;
 	}
 
+	public Integer getFreeze() {
+		return freeze;
+	}
 
+	public void setFreeze(Integer freeze) {
+		this.freeze = freeze;
+	}
 }
 

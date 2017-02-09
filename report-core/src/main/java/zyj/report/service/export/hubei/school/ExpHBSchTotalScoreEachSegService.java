@@ -22,7 +22,7 @@ import java.util.Map;
 
 /**
  * Created by CXinZhi on 2017/1/1.
- * <p>
+ * <p()>
  * 导出 湖北版 总分各分数段人数 服务
  */
 @Service
@@ -47,7 +47,7 @@ public class ExpHBSchTotalScoreEachSegService extends BaseRptService {
 		super.initParam(params);
 
 		//校验参数
-		if (p.getExamBatchId() == null || p.getPath() == null || p.getCityCode() == null)
+		if (p().getExamBatchId() == null || p().getPath() == null || p().getCityCode() == null)
 			return;
 
 		// 设置标题模板
@@ -57,7 +57,7 @@ public class ExpHBSchTotalScoreEachSegService extends BaseRptService {
 		List<Sheet> sheets = getSheets(segmentTemplate);
 
 		// 初始化 excel
-		Excel excel = new Excel(excelName + ".xls", p.getPath(), sheets);
+		Excel excel = new Excel(excelName + ".xls", p().getPath(), sheets);
 
 		// 导出 excel 文件
 		ExportUtil.createExcel(excel);
@@ -71,11 +71,17 @@ public class ExpHBSchTotalScoreEachSegService extends BaseRptService {
 
 		List<Sheet> sheets = new ArrayList<>();
 
-		// 添加文科 sheet
-		sheets.add(getSheet(EnmSubjectType.WEN, rptTemplate));
+		List<Map<String, Object>> subjects = baseDataService.getSubjectByExamid(p().getExamBatchId());
 
-		// 添加理科 sheet
-		sheets.add(getSheet(EnmSubjectType.LI, rptTemplate));
+		if (EnmSubjectType.ALL.getCode() == Integer.parseInt(subjects.get(0).get("TYPE").toString())) {
+			sheets.add(getSheet(EnmSubjectType.ALL,rptTemplate));
+		} else {
+			// 添加文科 sheet
+			sheets.add(getSheet(EnmSubjectType.WEN, rptTemplate));
+
+			// 添加理科 sheet
+			sheets.add(getSheet(EnmSubjectType.LI, rptTemplate));
+		}
 
 		return sheets;
 	}
@@ -92,11 +98,11 @@ public class ExpHBSchTotalScoreEachSegService extends BaseRptService {
 		Sheet sheet = new Sheet(subjectType.getCode() + "", subjectType.getName());
 
 		Map conditions = new HashMap<String, Object>();
-		conditions.put("exambatchId", p.getExamBatchId());
-		conditions.put("cityCode", p.getCityCode());
-		conditions.put("schoolId", p.getSchoolId());
+		conditions.put("exambatchId", p().getExamBatchId());
+		conditions.put("cityCode", p().getCityCode());
+		conditions.put("schoolId", p().getSchoolId());
 		conditions.put("type", subjectType.getCode());
-		conditions.put("stuType", p.getStuType());
+		conditions.put("stuType", p().getStuType());
 
 		//读取源数据
 		List<Map<String, Object>> data = rptExpStudetScoreMapper.findTotalScoreEachSegment(conditions);

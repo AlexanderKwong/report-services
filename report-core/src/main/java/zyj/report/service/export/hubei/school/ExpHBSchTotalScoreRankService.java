@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @Service
 public class ExpHBSchTotalScoreRankService extends BaseRptService {
 
-	private static String excelName = "总分排名（%s)";
+	private static String excelName = "总分排名（%s）";
 
 	@Autowired
 	BaseDataService baseDataService;

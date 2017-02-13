@@ -57,12 +57,13 @@ public class BaseDataAop {
      * @throws Throwable
      */
      @Around("cacheBefore() && cacheBeforeOnAnnotation () ")
-    public Object tryGetCache(ProceedingJoinPoint pjp/*, String... paramter*/) throws Throwable {
+    public Object tryGetCache(ProceedingJoinPoint pjp/*, String... paramter*/)  {
 //        System.out.println("开始查缓存...");
          logger.debug("开始查缓存...");
         Object[] paramter =  pjp.getArgs();
         if(paramter.length <= 0) {
-            throw new ReportCacheException("exambatchId是必传参数！");
+//            throw new ReportCacheException("exambatchId是必传参数！");
+            return null;
         }
         String exambatchId = ObjectUtils.toString(paramter[0]);
         Method method =  ((MethodSignature) pjp.getSignature()).getMethod();
@@ -91,11 +92,13 @@ public class BaseDataAop {
             try {
                 parentScope = (ParentScope)method.getParameterAnnotations()[1][0];
             }catch (Exception e){
-                throw new ReportCacheException("没有找到parentScope的注解。");
+//                throw new ReportCacheException("没有找到parentScope的注解。");
+                return null;
             }
 
             if ( parentScope == null) {
-                throw new ReportCacheException("没有找到parentScope的注解。");
+//                throw new ReportCacheException("没有找到parentScope的注解。");
+                return null;
             }else if ( parentScope.value() == scope){//第一种情况
                 Map<String,String> queryResult =  (Map<String,String>)redisService.hmget(exambatchId + ":" + scope + ":" + scopeId, value);
                 if (queryResult != null && !queryResult.isEmpty()){
@@ -108,7 +111,8 @@ public class BaseDataAop {
             }
         }else if(paramter.length == 3){// 获取科目 paramter[0] == exambatchId ;paramter[1] == paperId ; paramter[2] == subjectShortName
 
-            if (scope != Scope.SUBJECT)  throw new ReportCacheException("没有匹配上参数个数。") ;
+            if (scope != Scope.SUBJECT)  //throw new ReportCacheException("没有匹配上参数个数。") ;
+                return null ;
             String paperId = ObjectUtils.toString(paramter[1]);
             String shortName = ObjectUtils.toString(paramter[2]);
             Map<String,String> queryResult =  (Map<String,String>)redisService.hmget(exambatchId + ":" + scope + ":" + paperId + "_" + shortName, value);
@@ -117,7 +121,8 @@ public class BaseDataAop {
 
         }else if (paramter.length == 4 || paramter.length == 6){// 缓存学生科目和总分 paramter[0] ==  exambatchId,  paramter[1] ==  parentScopeId,  paramter[2] ==  level,  paramter[3] ==  stuType
 
-            if (scope != Scope.STUDENT)  throw new ReportCacheException("没有匹配上参数个数。") ;
+            if (scope != Scope.STUDENT)  //throw new ReportCacheException("没有匹配上参数个数。") ;
+                return null ;
             String field = "";
             String parentScopeId = ObjectUtils.toString(paramter[1]);
             String level = ObjectUtils.toString(paramter[2]);
@@ -162,10 +167,16 @@ public class BaseDataAop {
                     }else findCache = false;
                 }else findCache = false;
             }
-        }else throw new ReportCacheException("没有匹配上参数个数。");
+        }else return null;//throw new ReportCacheException("没有匹配上参数个数。");
 
          if (!findCache){
-             Object result = pjp.proceed(paramter);
+             logger.debug(String.format("没有找到%s维度对应的缓存数据", scope.getName()));
+             Object result = null;
+             try {
+                 result = pjp.proceed(paramter);
+             } catch (Throwable throwable) {
+                 throwable.printStackTrace();
+             }
              if (method.getName().equals("getClasses")){//cache
                  cacheBaseData(exambatchId, (List<Map<String,Object>>)result);
              }else if(method.getName().equals("getSubjectByExamid")){
@@ -213,7 +224,7 @@ public class BaseDataAop {
 
              return result;
          }
-         else  throw new ReportCacheException("未知异常！");
+         else  return null ;//throw new ReportCacheException("未知异常！");
     }
 
 //    @AfterThrowing("cacheBefore()")
@@ -222,7 +233,7 @@ public class BaseDataAop {
 //    }
 
 //    @AfterReturning(value = "cacheAfter()" ,returning = "classesInfo")
-    public void cacheBaseData(String exambatchId, List<Map<String,Object>> classesInfo) throws ReportExportException {
+    public void cacheBaseData(String exambatchId, List<Map<String,Object>> classesInfo) /*throws ReportExportException */{
         if (classesInfo.isEmpty()) return;
 //        System.out.println("获得所有 班级，学校，镇区，市区");
         logger.debug("获得所有 班级，学校，镇区，市区");
@@ -268,7 +279,7 @@ public class BaseDataAop {
                 return city;
             } else return null;
         }).distinct().filter(m -> !Objects.isNull(m)).collect(Collectors.toList());
-        if(citiesInfo.size() != 1 ) throw new ReportExportException("暂时不支持跨市考试！");
+        if(citiesInfo.size() != 1 ) return;//throw new ReportExportException("暂时不支持跨市考试！");
 
 
     //生成一棵树

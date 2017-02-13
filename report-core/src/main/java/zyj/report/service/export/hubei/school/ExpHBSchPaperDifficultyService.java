@@ -1,4 +1,4 @@
-package zyj.report.service.export.hubei;
+package zyj.report.service.export.hubei.school;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,20 +17,19 @@ import java.util.Map;
 
 /**
  * @author 邝晓林
- * @Description
- * @date 2017/1/12
+ * @Description 导出 湖北版 试卷难易程度 服务
+ * @date 2017/1/16
  */
 @Service
-public class ExpObjectiveAnswerService extends BaseRptService{
+public class ExpHBSchPaperDifficultyService extends BaseRptService {
 
-    private static String excelName = "学生选择题答案";
+    private static String excelName = "试卷难易程度";
 
     @Autowired
     RptExpQuestionMapper rptExpQuestionMapper;
 
     @Override
     public void exportData(Map<String, Object> params) throws Exception {
-
         // 初始化 filed
         List<Field> fields = getFields(params);
 
@@ -53,28 +52,16 @@ public class ExpObjectiveAnswerService extends BaseRptService{
 
         MultiField root = new MultiField(excelName);
 
+        String subject_name = params.get("subjectName").toString();
         //step1:加载固定标题
-        for (String t : new String[]{"考号,SEQUENCE","姓名,NAME","班级,CLSNAME"}){
+        for (String t : new String[]{"难度（P）区分度（R),PR", "题号,NO", "题量,TILIANG", "比例,BILI"}) {
             String[] args = t.split(",");
             root.add(new SingleField(args[0], args[1]));
         }
-
-        List<Map> questions = rptExpQuestionMapper.qryClassQuestionScore6(params);
-
-        List<Integer> orderList = new ArrayList<Integer>();
-
-        questions.stream().filter(m -> Integer.parseInt(m.get("QST_TIPY").toString()) != 4).forEach(m -> {
-            int order = Integer.parseInt(m.get("QUESTION_ORDER").toString());
-            orderList.add(order);
-            root.add(new SingleField((String)m.get("QUESTION_NO"), "Q"+ order));
-        });
-
-        params.put("orderList2",orderList);
         fields.add(root);
 
         return fields;
     }
-
     /**
      * 初始化 sheet
      *
@@ -84,14 +71,31 @@ public class ExpObjectiveAnswerService extends BaseRptService{
 
         List<Sheet> sheets = new ArrayList<>();
 
-        List<Map<String, Object>> result = rptExpQuestionMapper.qryStudentQuestionScore(params);
-        if (result.isEmpty()) throw new ReportExportException("没有查到源数据，请核查！");
+        List<Map<String,Object>> questionSuitable = rptExpQuestionMapper.qryQuestionSuitable(params);
+        if (questionSuitable.isEmpty()) throw new ReportExportException("没有查到源数据，请核查！");
 
+        for(Map situation : questionSuitable){
+            int nandu = Integer.parseInt(situation.get("P").toString());
+            int qufendu = Integer.parseInt(situation.get("R").toString());
+            if(nandu == 0 && qufendu == 1)
+                situation.put("PR", "难度适合  区分度合适");
+            else if (nandu == 0 && qufendu == 0)
+                situation.put("PR", "难度适合  区分度不合适");
+            else if (nandu == 1 && qufendu == 1)
+                situation.put("PR", "难度偏难  区分度合适");
+            else if (nandu == -1 && qufendu == 1)
+                situation.put("PR", "难度偏易  区分度合适");
+            else if (nandu == 1 && qufendu == 0)
+                situation.put("PR", "难度偏难  区分度不合适");
+            else if (nandu == -1 && qufendu == 0)
+                situation.put("PR", "难度偏易  区分度不合适");
+        }
         Sheet sheet = new Sheet("",excelName);
         sheet.setFields(fields);
-        sheet.getData().addAll(result);
+        sheet.getData().addAll(questionSuitable);
 
         sheets.add(sheet);
         return sheets;
     }
+
 }

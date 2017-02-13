@@ -1,4 +1,4 @@
-package zyj.report.service.export.hubei;
+package zyj.report.service.export.hubei.school;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,11 +23,11 @@ import java.util.stream.Collectors;
 
 /**
  * @author 邝晓林
- * @Description 湖北版 均分及各分数段人数（含各班） 报表导出
+ * @Description 导出 湖北版 均分及各分数段人数 服务
  * @date 2017/1/17
  */
 @Service
-public class ExpAvgAndScoreSegmentsService extends BaseRptService {
+public class ExpHBSchSubjectAvgAndScoreSegService extends BaseRptService {
 
     private static String excelName = "均分及各分数段人数";
 

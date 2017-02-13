@@ -63,7 +63,7 @@ public class ExpHBSchTotalScoreEachSegVerService extends BaseRptService {
 		List<Sheet> sheets = getSheets(segmentTemplate);
 
 		// 初始化 excel
-		Excel excel = new Excel(excelName + ".xls", p().getPath(), sheets);
+		Excel excel = new Excel(excelName + "（含各班）.xls", p().getPath(), sheets);
 
 		// 导出 excel 文件
 		ExportUtil.createExcel(excel);

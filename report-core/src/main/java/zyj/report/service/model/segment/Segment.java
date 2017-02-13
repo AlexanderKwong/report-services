@@ -156,7 +156,7 @@ public class Segment {
 			});
 		});
 		List<Map<String, Object>> result = new ArrayList<>(resultMap.values());
-		CollectionsUtil.orderByIntValueDesc(result, "index");
+//		CollectionsUtil.orderByIntValueDesc(result, "index");
 
 		return result;
 	}

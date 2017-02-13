@@ -1,4 +1,4 @@
-package zyj.report.service.export.hubei;
+package zyj.report.service.export.hubei.school;
 
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.ObjectUtils;
@@ -23,11 +23,11 @@ import java.util.stream.Collectors;
 
 /**
  * @author 邝晓林
- * @Description
+ * @Description 导出 湖北版 试卷整体分析 服务
  * @date 2017/1/12
  */
 @Service
-public class ExpPaperStatisticService extends BaseRptService{
+public class ExpHBSchPaperStatisticService extends BaseRptService{
 
     private static String excelName = "试卷整体分析";
 
@@ -203,7 +203,7 @@ public class ExpPaperStatisticService extends BaseRptService{
 
         if (data.isEmpty() ) throw new ReportExportException("没有查到源数据，请核查！");
 
-        Consumer<Map> addDistance = m -> m.put("DISTANCE",Integer.valueOf(m.get("TOP_SCORE").toString()) - Integer.valueOf(m.get("UP_SCORE").toString()));
+        Consumer<Map> addDistance = m -> m.put("DISTANCE",CalToolUtil.decimalFormat2(Float.valueOf(m.get("TOP_SCORE").toString()) - Float.valueOf(m.get("UP_SCORE").toString())));
 
         params.put("level","city");
         List<Map<String, Object>> cityData = rptExpSubjectMapper.findRptExpSubject(params);

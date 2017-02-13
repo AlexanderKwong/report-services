@@ -1,4 +1,4 @@
-package zyj.report.service.export.hubei;
+package zyj.report.service.export.hubei.school;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,11 +20,11 @@ import java.util.Map;
 
 /**
  * @author 邝晓林
- * @Description 成绩统计表（含各班）
+ * @Description 导出 湖北版 成绩统计表（含各班） 服务
  * @date 2017/1/9
  */
 @Service
-public class ExpScoreStatisticsService extends BaseRptService {
+public class ExpHBSchScoreStatisticsService extends BaseRptService {
 
     private static String excelName = "成绩统计表（含各班）";
 

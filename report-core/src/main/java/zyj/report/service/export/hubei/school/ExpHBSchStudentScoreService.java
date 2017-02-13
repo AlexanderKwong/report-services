@@ -29,7 +29,7 @@ public class ExpHBSchStudentScoreService extends BaseRptService {
 	@Autowired
 	BaseDataService baseDataService;
 
-	private static String excelName = "学生各科成绩和总分（%s)";
+	private static String excelName = "学生各科成绩和总分（%s）";
 
 	@Override
 	public void exportData(Map<String, Object> params) throws Exception {

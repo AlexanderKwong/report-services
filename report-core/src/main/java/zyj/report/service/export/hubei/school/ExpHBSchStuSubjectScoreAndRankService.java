@@ -1,4 +1,4 @@
-package zyj.report.service.export.hubei;
+package zyj.report.service.export.hubei.school;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,11 +20,11 @@ import java.util.stream.Collectors;
 
 /**
  * @author 邝晓林
- * @Description
+ * @Description 导出 湖北版 学生单科成绩与排名 服务
  * @date 2017/1/12
  */
 @Service
-public class ExpStuSubjectScoreAndRankService extends BaseRptService{
+public class ExpHBSchStuSubjectScoreAndRankService extends BaseRptService{
 
     private static String excelName = "学生单科成绩与排名";
 

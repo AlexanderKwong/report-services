@@ -13,22 +13,22 @@ import java.util.Map;
  * @Description
  * @date 2017/1/11
  */
-public class ExpStuSubjectScoreAndRankServiceTest extends BaseExportTest{
+public class ExpHBSchPaperStatisticServiceTest extends BaseExportTest{
 
     @Before
     public void setUp(){
         Map<String,Object> subject = new HashMap<>();
         subject.put("SUBJECT","SW");
         subject.put("SUBJECT_NAME","生物");
-        subject.put("PAPER_ID","045cdafc-e85b-4496-a8fe-faa4363f5314");
-        subject.put("TYPE",2);
-        setParmter("expStuSubjectScoreAndRankService",
-                "7943ec7c-956c-4cd1-8ada-65e35097aa95",
-                "130100",
+        subject.put("PAPER_ID","70624e01-0980-4149-911f-5fa48725e4d3");
+        subject.put("TYPE",0);
+        setParmter("expHBSchPaperStatisticService",
+                "386840d9-bf0c-4086-a762-5ca129521950",
+                "350800",
                 subject,
                 "school",
                 1,
-                "651a64b2-c04a-45b9-8fa5-8fd0359a4671");
+                "abfa5b06-362f-4d34-9d94-ff82b09be3e1");
     }
 
     @Test

@@ -9,30 +9,31 @@ package zyj.report.annotation;
  */
 public enum Scope {
 
-    SUBJECT,
-    STUDENT,
-    CLASS,
-    SCHOOL,
-    AREA,
-    CITY;
+    SUBJECT(9, "科目"),
+    STUDENT(4, "学生"),
+    CLASS(3, "班级"),
+    SCHOOL(2, "学校"),
+    AREA(1, "区县"),
+    CITY(0, "市区");
+
+    private Integer code;
+    private String name;
+
+    Scope(int code, String name) {
+        this.code = code;
+        this.name = name;
+    }
+
+    public Integer getCode() {
+        return code;
+    }
+
+    public String getName() {
+        return name;
+    }
 
     @Override
     public String toString() {
-        switch (this){
-            case SUBJECT:
-                return "9";
-            case STUDENT:
-                return "4";
-            case CLASS:
-                return "3";
-            case SCHOOL:
-                return "2";
-            case AREA:
-                return "1";
-            case CITY:
-                return "0";
-            default:
-                return "null";
-        }
+        return String.valueOf(getCode());
     }
 }

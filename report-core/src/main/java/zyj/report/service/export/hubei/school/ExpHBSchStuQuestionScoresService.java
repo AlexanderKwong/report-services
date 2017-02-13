@@ -1,4 +1,4 @@
-package zyj.report.service.export.hubei;
+package zyj.report.service.export.hubei.school;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,21 +21,19 @@ import java.util.stream.Collectors;
 
 /**
  * @author 邝晓林
- * @Description
+ * @Description 导出 湖北版 学生每题得分 服务
  * @date 2017/1/13
  */
 @Service
-public class ExpStuQuestionScoresService extends BaseRptService{
+public class ExpHBSchStuQuestionScoresService extends BaseRptService{
 
-    private static String excelName = "学生每题得分";
+    private String excelName = "学生每题得分";
 
 
     @Autowired
     RptExpQuestionMapper rptExpQuestionMapper;
     @Autowired
     BaseDataService baseDataService;
-    @Autowired
-    RptExpStudentSubjectMapper rptExpStudentSubjectMapper;
 
     @Override
     public void exportData(Map<String, Object> params) throws Exception {
@@ -46,7 +44,7 @@ public class ExpStuQuestionScoresService extends BaseRptService{
         List<Sheet> sheets = getSheet(fields, params);
 
         // 初始化 excel
-        Excel excel = new Excel(excelName+".xls", params.get("pathFile").toString(), sheets);
+        Excel excel = new Excel(this.excelName+".xls", params.get("pathFile").toString(), sheets);
 
         // 导出 excel 文件
         ExportUtil.createExcel(excel);
@@ -100,10 +98,10 @@ public class ExpStuQuestionScoresService extends BaseRptService{
         Integer stuType = (Integer)params.get("stuType");
 
         String key = params.get("subjectName").toString()+ "_SCORE";
-        List<Map<String, Object>> result1 = baseDataService.getStudentSubjectsAndAllscore(exambatchId, params.get(level + "Id").toString(), level, stuType)
+        List<Map<String, Object>> result1 = baseDataService.getStudentSubjectsAndAllscore(exambatchId, (String) params.get(level + "Id"), level, stuType)
             .stream().filter(m->m.get(key) != null).collect(Collectors.toList());
 
-        List<Map<String, Object>> result2 = baseDataService.getStudentQuestion(exambatchId,params.get(level + "Id").toString(),level,stuType,params.get("paperId").toString(),params.get("subject").toString());
+        List<Map<String, Object>> result2 = baseDataService.getStudentQuestion(exambatchId,(String) params.get(level + "Id"),level,stuType,params.get("paperId").toString(),params.get("subject").toString());
 
         if (result1.isEmpty() || result2.isEmpty()) throw new ReportExportException("没有查到源数据，请核查！");
 

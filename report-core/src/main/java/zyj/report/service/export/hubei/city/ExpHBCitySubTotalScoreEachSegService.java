@@ -31,7 +31,7 @@ public class ExpHBCitySubTotalScoreEachSegService extends ExpHBSchTotalScoreEach
 	@Value("${hb.score.1step}")
 	int step;
 
-	private static String excelName = "总分各分数段人数";
+	private static String excelName = "各分数段人数";
 
 	@Override
 	public void exportData(Map<String, Object> params) throws Exception {
@@ -49,7 +49,7 @@ public class ExpHBCitySubTotalScoreEachSegService extends ExpHBSchTotalScoreEach
 		List<Sheet> sheets = getSheets(rptTemplate);
 
 		// 初始化 excel
-		Excel excel = new Excel(excelName + ".xls", p().getPath(), sheets);
+		Excel excel = new Excel(excelName + "（一分一段）.xls", p().getPath(), sheets);
 
 		// 导出 excel 文件
 		ExportUtil.createExcel(excel);
@@ -69,7 +69,7 @@ public class ExpHBCitySubTotalScoreEachSegService extends ExpHBSchTotalScoreEach
 		conditions.put("stuType", p().getStuType());
 
 		//读取源数据
-		List<Map<String, Object>> data = rptExpStudetScoreMapper.findTotalScoreEachSegment(conditions);
+		List<Map<String, Object>> data = rptExpStudetScoreMapper.findSubTotalScoreEachSegment(conditions);
 
 		// 加载 字段
 		sheet.getFields().addAll(rptTemplate.createTitle(excelName));

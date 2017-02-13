@@ -216,8 +216,8 @@
 		<if test="paperId != null">
 			and paper_id=#{paperId}
 		</if>
-		<if test="areaCode != null">
-			and area_id=#{areaCode}
+		<if test="areaId != null">
+			and area_id=#{areaId}
 		</if>
 		<if test="schoolId != null">
 			and sch_id=#{schoolId}

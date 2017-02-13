@@ -1,16 +1,9 @@
-package zyj.report.service.export.hubei;
+package zyj.report.service.export.hubei.school;
 
-import org.apache.commons.lang.ObjectUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import zyj.report.common.ExportUtil;
 import zyj.report.common.util.CollectionsUtil;
 import zyj.report.exception.report.ReportExportException;
-import zyj.report.persistence.client.RptExpQuestionMapper;
-import zyj.report.persistence.client.RptExpStudentSubjectMapper;
-import zyj.report.service.BaseDataService;
-import zyj.report.service.export.BaseRptService;
 import zyj.report.service.model.*;
 
 import java.util.*;
@@ -18,11 +11,11 @@ import java.util.stream.Collectors;
 
 /**
  * @author 邝晓林
- * @Description
+ * @Description 导出 湖北版 学生每题得分（含各班） 服务
  * @date 2017/1/13
  */
 @Service
-public class ExpStuQuestionScoresOfClassesService extends ExpStuQuestionScoresService{
+public class ExpHBSchStuQuesScoresOfClassesService extends ExpHBSchStuQuestionScoresService {
 
     private static String excelName = "学生每题得分%s";
 

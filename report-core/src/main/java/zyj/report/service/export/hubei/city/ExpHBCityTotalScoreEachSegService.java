@@ -49,7 +49,7 @@ public class ExpHBCityTotalScoreEachSegService extends ExpHBSchTotalScoreEachSeg
 		List<Sheet> sheets = getSheets(rptTemplate);
 
 		// 初始化 excel
-		Excel excel = new Excel(excelName + ".xls", p().getPath(), sheets);
+		Excel excel = new Excel(excelName + "（一分一段）.xls", p().getPath(), sheets);
 
 		// 导出 excel 文件
 		ExportUtil.createExcel(excel);
@@ -87,7 +87,7 @@ public class ExpHBCityTotalScoreEachSegService extends ExpHBSchTotalScoreEachSeg
 		conditions.put("stuType", p().getStuType());
 
 		//读取源数据
-		List<Map<String, Object>> data = rptExpStudetScoreMapper.findSubTotalScoreEachSegment(conditions);
+		List<Map<String, Object>> data = rptExpStudetScoreMapper.findTotalScoreEachSegment(conditions);
 
 		// 加载 字段
 		sheet.getFields().addAll(rptTemplate.createTitle(excelName));

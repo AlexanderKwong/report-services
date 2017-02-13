@@ -1,16 +1,17 @@
-package zyj.report.service.export.hubei;
+package zyj.report.service.export.hubei.school;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import zyj.report.common.CalToolUtil;
 import zyj.report.common.ExportUtil;
+import zyj.report.common.constant.EnmSegmentType;
+import zyj.report.common.util.CollectionsUtil;
 import zyj.report.exception.report.ReportExportException;
-import zyj.report.persistence.client.RptExpQuestionMapper;
+import zyj.report.persistence.client.RptExpSubjectMapper;
 import zyj.report.service.BaseDataService;
 import zyj.report.service.export.BaseRptService;
-import zyj.report.service.model.MultiField;
-import zyj.report.service.model.Sheet;
-import zyj.report.service.model.SingleField;
+import zyj.report.service.model.segment.Segment;
 import zyj.report.service.model.*;
 
 import java.util.*;
@@ -18,19 +19,22 @@ import java.util.stream.Collectors;
 
 /**
  * @author 邝晓林
- * @Description
- * @date 2017/1/16
+ * @Description 导出 湖北版 各分数段人数（含各班） 服务
+ * @date 2017/1/17
  */
 @Service
-public class ExpClsQuesAvgScoresService extends BaseRptService{
+public class ExpHBSchScoreSegmentOfClassesService extends BaseRptService {
 
-    private static String excelName = "各题平均得分";
-
-    @Autowired
-    RptExpQuestionMapper rptExpQuestionMapper;
+    private static String excelName = "各分数段人数（含各班）";
 
     @Autowired
     BaseDataService baseDataService;
+
+    @Autowired
+    RptExpSubjectMapper rptExpSubjectMapper;
+
+    @Value("${hubei.subject.score.step}")
+    Integer step;
 
     @Override
     public void exportData(Map<String, Object> params) throws Exception {
@@ -55,9 +59,8 @@ public class ExpClsQuesAvgScoresService extends BaseRptService{
         List<Field> fields = new ArrayList<>();
 
         MultiField root = new MultiField(excelName);
-
         //step1:加载固定标题
-        for (String t : new String[]{"题目名称,QUESTION_NO"}) {
+        for (String t : new String[]{"分数段,SCORE_SEG","汇总,FREQUENCY" }) {
             String[] args = t.split(",");
             root.add(new SingleField(args[0], args[1]));
         }
@@ -67,9 +70,9 @@ public class ExpClsQuesAvgScoresService extends BaseRptService{
 
         for (Map<String,Object> cls : classesInSchool){
             if (Integer.parseInt(cls.get("CLS_TYPE").toString()) == Integer.parseInt(params.get("type").toString()))
-                 root.add(new SingleField(cls.get("CLS_NAME").toString(),cls.get("CLS_ID").toString()));
+                root.add(new SingleField(cls.get("CLS_NAME").toString(),cls.get("CLS_ID").toString()));
         }
-
+        params.put("classes",classesInSchool);
         fields.add(root);
 
         return fields;
@@ -84,28 +87,24 @@ public class ExpClsQuesAvgScoresService extends BaseRptService{
 
         List<Sheet> sheets = new ArrayList<>();
 
+                //拿到总分
         Map condition = new HashMap(params);
-        condition.put("level","classes");
-        List<Map<String,Object>> clsQuestions =  rptExpQuestionMapper.findRptExpQuestion(condition);
-        if (clsQuestions.isEmpty()) throw new ReportExportException("没有查到源数据，请核查！");
+        condition.put("level","city");
+        List<Map<String, Object>> citySubject =  rptExpSubjectMapper.findRptExpSubject(condition);
+        Float full = Float.parseFloat(citySubject.get(0).get("FULL_SCORE").toString());
 
-        List<Map<String,Object>> result =  clsQuestions.stream().map(m-> {
-            Map<String,Object> row = new HashMap<>();
-            row.put("QUESTION_NO",m.get("QUESTION_NO").toString());
-            row.put("QUESTION_ORDER",m.get("QUESTION_ORDER").toString());
-            row.put(m.get("CLS_ID").toString(), m.get("AVG_SCORE").toString());
-            return row;
-        }).collect(Collectors.groupingBy(r -> r.get("QUESTION_ORDER")))./*forEach((k,v) -> System.out.println(String.format("key:%s, value:%s",k,v)));*/
+        String key = params.get("subjectName").toString()+ "_SCORE";
+        List<Map<String,Object>> result1 = baseDataService.getStudentSubjectsAndAllscore(params.get("exambatchId").toString(),params.get("schoolId").toString(),params.get("level").toString(),(Integer)params.get("stuType")).
+                stream().filter(m->m.get(key) != null).collect(Collectors.toList());
+        if (result1.isEmpty()) throw new ReportExportException("没有查到源数据，请核查！");
 
-        values().stream().map(list->{
-            Map<String,Object> row = new HashMap<>();
-            list.forEach(m->{
-                row.putAll(m);
-            });
-            return row;
-        }).collect(Collectors.toList());
+        Segment segment = new Segment(step,0,full,result1.size(), EnmSegmentType.ROUNDED);
+        //学校汇总
+        List<Map<String, Object>> result = segment.getStepSegment(result1,key);
 
-        CalToolUtil.sortByIndexValue(result, "QUESTION_ORDER");
+        List<Map<String, Object>> result2 = segment.getPartitionStepSegmentVertical(result1,key,new String[]{"CLS_ID"});
+        result = CollectionsUtil.leftjoinMapByKey(result, result2,"SCORE_SEG");
+        CollectionsUtil.orderBySpecifiedValue(result, "SCORE_SEG", segment.generateSegment().toArray());
 
         Sheet sheet = new Sheet("",excelName);
         sheet.setFields(fields);

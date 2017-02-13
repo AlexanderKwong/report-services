@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import zyj.report.business.task.RptParameter;
 import zyj.report.business.task.RptTask;
 import zyj.report.business.task.RptTaskFactory;
 import zyj.report.business.task.RptTaskQueue;
@@ -22,6 +23,7 @@ import zyj.report.persistence.client.JyjRptExtMapper;
 import zyj.report.service.export.BaseRptService;
 import zyj.report.service.redis.RedisService;
 
+import java.awt.font.FontRenderContext;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -70,29 +72,17 @@ public class JyjRptExtService {
 			FileUtil.rmvDir(rptPath);
 
 			List<Map<String, Object>> subjects2Exp = new ArrayList<Map<String, Object>>();//需要单导的科目 每个map中keySet为：PAPER_ID,SUBJECT,SUBJECT_NAME
-			List<Map<String, Object>> taskList1 = new ArrayList<Map<String, Object>>();
-			RptTaskQueue rpttaskqueue;
 			boolean wenliFlag = false;
-//			BaseRptService.updateSubjecName(examId);
 
 			Map gradParam = new HashMap();
-//			gradParam.put("finished", "true");
 			gradParam.put("examId", examId);
-//			gradParam.put("grade", grade);
+			gradParam.put("examName", examName);
 
-//			List<Map> allPaperList = new ArrayList<Map>();
-			List<Map<String, Object>> wenPaperList = new ArrayList<Map<String, Object>>();
-			List<Map<String, Object>> liPaperList = new ArrayList<Map<String, Object>>();
-			//add by 邝晓林 ,科目拆分后不能根据原始科目来传参
-		/*	Optional<List<Map<String, Object>>> subjectCache = DataCacheUtil.getSubjectByExamid(examId);
-			if (!subjectCache.isPresent()) {
-				ReportExportException err = new ReportExportException("科目缓存为空！");
-				logger.error("", err);
-				throw err;
-			}
-			List<Map<String, Object>> subjectList = subjectCache.get();*/
+
+			//取得所有的科目
 			List<Map<String, Object>> subjectList = baseDataService.getSubjectByExamid(examId);
 
+			//除了科目，加上“总分” 来导出
 			Map<String, Object> totalscoreMap = new HashMap<>();
 			totalscoreMap.put("PAPER_ID", "total");
 			totalscoreMap.put("SUBJECT", "total");
@@ -106,133 +96,114 @@ public class JyjRptExtService {
 			} else
 				subjects2Exp = subjectList.stream().filter(map -> paperIds2Exp.contains(map.get("PAPER_ID").toString())).collect(Collectors.toList());
 
-//			if(true){//20160416 修改 孝感地区高一也会出现 文理分科 为避免这个问题 全部年级都走一次
+			//判断此考试是否包含文理科
 			boolean wen = false;
 			boolean li = false;
-
+			List<Map<String, Object>> wenPaperList = new ArrayList<Map<String, Object>>();
+			List<Map<String, Object>> liPaperList = new ArrayList<Map<String, Object>>();
 			List<Map> types = jyjRptExtMapper.qryExamType(gradParam);
 			for (Map type : types) {
-				if (type.get("TYPE").toString().equals("1"))
+				if (Integer.parseInt(type.get("TYPE").toString()) == 1)
 					wen = true;
-				if (type.get("TYPE").toString().equals("2"))
+				if (Integer.parseInt(type.get("TYPE").toString()) == 2)
 					li = true;
-				if (type.get("TYPE").toString().equals("0")) {
+				if (Integer.parseInt(type.get("TYPE").toString()) == 0) {
 					wen = false;
 					li = false;
 					break;
 				}
 			}
-//				if (wen == true && li == true) {//20160415 修改 避免单场考试只有文科、理科的情况
+
 			if (wen == true || li == true) {
 				wenliFlag = true;
 				for (Map<String, Object> subjectInfo : subjects2Exp) {
-//					String subject = (String) subjectInfo.get("SUBJECT");
-					String type =  subjectInfo.get("TYPE").toString();
-//					if (Arrays.asList(BaseRptService.subjects_w).contains(subject)) {
-//						wenPaperList.add(subjectInfo);
-//					} else if (Arrays.asList(BaseRptService.subjects_l).contains(subject))
-//						liPaperList.add(subjectInfo);
-					if ("1".equals(type)) {
+					int type =  Integer.parseInt(subjectInfo.get("TYPE").toString());
+					if (1 == type) {
 						wenPaperList.add(subjectInfo);
-					} else if ("2".equals(type))
+					} else if (2 == type)
 						liPaperList.add(subjectInfo);
 				}
 				wenPaperList.add(totalscoreMap);
 				liPaperList.add(totalscoreMap);
 			}
-//			}
 			gradParam.put("wenPaperList", wenPaperList);
 			gradParam.put("liPaperList", liPaperList);
+
+			//初始化参数
 			RptParameterBase parameter = new RptParameterBase(rptType, wenliFlag, rptPath, examId, "", stuType, subjects2Exp, gradParam);
-//			RptTaskFactory rpttaskfactory = SpringUtil.getSpringBean(null, "rptTaskFactory");
-			rpttaskqueue = rpttaskfactory.create(parameter);
 
-			/*************************全市报表  ***********************/
-			List<Map> cityList = jyjRptExtMapper.qryExamCity(examId);
-			for (Map city : cityList) {
-				HashMap<String, Object> otherParams;
-				Map cityParams = new HashMap(gradParam);
-				String cityCode = city.get("CITYCODE").toString();
-				cityParams.put("cityCode", cityCode);
-				otherParams = new HashMap<String, Object>();
+			//添加任务
+			return createTaskQueue(parameter);
 
-				String fullName = "" + city.get("NAME") + ' ' + examName;
-
-				String rootPath = rptPath + "/" + fullName + " 报表";
-				//报表参数加到队列
-
-				RptParameterBase cityParameter = new RptParameterBase(parameter);
-				cityParameter.setPathFile(rootPath);
-				cityParameter.setCityCode(cityCode);
-				rpttaskqueue.addCityTask(cityParameter);
-
-				/************** 全区报表********************/
-//            if (level == null || level >= 2) {
-				List<Map> areaList = jyjRptExtMapper.qryExamArea(cityParams);
-				for (Map area : areaList) {
-					if (area == null)
-						break;
-					Map areaParams = new HashMap(cityParams);
-					areaParams.put("areaCode", area.get("AREACODE"));
-					areaParams.put("areaId", area.get("AREACODE"));
-					areaParams.put("areaName", area.get("NAME"));
-					//报表参数加到队列
-
-					RptParameterBase areaParameter = new RptParameterBase(cityParameter);
-					areaParameter.setOtherParams(new HashMap(areaParams));
-					rpttaskqueue.addAreaTask(areaParameter);
-
-//                    if (level == null || level >= 3) {
-					/************** 全校报表*******************/
-					List<Map> schoolList = jyjRptExtMapper.qryExamSchool(areaParams);
-//							for (Map school : schoolList) {
-					//将学校维度处理并行化
-					final List<Map<String, Object>> finalSubjects2Exp = subjects2Exp;
-					schoolList.parallelStream().forEach(school -> {
-						try {
-							Map schoolParams = new HashMap(areaParams);
-							schoolParams.put("schoolId", school.get("ID"));
-							schoolParams.put("schoolName", school.get("NAME"));
-
-							schoolParams.put("subjects2Exp", finalSubjects2Exp);
-							//报表参数加到队列
-
-							RptParameterBase schoolParameter = new RptParameterBase(areaParameter);
-							schoolParameter.setOtherParams(new HashMap(schoolParams));
-							rpttaskqueue.addSchoolTask(schoolParameter);
-
-//                                if (level == null || level >= 4) {
-							/************************** 班级报表 *************************/
-							List<Map> classList = jyjRptExtMapper.qryExamClasses(schoolParams);
-							for (Map classes : classList) {
-								Map classesParams = new HashMap(schoolParams);
-								classesParams.put("classesId", classes.get("ID"));
-								classesParams.put("classesName", classes.get("NAME"));
-
-								//报表参数加到队列
-								RptParameterBase classesParameter = new RptParameterBase(schoolParameter);
-								classesParameter.setOtherParams(new HashMap(classesParams));
-								rpttaskqueue.addClassTask(classesParameter);
-							}
-//                                }
-						} catch (Exception e) {
-							e.printStackTrace();
-
-						}
-					});
-//                    }
-				}
-//            }
-			}
-			return rpttaskqueue;
 		}
 
+	/**
+	 * 根据参数创建任务队列
+	 * @param parameter
+	 * @return
+	 * @throws Exception
+	 */
+	private RptTaskQueue createTaskQueue(RptParameterBase parameter) throws Exception {
 
-	public void createTaskQueue(String examId, RptTaskQueue rpttaskqueue, Map gradParam)	{
+		RptTaskQueue rpttaskqueue = rpttaskfactory.create(parameter);
+		//获取查询条件
+		String examId = parameter.getExambatchId();
+		Map gradParam = parameter.getOtherParams();
+		String examName = gradParam.get("examName").toString();
+
 		List<Map<String, Object>> classesInfo =  baseDataService.getClasses(examId);
 		List<Map<String, Object>> schoolsInfo =  baseDataService.getSchools(examId);
 		List<Map<String, Object>> areasInfo =  baseDataService.getAreas(examId);
+		List<Map> cityInfo = jyjRptExtMapper.qryExamCity(examId);
+		if (cityInfo.size() != 1) throw new ReportExportException("找不到唯一参考地市");
 
+		//获取地市，设置参数
+		Map city = cityInfo.get(0);
+		Map cityParams = new HashMap(gradParam);
+		String cityCode = city.get("CITYCODE").toString();
+		cityParams.put("cityCode", cityCode);
+		String fullName = "" + city.get("NAME") + ' ' + examName;
+		String rootPath = parameter.getPathFile() + "/" + fullName + " 报表";
+		//添加市维度的报表任务
+		RptParameterBase cityParameter = new RptParameterBase(parameter);
+		cityParameter.setPathFile(rootPath);
+		cityParameter.setCityCode(cityCode);
+		rpttaskqueue.addCityTask(cityParameter);
+		//添加区维度的报表任务
+		for (Map area : areasInfo){
+			Map areaParams = new HashMap(cityParams);
+			areaParams.put("areaId", area.get("AREA_ID"));
+			areaParams.put("areaName", area.get("AREA_NAME"));
+			RptParameterBase areaParameter = new RptParameterBase(cityParameter);
+			areaParameter.setOtherParams(new HashMap(areaParams));
+			rpttaskqueue.addAreaTask(areaParameter);
+		}
+		//添加校维度的报表任务
+		for (Map school : schoolsInfo){
+			Map schoolParams = new HashMap(cityParams);
+			schoolParams.put("schoolId", school.get("SCH_ID"));
+			schoolParams.put("schoolName", school.get("SCH_NAME"));
+			schoolParams.put("areaId", school.get("AREA_ID"));
+			schoolParams.put("areaName", school.get("AREA_NAME"));
+			RptParameterBase schoolParameter = new RptParameterBase(cityParameter);
+			schoolParameter.setOtherParams(new HashMap(schoolParams));
+			rpttaskqueue.addSchoolTask(schoolParameter);
+		}
+		//添加班维度的报表任务
+		for (Map clazz : classesInfo){
+			Map classesParams = new HashMap(cityParams);
+			classesParams.put("schoolId", clazz.get("SCH_ID"));
+			classesParams.put("schoolName", clazz.get("SCH_NAME"));
+			classesParams.put("areaId", clazz.get("AREA_ID"));
+			classesParams.put("areaName", clazz.get("AREA_NAME"));
+			classesParams.put("classesId", clazz.get("CLS_ID"));
+			classesParams.put("classesName", clazz.get("CLS_NAME"));
+			RptParameterBase classesParameter = new RptParameterBase(cityParameter);
+			classesParameter.setOtherParams(new HashMap(classesParams));
+			rpttaskqueue.addClassTask(classesParameter);
+		}
+
+		return rpttaskqueue;
 	}
 
 /***************************************   test   ************************************************************/

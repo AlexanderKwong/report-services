@@ -124,11 +124,11 @@ public class ExpHBSchTotalScoreEachSegService extends BaseRptService {
 	 * @return
 	 */
 	public List<Map<String, Object>> getSegmentData(List<Map<String, Object>> data, Integer step, EnmSegmentType type) {
-		Float maxScore = Float.parseFloat(data.get(0).get("SIGN_TOTAL").toString());
+		Float maxScore = Float.parseFloat(data.get(0).get("ALL_TOTAL").toString());
 
 		Segment segment = new Segment(step, 0, maxScore, data.size(), type);
 
-		return segment.getStepSegment(data, "SIGN_TOTAL");
+		return segment.getStepSegment(data, "ALL_TOTAL");
 	}
 
 

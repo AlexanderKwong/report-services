@@ -1,4 +1,4 @@
-package zyj.report.service.export.hubei;
+package zyj.report.service.export.hubei.school;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,11 +20,11 @@ import java.util.function.Consumer;
 
 /**
  * @author 邝晓林
- * @Description
+ * @Description 导出 湖北版 各班均分、优秀数、及格数、标准差（含各班） 服务
  * @date 2017/1/11
  */
 @Service
-public class ExpClassScoreBasicIndexService extends BaseRptService{
+public class ExpHBSchBasicIndexOfClassesService extends BaseRptService{
 
     private static String excelName = "各班均分、优秀数、及格数、标准差";
 
@@ -40,7 +40,7 @@ public class ExpClassScoreBasicIndexService extends BaseRptService{
         List<Sheet> sheets = getSheet(fields, params);
 
         // 初始化 excel
-        Excel excel = new Excel(excelName+".xls", params.get("pathFile").toString(), sheets);
+        Excel excel = new Excel(excelName+"（含各班）.xls", params.get("pathFile").toString(), sheets);
 
         // 导出 excel 文件
         ExportUtil.createExcel(excel);
@@ -80,7 +80,7 @@ public class ExpClassScoreBasicIndexService extends BaseRptService{
 
         if (data.isEmpty() ) throw new ReportExportException("没有查到源数据，请核查！");
 
-        Consumer<Map> distance = m -> m.put("DISTANCE",Integer.valueOf(m.get("TOP_SCORE").toString()) - Integer.valueOf(m.get("UP_SCORE").toString()));
+        Consumer<Map> distance = m -> m.put("DISTANCE",CalToolUtil.decimalFormat2(Float.valueOf(m.get("TOP_SCORE").toString()) - Float.valueOf(m.get("UP_SCORE").toString())));
 
         Consumer<Map> gd_rate = m -> m.put("LEVEL_GD_RATE", CalToolUtil.decimalFormat2(Double.valueOf(m.get("LEVEL_GD_NUM").toString()) *100 / Integer.valueOf(m.get("TAKE_EXAM_NUM").toString()))+"%");
 

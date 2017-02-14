@@ -112,7 +112,7 @@ public class ExpHBSchTotalScoreEachSegService extends BaseRptService {
 
 		// 加载 各行的字段的数据
 		sheet.getData().addAll(getSegmentData(data, ((SegmentTemplate) rptTemplate).getStep(), EnmSegmentType
-				.ROUNDED));
+				.ROUNDED, "ALL_TOTAL"));
 
 		return sheet;
 	}
@@ -123,12 +123,12 @@ public class ExpHBSchTotalScoreEachSegService extends BaseRptService {
 	 * @param data
 	 * @return
 	 */
-	public List<Map<String, Object>> getSegmentData(List<Map<String, Object>> data, Integer step, EnmSegmentType type) {
-		Float maxScore = Float.parseFloat(data.get(0).get("ALL_TOTAL").toString());
+	public List<Map<String, Object>> getSegmentData(List<Map<String, Object>> data, Integer step, EnmSegmentType type, String scoreKey) {
+		Float maxScore = Float.parseFloat(data.get(0).get(scoreKey).toString());
 
 		Segment segment = new Segment(step, 0, maxScore, data.size(), type);
 
-		return segment.getStepSegment(data, "ALL_TOTAL");
+		return segment.getStepSegment(data, scoreKey);
 	}
 
 

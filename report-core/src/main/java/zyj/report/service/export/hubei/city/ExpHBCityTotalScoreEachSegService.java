@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import zyj.report.common.ExportUtil;
 import zyj.report.common.constant.EnmSegmentType;
+import zyj.report.common.constant.EnmSubjectType;
 import zyj.report.persistence.client.RptExpStudetScoreMapper;
 import zyj.report.service.export.hubei.school.ExpHBSchTotalScoreEachSegService;
 import zyj.report.service.model.Excel;
@@ -12,7 +13,6 @@ import zyj.report.service.model.Sheet;
 import zyj.report.service.model.report.RptTemplate;
 import zyj.report.service.model.segment.SegmentTemplate;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +20,7 @@ import java.util.Map;
 /**
  * Created by CXinZhi on 2017/1/17.
  * <p()>
- * 市级报表--总分个分数段
+ * 全市报表 -- 科目 总分个分数段
  */
 @Service
 public class ExpHBCityTotalScoreEachSegService extends ExpHBSchTotalScoreEachSegService {
@@ -56,34 +56,16 @@ public class ExpHBCityTotalScoreEachSegService extends ExpHBSchTotalScoreEachSeg
 
 	}
 
-	/**
-	 * 初始化 sheet
-	 */
-	public List<Sheet> getSheets(RptTemplate rptTemplate) {
 
-		List<Sheet> sheets = new ArrayList<>();
+	@Override
+	public Sheet getSheet(EnmSubjectType subjectType, RptTemplate rptTemplate) {
 
-		// 添加文科 sheet
-		sheets.add(getSheet(rptTemplate));
-
-		return sheets;
-	}
-
-	/**
-	 *
-	 * 新建sheet 表格
-	 *
-	 * @param rptTemplate
-	 * @return
-	 */
-	public Sheet getSheet(RptTemplate rptTemplate) {
-
-		Sheet sheet = new Sheet(p().getSubject(),p().getSubjectName());
+		Sheet sheet = new Sheet(subjectType.getCode() + "", subjectType.getName());
 		Map conditions = new HashMap<String, Object>();
 
 		conditions.put("exambatchId", p().getExamBatchId());
 		conditions.put("cityCode", p().getCityCode());
-		conditions.put("subject", p().getSubject());
+		conditions.put("type", subjectType.getCode());
 		conditions.put("stuType", p().getStuType());
 
 		//读取源数据
@@ -94,7 +76,7 @@ public class ExpHBCityTotalScoreEachSegService extends ExpHBSchTotalScoreEachSeg
 
 		// 加载 各行的字段的数据
 		sheet.getData().addAll(getSegmentData(data, ((SegmentTemplate) rptTemplate).getStep(),
-				EnmSegmentType.ROUNDED));
+				EnmSegmentType.ROUNDED, "ALL_TOTAL"));
 
 		return sheet;
 	}

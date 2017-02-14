@@ -70,7 +70,7 @@ public class Segment {
 	public void initSegmentList() {
 		// 分数阶梯集合 排序
 		scoreSet = new TreeMap<Integer, Integer>();
-		for (int i = minScore; i < maxScore; i++) {
+		for (int i = minScore; i <= maxScore; i++) {
 			scoreSet.put(i, 0);
 		}
 	}
@@ -86,7 +86,8 @@ public class Segment {
 			try {
 				ScoreSegment segment = SegmentFactor.getInstance().creator(enmSegmentType.getCode());
 				Integer score = segment.doSegment(enmSegmentType, Float.parseFloat(model.get(key).toString()));
-				scoreSet.put(score - 1, scoreSet.ceilingEntry(score - 1).getValue() + 1);
+//				scoreSet.put(score - 1, scoreSet.ceilingEntry(score - 1).getValue() + 1);
+				scoreSet.put(score, scoreSet.ceilingEntry(score ).getValue() + 1);
 			} catch (Exception ex) {
 				throw ex;
 			}
@@ -290,10 +291,10 @@ public class Segment {
 
 			// 对第一个有数 区间以下的数据进行处理
 			for (int i = counter; i > 0; i--) {
-				Integer form = i * step - 1;
-				Integer to = (i - 1) * step - 1;
+				Integer form = i * step ;
+				Integer to = (i - 1) * step ;
 
-				segmentNames.add(String.format("[%d,%d)", to + 1, form + 1));
+				segmentNames.add(String.format("[%d,%d)", to, form ));
 
 			}
 		}
@@ -320,8 +321,8 @@ public class Segment {
 
 		for (String s : segmentNames) {
 			String[] fromTo = s.substring(1, s.length() - 1).split(",");
-			Integer from = segmentNames.indexOf(s) == 0 ? Integer.parseInt(fromTo[1]) : Integer.parseInt(fromTo[1]) - 1;
-			Integer to = Integer.parseInt(fromTo[0]) - 1;
+			Integer from = segmentNames.indexOf(s) == 0 ? Integer.parseInt(fromTo[1]) : (Integer.parseInt(fromTo[1]) - 1);
+			Integer to = Integer.parseInt(fromTo[0]) - 1 ;
 
 			SortedMap<Integer, Integer> subMap = scoreSet.descendingMap().subMap(from, to);
 			Iterator iterator = subMap.entrySet().iterator();

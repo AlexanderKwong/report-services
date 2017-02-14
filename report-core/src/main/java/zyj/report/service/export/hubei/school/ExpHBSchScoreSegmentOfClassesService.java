@@ -69,7 +69,7 @@ public class ExpHBSchScoreSegmentOfClassesService extends BaseRptService {
         CalToolUtil.sortByIndexValue(classesInSchool,"CLS_NAME");
 
         for (Map<String,Object> cls : classesInSchool){
-            if (Integer.parseInt(cls.get("CLS_TYPE").toString()) == Integer.parseInt(params.get("type").toString()))
+            if (Integer.parseInt(cls.get("CLS_TYPE").toString()) == Integer.parseInt(params.get("type").toString())  || Integer.parseInt(params.get("type").toString())==3 )
                 root.add(new SingleField(cls.get("CLS_NAME").toString(),cls.get("CLS_ID").toString()));
         }
         params.put("classes",classesInSchool);

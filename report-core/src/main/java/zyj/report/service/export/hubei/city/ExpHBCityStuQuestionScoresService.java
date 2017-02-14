@@ -14,7 +14,7 @@ import zyj.report.service.export.hubei.school.ExpHBSchStuQuestionScoresService;
 @Service
 public class ExpHBCityStuQuestionScoresService extends ExpHBSchStuQuestionScoresService{
 
-    private String excelName = "成绩明细表";
+    protected String excelName = "成绩明细表";
 
 
     @Autowired

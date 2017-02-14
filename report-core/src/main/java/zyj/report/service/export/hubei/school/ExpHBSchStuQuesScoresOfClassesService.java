@@ -49,7 +49,7 @@ public class ExpHBSchStuQuesScoresOfClassesService extends ExpHBSchStuQuestionSc
         MultiField rootToFormat = (MultiField) fields.get(0);
         //获取所有班级
         List<Map<String, Object>> classes = baseDataService.getClassesInSchool(params.get("exambatchId").toString(),params.get("schoolId").toString())
-                .stream().filter(c->Integer.parseInt(c.get("CLS_TYPE").toString()) == Integer.parseInt(params.get("type").toString())).collect(Collectors.toList());
+                .stream().filter(c->Integer.parseInt(c.get("CLS_TYPE").toString()) == Integer.parseInt(params.get("type").toString()) || Integer.parseInt(params.get("type").toString())==3).collect(Collectors.toList());
 
         CollectionsUtil.orderByStringValue(classes, "CLS_NAME");
 

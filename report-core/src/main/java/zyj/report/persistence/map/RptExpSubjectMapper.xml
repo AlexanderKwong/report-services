@@ -1135,9 +1135,9 @@ group by subject,PAPER_ID
 			<if test="classesId != null">
 				and cls_id = classesId
 			</if>
-			<if test="type != null">
+			<!--<if test="type != null">
 				and cls_type = #{type}
-			</if>
+			</if>-->
 		</where>
 		group by exambatch_id, exambatch_name, batchid, paper_id, paper_name
 		<if test="GroupBy != null">

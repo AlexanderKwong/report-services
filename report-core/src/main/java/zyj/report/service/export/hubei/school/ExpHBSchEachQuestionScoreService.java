@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import zyj.report.common.CalToolUtil;
 import zyj.report.common.ExportUtil;
+import zyj.report.common.util.CollectionsUtil;
 import zyj.report.exception.report.ReportExportException;
 import zyj.report.persistence.client.JyjRptExtMapper;
 import zyj.report.persistence.client.RptExpQuestionMapper;
@@ -66,51 +67,73 @@ public class ExpHBSchEachQuestionScoreService extends BaseRptService {
 
 		List<MultiSheet> sheets = new ArrayList<>();
 
-		//读取源数据
-		Map condition = new HashMap(params);
-		// condition.put("level","classes");
 
 
 		// 查询出当前有多少个班级参与
 		List<Map<String, Object>> classList = baseDataService.getClassesInSchool(p().getExamBatchId(),p()
-				.getSchoolId());
+				.getSchoolId()).stream().filter(c->(Integer.parseInt(params.get("type").toString())==3 || Integer.parseInt(c.get("CLS_TYPE").toString()) == Integer.parseInt(params.get("type").toString()))).collect(Collectors.toList());;
 
-		classList.forEach(model -> {
+		//02/14 add by kwong +++++++++++++++ 不在循环中查询
+		Map condition = new HashMap(params);
+		condition.put("level", "classes");
+		// 题目数据
+		List<Map<String, Object>> questions = rptExpQuestionMapper.findRptExpQuestion(condition);
+		// 题目的选择
+		List<Map<String, Object>> questionitems = rptExpQuestionMapper.findRptExpQuestionItem(condition);
+		//客观题 为 空、对、缺失、错误的 统计数
+		condition.put("GroupBy", "cls_id");
+		List<Map<String, Object>> objectiveNullRightMissWrongs = rptExpQuestionMapper.qryObjectiveNullRightMissWrong(condition);
+		if (questions.isEmpty() || questionitems.isEmpty() || objectiveNullRightMissWrongs.isEmpty()) {
+			throw new ReportExportException("没有查到源数据，请核查！");
+		}
 
-			MultiSheet sheet = new MultiSheet(model.get("CLS_ID").toString(), model.get("CLS_NAME").toString());
-			try {
+		Map<String, List<Map<String, Object>>> questionPartition = CollectionsUtil.partitionBy(questions, new String[]{"CLS_ID"});
+		Map<String, List<Map<String, Object>>> questionItemPartition = CollectionsUtil.partitionBy(questionitems, new String[]{"CLS_ID"});
+		Map<String, List<Map<String, Object>>> objectivePartition = CollectionsUtil.partitionBy(objectiveNullRightMissWrongs, new String[]{"CLS_ID"});
+		//++++++++++++++++++++
 
-				condition.put("level","classes");
-				condition.put("classesId",model.get("CLS_ID").toString());
+//--		classList.forEach(model -> {
+		for (Map<String, Object> model : classList) {
+			String clsId = model.get("CLS_ID").toString();
+			MultiSheet sheet = new MultiSheet(clsId, model.get("CLS_NAME").toString());
+//--			try {
 
-				// 题目数据
-				List<Map<String, Object>> question = rptExpQuestionMapper.findRptExpQuestion(condition);
+//--			condition.put("level","classes");
+//--				condition.put("classesId",model.get("CLS_ID").toString());
 
-				// 题目的选择
-				List<Map<String, Object>> questionitem = rptExpQuestionMapper.findRptExpQuestionItem(condition);
+//				// 题目数据
+//--				List<Map<String, Object>> question = rptExpQuestionMapper.findRptExpQuestion(condition);
+			List<Map<String, Object>> question = questionPartition.get(clsId);
+//				// 题目的选择
+//--				List<Map<String, Object>> questionitem = rptExpQuestionMapper.findRptExpQuestionItem(condition);
+			List<Map<String, Object>> questionitem = questionItemPartition.get(clsId);
+//--				condition.put("GroupBy", "sch_id");
 
-				condition.put("GroupBy", "sch_id");
+//				// 客观题 为 空、对、缺失、错误的 统计数
+//--				List<Map<String, Object>> objectiveNullRightMissWrong = rptExpQuestionMapper.qryObjectiveNullRightMissWrong(condition);
+			List<Map<String, Object>> objectiveNullRightMissWrong = objectivePartition.get(clsId);
 
-				// 客观题 为 空、对、缺失、错误的 统计数
-				List<Map<String, Object>> objectiveNullRightMissWrong = rptExpQuestionMapper.qryObjectiveNullRightMissWrong(condition);
-
-				if (question.isEmpty() || questionitem.isEmpty())
-					throw new ReportExportException("没有查到源数据，请核查！");
-
-				sheet.getSheets().add(getObjectiveSheet(params, question.stream().filter(m -> Integer.valueOf(m.get("QST_TIPY").toString()) != 4).collect(Collectors.toList()), questionitem.stream().filter(m -> Integer.valueOf(m.get("QST_TIPY").toString()) != 4).collect(Collectors.toList()), objectiveNullRightMissWrong));
-
-				sheet.getSheets().add(getSubjectiveSheet(params, question.stream().filter(m -> Integer.valueOf(m.get
-						("QST_TIPY").toString()) == 4).collect(Collectors.toList())));
-
-				sheet.getSheets().add(getPaperSheet(params));
-
-				sheets.add(sheet);
-
-			} catch (ReportExportException e) {
-				e.printStackTrace();
+			if (question == null || questionitem == null || objectiveNullRightMissWrong == null) {
+				System.out.println("Warn: 没有找到对应的班级数据，跳过");
+				continue;
 			}
+			CollectionsUtil.orderByIntValue(question,"QUESTION_ORDER");
 
-		});
+			sheet.getSheets().add(getObjectiveSheet(params, question.stream().filter(m -> Integer.valueOf(m.get("QST_TIPY").toString()) != 4).collect(Collectors.toList()), questionitem.stream().filter(m -> Integer.valueOf(m.get("QST_TIPY").toString()) != 4).collect(Collectors.toList()), objectiveNullRightMissWrong));
+
+			sheet.getSheets().add(getSubjectiveSheet(params, question.stream().filter(m -> Integer.valueOf(m.get
+					("QST_TIPY").toString()) == 4).collect(Collectors.toList())));
+
+			sheet.getSheets().add(getPaperSheet(params));
+
+			sheets.add(sheet);
+
+//--			} catch (ReportExportException e) {
+//--				e.printStackTrace();
+//--			}
+
+		};
+		//--);
 
 		return sheets;
 	}

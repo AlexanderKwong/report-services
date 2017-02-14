@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @Service
 public class ExpHBSchStuQuestionScoresService extends BaseRptService{
 
-    private String excelName = "学生每题得分";
+    protected String excelName = "学生每题得分";
 
 
     @Autowired

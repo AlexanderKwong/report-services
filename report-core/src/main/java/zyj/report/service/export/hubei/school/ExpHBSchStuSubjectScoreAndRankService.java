@@ -6,7 +6,6 @@ import zyj.report.common.CalToolUtil;
 import zyj.report.common.ExportUtil;
 import zyj.report.common.util.CollectionsUtil;
 import zyj.report.exception.report.ReportExportException;
-import zyj.report.persistence.client.RptExpQuestionMapper;
 import zyj.report.persistence.client.RptExpSubjectMapper;
 import zyj.report.service.BaseDataService;
 import zyj.report.service.export.BaseRptService;
@@ -30,6 +29,7 @@ public class ExpHBSchStuSubjectScoreAndRankService extends BaseRptService{
 
     @Autowired
     BaseDataService baseDataService;
+
     @Autowired
     RptExpSubjectMapper rptExpSubjectMapper;
 

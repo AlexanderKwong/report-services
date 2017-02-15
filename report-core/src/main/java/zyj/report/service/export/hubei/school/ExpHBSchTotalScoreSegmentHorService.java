@@ -3,6 +3,7 @@ package zyj.report.service.export.hubei.school;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import zyj.report.common.CalToolUtil;
 import zyj.report.common.ExportUtil;
 import zyj.report.common.constant.EnmSegmentType;
 import zyj.report.common.constant.EnmSubjectType;
@@ -14,7 +15,10 @@ import zyj.report.service.export.BaseRptService;
 import zyj.report.service.model.*;
 import zyj.report.service.model.segment.Segment;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -132,7 +136,7 @@ public class ExpHBSchTotalScoreSegmentHorService extends BaseRptService {
 	 */
 	private Sheet getSheet(EnmSubjectType type) throws ReportExportException {
 
-		Sheet sheet = new Sheet("", type.getName());
+		Sheet sheet = new Sheet("",getWenLiSheetName(type,excelName));
 		Map<String,Object> data = getFields(type);
 		sheet.setFields((List<Field>)data.get("fields"));
 
@@ -143,6 +147,8 @@ public class ExpHBSchTotalScoreSegmentHorService extends BaseRptService {
 
 		//数据集1
 		List<Map<String, Object>> clsSubjectInfo = rptExpAllscoreMapper.qryClassAllScoreInfo(params);
+
+		CalToolUtil.sortByIndexValueAndResetRank(clsSubjectInfo,"RANK");
 
 		//数据集2
 		Segment segment = (Segment) data.get("segment");

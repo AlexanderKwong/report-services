@@ -2,6 +2,7 @@ package zyj.report.service.export;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import zyj.report.common.constant.EnmSubjectType;
 import zyj.report.exception.report.ReportExportException;
 import zyj.report.service.model.RptParam;
 
@@ -13,7 +14,7 @@ import java.util.Map;
 public class BaseRptService {
 
 	private Logger logger = LoggerFactory.getLogger(BaseRptService.class);
-	
+
 	private static String[][] grades = new String[][]{{"x1", "小学1年级"},
 			{"x2", "小学2年级"}, {"x3", "小学3年级"}, {"x4", "小学4年级"},
 			{"x5", "小学5年级"}, {"x6", "小学6年级"}, {"c1", "初中1年级"},
@@ -248,6 +249,32 @@ public class BaseRptService {
 
 	public static RptParam p() {
 		return paramLocal.get();
+	}
+
+	/**
+	 * 获取 文理 分科的 sheet 名称
+	 * @param type
+	 * @param sheetName
+	 * @return
+	 */
+	protected static String getWenLiSheetName(EnmSubjectType type, String sheetName) {
+		if (type.equals(EnmSubjectType.ALL)) {
+			return sheetName;
+		} else
+			return type.getName();
+	}
+
+	/**
+	 * 获取 文理 分科的 Field 名称
+	 * @param type
+	 * @param sheetName
+	 * @return
+	 */
+	protected static String getWenLiFieldName(EnmSubjectType type, String sheetName) {
+		if (type.equals(EnmSubjectType.ALL)) {
+			return sheetName;
+		} else
+			return sheetName + "(" + type.getName() + ")";
 	}
 
 	private static ThreadLocal<RptParam> paramLocal = new ThreadLocal<RptParam>() {

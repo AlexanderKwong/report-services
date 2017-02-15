@@ -20,11 +20,14 @@ public class MulClassSegmentRptTitle implements RptTitle {
 		List<Field> fields = new ArrayList<>();
 		MultiField root = new MultiField(excelName);
 
+		MultiField sum =new MultiField("汇总");
 		//step1:加载固定标题
-		for (String t : new String[]{"分数段,SCORE_SEG", "频数,FREQUENCY", "人数,ACC_FREQUENCY"}) {
+		for (String t : new String[]{"分数段,SCORE_SEG", "人数,FREQUENCY", "累计,ACC_FREQUENCY"}) {
 			String[] args = t.split(",");
-			root.add(new SingleField(args[0], args[1]));
+			sum.add(new SingleField(args[0], args[1]));
 		}
+
+		root.add(sum);
 
 		//step2:加载扩展标题
 		if (exFields == null)

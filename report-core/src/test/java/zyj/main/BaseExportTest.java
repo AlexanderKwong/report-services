@@ -1,21 +1,11 @@
 package zyj.main;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
 import zyj.report.common.SpringUtil;
 import zyj.report.configuration.AppConfig;
 import zyj.report.service.redis.RedisService;
@@ -41,7 +31,7 @@ public class BaseExportTest  {
 //导出的参数
     private Map<String ,Object> parmter;
 //导出路径
-    final private String pathFile = "d:/testxls/zskcs_5/";
+    final private String pathFile = "/Users/CXinZhi/Downloads/test/";
 
    /* @Before
     public void initSpring(){

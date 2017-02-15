@@ -77,8 +77,6 @@ public class ExpHBSchTotalScoreSegmentHorService extends BaseRptService {
 		params.put("schoolId",p().getSchoolId());
 		params.put("type",type.getCode());
 
-
-
 		//step2: 加载动态标题1 查最高分
 		Float max = rptExpAllscoreMapper.qryStudentSubjectTopScore(params);
 
@@ -113,7 +111,6 @@ public class ExpHBSchTotalScoreSegmentHorService extends BaseRptService {
 	private List<Sheet> getSheets() throws ReportExportException {
 		List<Sheet> sheets = new ArrayList<>();
 
-
 		List<Map<String, Object>> subjects = baseDataService.getSubjectByExamid(p().getExamBatchId());
 
 		if (EnmSubjectType.ALL.getCode() == Integer.parseInt(subjects.get(0).get("TYPE").toString())) {
@@ -125,12 +122,7 @@ public class ExpHBSchTotalScoreSegmentHorService extends BaseRptService {
 			// 理科
 			sheets.add(getSheet(EnmSubjectType.LI));
 		}
-
-
-
-
 		return sheets;
-
 	}
 
 	/**
@@ -165,7 +157,6 @@ public class ExpHBSchTotalScoreSegmentHorService extends BaseRptService {
 		List<Map<String, Object>> result = CollectionsUtil.leftjoinMapByKey(clsSubjectInfo, result3, "CLS_ID");
 
 		CollectionsUtil.orderByIntValue(result, "RANK");
-
 
 		sheet.getData().addAll(result);
 

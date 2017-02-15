@@ -114,7 +114,7 @@ public class ExpHBSchStuQuestionScoresService extends BaseRptService{
         });
         zyj.report.common.CalToolUtil.sortByIndexValue(result, "SEQUENCE");
 
-        Sheet sheet = new Sheet("",excelName);
+        Sheet sheet = new Sheet("","全级");
         sheet.setFields(fields);
         sheet.getData().addAll(result);
 

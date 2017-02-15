@@ -87,7 +87,7 @@ public class ExpHBSchObjectiveAnswerService extends BaseRptService{
         List<Map<String, Object>> result = rptExpQuestionMapper.qryStudentQuestionScore(params);
         if (result.isEmpty()) throw new ReportExportException("没有查到源数据，请核查！");
 
-        Sheet sheet = new Sheet("",excelName);
+        Sheet sheet = new Sheet("","全级");
         sheet.setFields(fields);
         sheet.getData().addAll(result);
 

@@ -31,6 +31,61 @@
 			</foreach>
 		</where>
 	</sql>
+	<sql id="School_Allscore_Column_List">
+		EXAMBATCH_ID,SCH_ID,SCH_NAME,FULL_SCORE,FULL_SCORE_RATE,AVG_SCORE,TOP_SCORE,UP_SCORE,PERSON_NUM,LEVEL_A_NUM,LEVEL_B_NUM,LEVEL_C_NUM,LEVEL_D_NUM,LEVEL_E_NUM,LEVEL_GD_NUM,LEVEL_FN_NUM,LEVEL_PS_NUM,LEVEL_FL_NUM,AVG_SCORE_RANK,AREA_ID,CITY_CODE,BEYOND_AVG_RATE,COMPARE_AVG_RATE,STU_SCORE_SD,TYPE,STUDENT_TYPE
+	</sql>
+
+	<sql id="Class_Allscore_Column_List">
+		EXAMBATCH_ID,SCH_ID,SCH_NAME,CLS_ID,CLS_NAME,FULL_SCORE,FULL_SCORE_RANK,AVG_SCORE,TOP_SCORE,UP_SCORE,PERSON_NUM,LEVEL_A_NUM,LEVEL_B_NUM,LEVEL_C_NUM,LEVEL_D_NUM,LEVEL_E_NUM,LEVEL_GD_NUM,LEVEL_FN_NUM,LEVEL_PS_NUM,LEVEL_FL_NUM,AVG_SCORE_RANK,AREA_ID,CITY_CODE,BEYOND_AVG_RATE,COMPARE_AVG_RATE,STU_SCORE_SD,TYPE,STUDENT_TYPE
+	</sql>
+
+	<sql id="Area_Allscore_Column_List">
+		EXAMBATCH_ID,AREA_ID,FULL_SCORE,FULL_SCORE_RATE,AVG_SCORE,TOP_SCORE,UP_SCORE,PERSON_NUM,LEVEL_A_NUM,LEVEL_B_NUM,LEVEL_C_NUM,LEVEL_D_NUM,LEVEL_E_NUM,LEVEL_GD_NUM,LEVEL_FN_NUM,LEVEL_PS_NUM,LEVEL_FL_NUM,CITY_CODE,BEYOND_AVG_RATE,COMPARE_AVG_RATE,STU_SCORE_SD,AVG_SCORE_RANK,TYPE,STUDENT_TYPE,AREA_NAME
+	</sql>
+
+	<sql id="City_Allscore_Column_List">
+		EXAMBATCH_ID,CITY_CODE,FULL_SCORE,FULL_SCORE_RATE,AVG_SCORE,TOP_SCORE,UP_SCORE,PERSON_NUM,LEVEL_A_NUM,LEVEL_B_NUM,LEVEL_C_NUM,LEVEL_D_NUM,LEVEL_E_NUM,LEVEL_GD_NUM,LEVEL_FN_NUM,LEVEL_PS_NUM,LEVEL_FL_NUM,STU_SCORE_SD,TYPE,STUDENT_TYPE
+	</sql>
+	<select id="findRptExpAllscore" resultType="map" parameterType="map">
+		select
+		<if test="level == 'city'">
+			<include refid="City_Allscore_Column_List"/>
+			from RPT_EXP_CITY_ALLSCORE
+		</if>
+		<if test="level == 'area'">
+			<include refid="Area_Allscore_Column_List"/>
+			from RPT_EXP_AREA_ALLSCORE
+		</if>
+		<if test="level == 'school'">
+			<include refid="School_Allscore_Column_List"/>
+			from RPT_EXP_SCHOOL_ALLSCORE
+		</if>
+		<if test="level == 'classes'">
+			<include refid="Class_Allscore_Column_List"/>
+			from RPT_EXP_CLASS_ALLSCORE
+		</if>
+		where
+		EXAMBATCH_ID = #{exambatchId,jdbcType=VARCHAR}
+		and CITY_CODE = #{cityCode,jdbcType=VARCHAR}
+		<if test="stuType!=null">
+			and student_type = #{stuType}
+		</if>
+		<if test="level!='city' and areaId!=null">
+			and AREA_ID=#{areaId,jdbcType=VARCHAR}
+		</if>
+		<if test="level!='area'  and level!='city' and schoolId!=null">
+			and SCH_ID=#{schoolId,jdbcType=VARCHAR}
+		</if>
+		<if test="level=='classes' and classesId!=null">
+			and CLS_ID=#{classesId,jdbcType=VARCHAR}
+		</if>
+		<if test="type != null">
+			and TYPE=#{type}
+		</if>
+		<if test="orderBy != null">
+			order by ${orderBy}
+		</if>
+	</select>
 
 	<!-- 获取学生科目总成绩信息-->
 	<select id="qryStudentSubjectAllScore" resultType="java.util.HashMap">

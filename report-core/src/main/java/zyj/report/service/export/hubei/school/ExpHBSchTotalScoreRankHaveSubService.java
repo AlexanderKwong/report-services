@@ -3,15 +3,22 @@ package zyj.report.service.export.hubei.school;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import zyj.report.business.task.SubjectInfo;
+import zyj.report.common.CalToolUtil;
 import zyj.report.common.ExportUtil;
 import zyj.report.common.constant.EnmSubjectType;
+import zyj.report.common.util.CollectionsUtil;
+import zyj.report.exception.report.ReportExportException;
+import zyj.report.persistence.client.RptExpAllscoreMapper;
+import zyj.report.persistence.client.RptExpSubjectMapper;
 import zyj.report.service.BaseDataService;
 import zyj.report.service.export.BaseRptService;
 import zyj.report.service.model.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -27,6 +34,8 @@ public class ExpHBSchTotalScoreRankHaveSubService extends BaseRptService {
 
 	@Autowired
 	BaseDataService baseDataService;
+	@Autowired
+	RptExpAllscoreMapper rptExpAllscoreMapper;
 
 	@Override
 	public void exportData(Map<String, Object> parmter) throws Exception {
@@ -84,14 +93,35 @@ public class ExpHBSchTotalScoreRankHaveSubService extends BaseRptService {
 
 		sheet.setFields(getFields(type));
 
-		List<Map<String, Object>> data2 = baseDataService.getStudentSubjectsAndAllscore(p().getExamBatchId(),
-				p().getSchoolId(), p().getLevel(), p().getStuType()).stream().collect(Collectors.toList());
+		//查学校维度的数据
+		String key = "ALL_SCORE";
+		Map condition = new HashMap();
+		condition.put("level",p().getLevel());
+		condition.put("schoolId",p().getSchoolId());
+		condition.put("cityCode",p().getCityCode());
+		condition.put("exambatchId",p().getExamBatchId());
+		condition.put("stuType",p().getStuType());
+		condition.put("type",type.getCode());
+		List<Map<String, Object>> schAllscore = rptExpAllscoreMapper.findRptExpAllscore(condition);
+
+		//获取平均分和标准差，用于计算标准分
+		Float avgScore = Float.parseFloat(schAllscore.get(0).get("AVG_SCORE").toString());
+		Float stdDev = Float.parseFloat(schAllscore.get(0).get("STU_SCORE_SD").toString());
+
+		//定义标准分算子
+		Function<Map<String,Object>,Map<String,Object>> calcStdDev = m -> {
+			Float stuScore = Float.parseFloat(m.get(key).toString());
+			String stdScore = CalToolUtil.decimalFormat2((stuScore - avgScore) * 100 / stdDev + 500);
+			m.put("STANDARD_SCORE",stdScore);
+			return m;
+		};
 
 		List<Map<String, Object>> data = baseDataService.getStudentSubjectsAndAllscore(p().getExamBatchId(),
 				p().getSchoolId(), p().getLevel(), p().getStuType()).stream().filter(m->Integer.parseInt(m.get
-				("TYPE").toString())==type.getCode()).collect(Collectors.toList());
+				("TYPE").toString())==type.getCode()).map(calcStdDev).collect(Collectors.toList());
 
-		zyj.report.common.CalToolUtil.sortByIndexValue2(data, "ALL_RANK");
+//		zyj.report.common.CalToolUtil.sortByIndexValue2(data, "ALL_RANK");
+		CollectionsUtil.orderByIntValue(data,"ALL_RANK_SCH");
 
 		sheet.getData().addAll(data);
 
@@ -128,7 +158,7 @@ public class ExpHBSchTotalScoreRankHaveSubService extends BaseRptService {
 		});
 
 		root.add(new SingleField("总分分数", "ALL_SCORE"));
-		root.add(new SingleField("标准分", "ALL_RANK"));
+		root.add(new SingleField("标准分", "STANDARD_SCORE"));
 		root.add(new SingleField("总分班名", "ALL_RANK_CLS"));
 		root.add(new SingleField("总分校名", "ALL_RANK_SCH"));
 

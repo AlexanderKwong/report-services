@@ -118,7 +118,7 @@ public class ExpHBSchSubjectAvgAndScoreSegService extends BaseRptService {
         List<Map<String, Object>> result = CollectionsUtil.leftjoinMapByKey(clsSubjectInfo, result3, "CLS_ID");
         CollectionsUtil.orderByStringValue(result, "CLS_NAME");
 
-        Sheet sheet = new Sheet("",excelName);
+        Sheet sheet = new Sheet("","全级");
         sheet.setFields(fields);
         sheet.getData().addAll(result);
 

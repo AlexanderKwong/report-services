@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import zyj.report.common.CalToolUtil;
 import zyj.report.common.ExportUtil;
+import zyj.report.common.util.CollectionsUtil;
 import zyj.report.exception.report.ReportExportException;
 import zyj.report.persistence.client.RptExpQuestionMapper;
 import zyj.report.service.BaseDataService;
@@ -105,7 +106,7 @@ public class ExpHBSchQuesAvgScoresOfClassesService extends BaseRptService{
             return row;
         }).collect(Collectors.toList());
 
-        CalToolUtil.sortByIndexValue(result, "QUESTION_ORDER");
+        CollectionsUtil.orderByIntValue(result, "QUESTION_ORDER");
 
         Sheet sheet = new Sheet("",excelName);
         sheet.setFields(fields);

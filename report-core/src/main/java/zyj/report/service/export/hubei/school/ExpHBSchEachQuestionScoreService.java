@@ -255,7 +255,7 @@ public class ExpHBSchEachQuestionScoreService extends BaseRptService {
 		MultiField root = new MultiField("试卷整体分析（全卷）");
 
 		//step1:加载固定标题
-		addRegularFields(root, new String[]{"最高分,TOP_SCORE", "最低分,UP_SCORE", "全距,DISTANCE", "均分,AVG_SCORE", "优秀人数,LEVEL_GD_NUM", "及格人数,LEVEL_PS_NUM", "众数,MODELS", "难度,STU_SCORE_DIFFICUT", "信度,STU_SCORE_RELIABILITY", "标准差,STU_SCORE_SD"});
+		addRegularFields(root, new String[]{"最高分,TOP_SCORE", "最低分,UP_SCORE", "全距,DISTANCE", "均分,AVG_SCORE", "优秀人数,LEVEL_GD_NUM", "及格人数,LEVEL_PS_NUM", "众数,MODELS","区分度,STU_SCORE_DIFFERENT", "难度,STU_SCORE_DIFFICUT", "信度,STU_SCORE_RELIABILITY", "标准差,STU_SCORE_SD"});
 
 		fields.add(root);
 
@@ -274,17 +274,21 @@ public class ExpHBSchEachQuestionScoreService extends BaseRptService {
 
 		String difficuty = cityData.get(0).get("STU_SCORE_DIFFICUT").toString();
 		String reliability = cityData.get(0).get("STU_SCORE_RELIABILITY").toString();
-
+		String discrimination = cityData.get(0).get("STU_SCORE_DIFFERENT").toString();
 		// 难度
 		Consumer<Map> addDifficuty = m -> m.put("STU_SCORE_DIFFICUT", difficuty);
 
 		// 信度
 		Consumer<Map> addReliability = m -> m.put("STU_SCORE_RELIABILITY", reliability);
 
+		//区分度
+		Consumer<Map> addDiscrimination = m -> m.put("STU_SCORE_DIFFERENT", discrimination);
+
 		Consumer<Map> doAll = m -> {
 			addDistance.accept(m);
 			addDifficuty.accept(m);
 			addReliability.accept(m);
+			addDiscrimination.accept(m);
 		};
 
 		data.forEach(doAll);

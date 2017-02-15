@@ -108,7 +108,7 @@ public class ExpHBSchStuSubjectScoreAndRankService extends BaseRptService{
 
         CollectionsUtil.orderByStringValue(result, "SEQUENCE");
 
-        Sheet sheet = new Sheet("",excelName);
+        Sheet sheet = new Sheet("","全级");
         sheet.setFields(fields);
         sheet.getData().addAll(result);
 

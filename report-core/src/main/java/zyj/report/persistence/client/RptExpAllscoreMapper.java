@@ -5,6 +5,9 @@ import java.util.Map;
 
 
 public interface RptExpAllscoreMapper {
+
+	public List findRptExpAllscore(Map conditions);
+
 	public List qryStudentSubjectAllScore(Map conditions);
 	
 	public List qryWenKeAllScoreByRanking(Map conditions);

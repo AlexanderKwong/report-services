@@ -107,7 +107,7 @@ public class ExpHBSchStuSubjectScoreAndRankService extends BaseRptService{
         List<Map<String, Object>> result = baseDataService.getStudentSubjectsAndAllscore(params.get("exambatchId").toString(),params.get("schoolId").toString(),"school",(Integer )params.get("stuType"))
                 .stream().filter(m->m.get(key) != null).map(calcStdDev).map(mapTypeName).collect(Collectors.toList());
 
-        CollectionsUtil.orderByStringValue(result, "SEQUENCE");
+        CollectionsUtil.orderByStringValue(result, params.get("subjectName").toString()+ "_RANK_SCH");
 
         Sheet sheet = new Sheet("",excelName);
         sheet.setFields(fields);

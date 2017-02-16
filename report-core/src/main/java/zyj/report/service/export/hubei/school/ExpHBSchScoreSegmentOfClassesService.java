@@ -58,7 +58,7 @@ public class ExpHBSchScoreSegmentOfClassesService extends BaseRptService {
 
         List<Field> fields = new ArrayList<>();
 
-        MultiField root = new MultiField(excelName);
+        MultiField root = new MultiField(params.get("subjectName") + excelName);
         //step1:加载固定标题
         for (String t : new String[]{"分数段,SCORE_SEG","汇总,FREQUENCY" }) {
             String[] args = t.split(",");

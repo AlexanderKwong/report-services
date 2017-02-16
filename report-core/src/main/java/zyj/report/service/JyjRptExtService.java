@@ -304,7 +304,7 @@ public static class MainTaskThread extends Thread {
 			Set<String> keys = redisService.keys(curExamId + "*");
 			long keysCost = System.currentTimeMillis();
 			logger.info(String.format("匹配KEYS耗时: %s(ms)", keysCost - start));
-			redisService.delWithPipline(keys.toArray(new String[keys.size()]));
+			logger.info("共删除缓存数据条数为：" + redisService.delWithPipline(keys.toArray(new String[keys.size()])));
 			logger.info(String.format("删除KEYS耗时: %s(ms)",System.currentTimeMillis() - keysCost));
 			logger.info(String.format("清缓存耗时: %s(ms)",System.currentTimeMillis() - start));
 			//创建压缩目录

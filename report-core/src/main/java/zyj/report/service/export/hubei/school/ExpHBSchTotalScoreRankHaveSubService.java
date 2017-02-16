@@ -7,9 +7,7 @@ import zyj.report.common.CalToolUtil;
 import zyj.report.common.ExportUtil;
 import zyj.report.common.constant.EnmSubjectType;
 import zyj.report.common.util.CollectionsUtil;
-import zyj.report.exception.report.ReportExportException;
 import zyj.report.persistence.client.RptExpAllscoreMapper;
-import zyj.report.persistence.client.RptExpSubjectMapper;
 import zyj.report.service.BaseDataService;
 import zyj.report.service.export.BaseRptService;
 import zyj.report.service.model.*;
@@ -23,14 +21,13 @@ import java.util.stream.Collectors;
 
 /**
  * Created by CXinZhi on 2017/2/4.
- *
+ * <p>
  * 导出 湖北版 总分排名（含各科名次） 服务
- *
  */
 @Service
 public class ExpHBSchTotalScoreRankHaveSubService extends BaseRptService {
 
-	private static String excelName = "总分排名（%s）";
+	private static String excelName = "总分排名";
 
 	@Autowired
 	BaseDataService baseDataService;
@@ -51,7 +48,7 @@ public class ExpHBSchTotalScoreRankHaveSubService extends BaseRptService {
 		List<Sheet> sheets = getSheets();
 
 		// 初始化 excel
-		Excel excel = new Excel(String.format(excelName, "含各科名次") + ".xls", p().getPath(), sheets);
+		Excel excel = new Excel(excelName + "(含各科名次)" + ".xls", p().getPath(), sheets);
 
 		// 导出 excel 文件
 		ExportUtil.createExcel(excel);
@@ -75,9 +72,6 @@ public class ExpHBSchTotalScoreRankHaveSubService extends BaseRptService {
 			sheets.add(getSheet(EnmSubjectType.LI));
 			sheets.add(getSheet(EnmSubjectType.WEN));
 		}
-
-
-
 		return sheets;
 	}
 
@@ -89,19 +83,19 @@ public class ExpHBSchTotalScoreRankHaveSubService extends BaseRptService {
 	 */
 	private Sheet getSheet(EnmSubjectType type) {
 
-		Sheet sheet = new Sheet(type.getCode().toString(), type.getName());
+		Sheet sheet = new Sheet(type.getCode().toString(), getWenLiSheetName(type, excelName));
 
 		sheet.setFields(getFields(type));
 
 		//查学校维度的数据
 		String key = "ALL_SCORE";
 		Map condition = new HashMap();
-		condition.put("level",p().getLevel());
-		condition.put("schoolId",p().getSchoolId());
-		condition.put("cityCode",p().getCityCode());
-		condition.put("exambatchId",p().getExamBatchId());
-		condition.put("stuType",p().getStuType());
-		condition.put("type",type.getCode());
+		condition.put("level", p().getLevel());
+		condition.put("schoolId", p().getSchoolId());
+		condition.put("cityCode", p().getCityCode());
+		condition.put("exambatchId", p().getExamBatchId());
+		condition.put("stuType", p().getStuType());
+		condition.put("type", type.getCode());
 		List<Map<String, Object>> schAllscore = rptExpAllscoreMapper.findRptExpAllscore(condition);
 
 		//获取平均分和标准差，用于计算标准分
@@ -109,19 +103,19 @@ public class ExpHBSchTotalScoreRankHaveSubService extends BaseRptService {
 		Float stdDev = Float.parseFloat(schAllscore.get(0).get("STU_SCORE_SD").toString());
 
 		//定义标准分算子
-		Function<Map<String,Object>,Map<String,Object>> calcStdDev = m -> {
+		Function<Map<String, Object>, Map<String, Object>> calcStdDev = m -> {
 			Float stuScore = Float.parseFloat(m.get(key).toString());
 			String stdScore = CalToolUtil.decimalFormat2((stuScore - avgScore) * 100 / stdDev + 500);
-			m.put("STANDARD_SCORE",stdScore);
+			m.put("STANDARD_SCORE", stdScore);
 			return m;
 		};
 
 		List<Map<String, Object>> data = baseDataService.getStudentSubjectsAndAllscore(p().getExamBatchId(),
-				p().getSchoolId(), p().getLevel(), p().getStuType()).stream().filter(m->Integer.parseInt(m.get
-				("TYPE").toString())==type.getCode()).map(calcStdDev).collect(Collectors.toList());
+				p().getSchoolId(), p().getLevel(), p().getStuType()).stream().filter(m -> Integer.parseInt(m.get
+				("TYPE").toString()) == type.getCode()).map(calcStdDev).collect(Collectors.toList());
 
 //		zyj.report.common.CalToolUtil.sortByIndexValue2(data, "ALL_RANK");
-		CollectionsUtil.orderByIntValue(data,"ALL_RANK_SCH");
+		CollectionsUtil.orderByIntValue(data, "ALL_RANK_SCH");
 
 		sheet.getData().addAll(data);
 
@@ -143,14 +137,14 @@ public class ExpHBSchTotalScoreRankHaveSubService extends BaseRptService {
 
 		List<Field> fields = new ArrayList<>();
 
-		MultiField root = new MultiField(String.format(excelName, type.getName()));
+		MultiField root = new MultiField(getWenLiFieldName(type, excelName));
 
 		root.add(new SingleField("考号", "SEQUENCE"));
 		root.add(new SingleField("姓名", "NAME"));
 		root.add(new SingleField("班级", "CLS_NAME"));
 
 		subjects.forEach(model -> {
-			if (type.getCode()==model.getType()) {
+			if (type.getCode() == model.getType()) {
 				root.add(new SingleField(model.getSubjectName() + "分数", model.getSubjectName() + "_SCORE"));
 				root.add(new SingleField(model.getSubjectName() + "班名", model.getSubjectName() + "_RANK_CLS"));
 				root.add(new SingleField(model.getSubjectName() + "校名", model.getSubjectName() + "_RANK_SCH"));
@@ -189,9 +183,9 @@ public class ExpHBSchTotalScoreRankHaveSubService extends BaseRptService {
 			}).collect(Collectors.toList());
 
 			return subjectList;
+		} catch (Exception ex) {
+			throw ex;
 		}
-		catch (Exception ex)
-		{ throw ex;}
 	}
 
 }

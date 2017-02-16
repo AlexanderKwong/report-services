@@ -104,7 +104,7 @@ public class ExpHBSchTotalScoreEachSegVerService extends BaseRptService {
 	 */
 	public Sheet getSheet(EnmSubjectType type, RptTemplate rptTemplate, List<Map<String, Object>> classList) {
 
-		Sheet sheet = new Sheet(type.getCode() + "", type.getName());
+		Sheet sheet = new Sheet(type.getCode() + "", getWenLiSheetName(type,excelName));
 
 		Map conditions = new HashMap<String, Object>();
 		conditions.put("exambatchId", p().getExamBatchId());

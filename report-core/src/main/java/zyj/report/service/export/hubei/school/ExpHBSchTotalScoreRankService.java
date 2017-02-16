@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @Service
 public class ExpHBSchTotalScoreRankService extends BaseRptService {
 
-	private static String excelName = "总分排名（%s）";
+	private static String excelName = "总分排名";
 
 	@Autowired
 	BaseDataService baseDataService;
@@ -34,7 +34,7 @@ public class ExpHBSchTotalScoreRankService extends BaseRptService {
 
 		List<Sheet> sheets = getSheets();
 
-		Excel excel = new Excel(String.format(excelName, "不含各科名次") + ".xls", p().getPath(), sheets);
+		Excel excel = new Excel(excelName+"(不含各科名次)"+ ".xls", p().getPath(), sheets);
 
 		ExportUtil.createExcel(excel);
 
@@ -70,7 +70,7 @@ public class ExpHBSchTotalScoreRankService extends BaseRptService {
 	 */
 	private Sheet getSheet(EnmSubjectType type) throws Exception {
 
-		Sheet sheet = new Sheet(type.getCode().toString(), type.getName());
+		Sheet sheet = new Sheet(type.getCode().toString(),getWenLiSheetName(type,excelName));
 
 		sheet.setFields(getFields(type));
 
@@ -97,7 +97,7 @@ public class ExpHBSchTotalScoreRankService extends BaseRptService {
 		//获取 本次考试科目列表
 		List<SubjectInfo> subjects = getSubjectList(type);
 
-		MultiField root = new MultiField(String.format(excelName, type.getName()));
+		MultiField root = new MultiField(getWenLiFieldName(type,excelName));
 		root.add(new SingleField("考号", "SEQUENCE"));
 		root.add(new SingleField("姓名", "NAME"));
 
@@ -105,7 +105,7 @@ public class ExpHBSchTotalScoreRankService extends BaseRptService {
 		subjects.forEach(model -> {
 			root.add(new SingleField(model.getSubjectName(), model.getSubjectName() + "_SCORE"));
 		});
-
+		root.add(new SingleField("总分分数","ALL_SCORE"));
 		fields.add(root);
 
 		return fields;

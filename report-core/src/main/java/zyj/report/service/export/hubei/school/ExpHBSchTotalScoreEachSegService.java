@@ -89,19 +89,19 @@ public class ExpHBSchTotalScoreEachSegService extends BaseRptService {
 	/**
 	 * 加载文理科数据
 	 *
-	 * @param subjectType
+	 * @param type
 	 * @param rptTemplate
 	 * @return
 	 */
-	public Sheet getSheet(EnmSubjectType subjectType, RptTemplate rptTemplate) {
+	public Sheet getSheet(EnmSubjectType type, RptTemplate rptTemplate) {
 
-		Sheet sheet = new Sheet(subjectType.getCode() + "", subjectType.getName());
+		Sheet sheet = new Sheet(type.getCode() + "", getWenLiSheetName(type,excelName));
 
 		Map conditions = new HashMap<String, Object>();
 		conditions.put("exambatchId", p().getExamBatchId());
 		conditions.put("cityCode", p().getCityCode());
 		conditions.put("schoolId", p().getSchoolId());
-		conditions.put("type", subjectType.getCode());
+		conditions.put("type", type.getCode());
 		conditions.put("stuType", p().getStuType());
 
 		//读取源数据

@@ -335,34 +335,6 @@ public class CalToolUtil {
 		}
 	}
 
-	/**
-	 * 按Map.get(key)的int值来排序
-	 * @param list
-	 * @param key
-	 */
-	@SuppressWarnings("unchecked")
-	public static void sortByIndexValueAndResetRank(List<Map<String,Object>> list ,final String key){
-		if(list!= null){
-			Collections.sort(list,new Comparator<Object>() {
-				public int compare(Object o1,Object o2) {
-					Map<String,Object> m1 = (Map<String,Object>)o1;
-					Map<String,Object> m2 = (Map<String,Object>)o2;
-					int k1 = Integer.parseInt(m1.get(key).toString());
-					int k2 = Integer.parseInt(m2.get(key).toString());
-					return k1-k2;
-				}
-			});
-
-			 int rank=1;
-
-			for (Map<String,Object> data:list)
-			{
-				data.put(key,(rank++)+"");
-			}
-		}
-	}
-
-
 	//根据该单元的String值大小排序
 	@SuppressWarnings("unchecked")
 	public static void sortByIndexValue2(List<List<Object>> d ,final int index){

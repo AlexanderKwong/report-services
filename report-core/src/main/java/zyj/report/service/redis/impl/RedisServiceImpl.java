@@ -3,6 +3,7 @@ package zyj.report.service.redis.impl;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
@@ -51,6 +52,24 @@ public class RedisServiceImpl implements RedisService {
             }
         });
     }
+    /**
+     * @param keys
+     */
+    public long delWithPipline(final String... keys) {
+
+        final AtomicInteger count = new AtomicInteger(0);
+         redisTemplate.executePipelined(new RedisCallback<Long>() {
+            @Override
+            public Long doInRedis(RedisConnection connection) throws DataAccessException {
+                for (int i = 0; i < keys.length; i++) {
+                    count.getAndAdd( connection.del(keys[i].getBytes()).intValue());
+                }
+                return null;
+            }
+        });
+         return count.get();
+    }
+
 
     public <T extends Serializable> void  set(final String key, final T object) {
         redisTemplate.execute(new RedisCallback() {

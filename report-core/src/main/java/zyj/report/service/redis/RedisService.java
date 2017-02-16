@@ -21,6 +21,12 @@ public interface RedisService {
      */
     public abstract long del(String... keys);
 
+    /**
+     * 通过key删除
+     *
+     * @param keys
+     */
+    public abstract long delWithPipline(String... keys);
 
     public abstract  <T extends Serializable> void  set(final String key, final T object);
 

@@ -18,10 +18,10 @@ public class ExpHBSchScoreStatisticsServiceTest extends BaseExportTest{
     @Before
     public void setUp(){
         Map<String,Object> subject = new HashMap<>();
-        subject.put("SUBJECT","YW");
-        subject.put("SUBJECT_NAME","语文");
+        subject.put("SUBJECT","LYW_S");
+        subject.put("SUBJECT_NAME","理科语文");
         subject.put("PAPER_ID","dedae08b-b679-4aca-8f04-af9ca5ce1b7d");
-        subject.put("TYPE",3);
+        subject.put("TYPE",2);
         setParmter("expHBSchScoreStatisticsService",
                 "7148ccdc-9e02-4a5a-99b9-362001b76222",
                 "130100",

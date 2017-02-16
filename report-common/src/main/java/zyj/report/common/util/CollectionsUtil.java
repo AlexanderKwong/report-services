@@ -58,6 +58,24 @@ public class CollectionsUtil {
 		return res;
 	}
 
+	public static List<Map<String, Object>> leftjoinMapByKeys(List<Map<String, Object>> a, List<Map<String, Object>> b, String[] keys) {
+		Map<String, Map<String, Object>> aDic = trans(a, keys);
+		Map<String, Map<String, Object>> bDic = trans(b, keys);
+		List<Map<String, Object>> res = new ArrayList<Map<String, Object>>();
+		for (Map.Entry<String, Map<String, Object>> entry : aDic.entrySet()) {
+			String k = entry.getKey();
+			Map<String, Object> m = new HashMap<String, Object>(entry.getValue());
+			try {
+				Map<String, Object> n = new HashMap<String, Object>(bDic.get(k));
+				m.putAll(n);
+			} catch (Exception e) {
+				System.out.println("Warn : b表中没有keys为 " + k + "的字段");
+			}
+			res.add(m);
+		}
+		return res;
+	}
+
 	public static boolean containsKey(List<Map<String, Object>> l, String key, String value) {
 		for (Map<String, Object> m : l) {
 			if (m.containsKey(key)) {

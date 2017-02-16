@@ -1,5 +1,6 @@
 package zyj.report.service.export.hubei.school;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import zyj.report.common.ExportUtil;
@@ -15,6 +16,7 @@ import zyj.report.service.model.SingleField;
 import zyj.report.service.model.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -57,9 +59,10 @@ public class ExpHBSchStuQuestionScoresService extends BaseRptService{
 
         List<Field> fields = new ArrayList<>();
 
-        MultiField root = new MultiField(excelName);
-
         String subject_name = params.get("subjectName").toString();
+
+        MultiField root = new MultiField(subject_name + excelName);
+
         //step1:加载固定标题
         for (String t : getConfirmedTitle()){
             String[] args = t.split(",");
@@ -67,16 +70,41 @@ public class ExpHBSchStuQuestionScoresService extends BaseRptService{
         }
         //step2: 加载动态标题1
         List<Map> questions = rptExpQuestionMapper.qryClassQuestionScore6(params);
+        /*******/
+        //查询小题
+        List<Map> subQuestions = rptExpQuestionMapper.qryQuestionSub(params);//按小题号排序
+        Map<String,List<Map<String,Object>>> subQuestionMap = new HashMap<String,List<Map<String,Object>>>();
 
-        List<Integer> orderList = new ArrayList<Integer>();
+        for(Map<String,Object> obj : subQuestions){
+            String k = "";
+            for(String t : new String[]{"PAPER_ID","SUBJECT","PARENT_QUESTION_ORDER"}){
+                k = k + ObjectUtils.toString(obj.get(t));
+            }
+            List<Map<String, Object>> sameParentOrder =   subQuestionMap.get(k);
+            if (sameParentOrder == null) {
+                sameParentOrder = new ArrayList<Map<String, Object>>();
+                subQuestionMap.put(k, sameParentOrder);
+            }
+            sameParentOrder.add(obj);
+        }
+        /*******/
 
+        String paperId = ObjectUtils.toString(params.get("paperId"));
+        String shortName = ObjectUtils.toString(params.get("subject"));
         questions.stream().filter(m -> Integer.parseInt(m.get("QST_TIPY").toString()) == 4).forEach(m -> {
             int order = Integer.parseInt(m.get("QUESTION_ORDER").toString());
-            orderList.add(order);
             root.add(new SingleField((String)m.get("QUESTION_NO"), "Q"+ order));
+            //补充小题
+            List<Map<String, Object>> subQuestionsOfThisParent  = subQuestionMap.get(paperId + shortName + order);
+            if (subQuestionsOfThisParent != null && !subQuestionsOfThisParent.isEmpty()){
+                for (Map<String, Object> sq : subQuestionsOfThisParent){
+                    String sub_no = ObjectUtils.toString(sq.get("QUESTION_NO"));
+                    String sub_order = sq.get("QUESTION_ORDER").toString().replace(".", "_");
+                    root.add(new SingleField(sub_no, "Q"+sub_order));
+                }
+            }
         });
 
-        params.put("orderList2",orderList);
         fields.add(root);
 
         return fields;
@@ -114,7 +142,7 @@ public class ExpHBSchStuQuestionScoresService extends BaseRptService{
         });
         zyj.report.common.CalToolUtil.sortByIndexValue(result, "SEQUENCE");
 
-        Sheet sheet = new Sheet("","全级");
+        Sheet sheet = new Sheet("",excelName);
         sheet.setFields(fields);
         sheet.getData().addAll(result);
 

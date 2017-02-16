@@ -351,7 +351,76 @@ GROUP BY subject,paperScore,user_id)a)group by stu_other_avg,stu_other_num,subje
         qst_tipy
         <if test="GroupBy != null"> ,${GroupBy} </if>
     </select>
-  
+
+    <!-- 下面三个sql用于旧版本下的小题查询 -->
+    <select id="qryQuestionSub"  resultType="java.util.HashMap" >
+        select distinct exambatch_id,paper_Id,subject,question_order,question_no,question_score,parent_question_id, parent_question_order from yjxt.rpt_exp_student_question_sub
+        where exambatch_id = #{exambatchId} and subject = #{subject} and paper_id = #{paperId}
+        <if test = "stuType!=null">
+            and student_type = #{stuType}
+        </if>
+        order by question_order
+    </select>
+    <select id="qryStudentQuestionSubScore"  resultType="java.util.HashMap" >
+        select
+        exambatch_id,paper_Id,subject,city_code,area_Id, sch_Id, cls_Id, user_Id, sequence,cls_type, <!--question_id,question_order,question_type,question_no,question_score, parent_question_id, parent_question_order,stu_score,-->student_type
+        <if test="orderList != null">
+            <foreach collection="orderList" index="index" item="question_order"
+                     open="," separator="," close=" ">
+                sum(decode(question_order,replace('${question_order}','_','.'),stu_score,0)) as Q${question_order}
+            </foreach>
+        </if>
+        from yjxt.rpt_exp_student_question_sub
+        <where>
+            exambatch_id = #{exambatchId} and subject = #{subject} and paper_id = #{paperId}
+            <if test="areaId != null">
+                and area_id = #{areaId}
+            </if>
+            <if test="schoolId != null">
+                and sch_id = #{schoolId}
+            </if>
+            <if test="classesId != null">
+                and cls_id = #{classesId}
+            </if>
+            <if test = "stuType!=null">
+                and student_type = #{stuType}
+            </if>
+        </where>
+        group by exambatch_id,paper_Id,subject,city_code,area_Id, sch_Id, cls_Id, user_Id, sequence,cls_type,student_type
+        order by sequence
+    </select>
+
+    <select id="qryQuestionSubScore" resultType="java.util.HashMap" >
+        select round(avg(stu_score),2) as avg_score,  round(avg(stu_score)/question_score,4) as score_rank,
+        question_score as qst_score,exambatch_id, paper_id, subject,
+        question_order,question_no,question_score,parent_question_id, parent_question_order
+        <if test="GroupBy != null">
+            ,${GroupBy}
+        </if>
+        from
+        yjxt.rpt_exp_student_question_sub
+        <where>
+            exambatch_id = #{exambatchId} and subject = #{subject}
+            <if test="level!='city' and areaId != null">
+                and area_id = #{areaId}
+            </if>
+            <if test="level!='area'  and level!='city' and schoolId != null">
+                and sch_id = #{schoolId}
+            </if>
+            <if test="level == 'classes' and classesId != null">
+                and cls_id = #{classesId}
+            </if>
+            <if test = "stuType!=null">
+                and student_type = #{stuType}
+            </if>
+        </where>
+        group by exambatch_id, paper_id, subject,question_order,question_no,question_score,parent_question_id, parent_question_order
+        <if test="GroupBy != null">
+            ,${GroupBy}
+        </if>
+
+    </select>
+
   <sql id="OracleDialectPrefix" >
     <if test="page != null" >
       select * from ( select row_.*, rownum rownum_ from ( 

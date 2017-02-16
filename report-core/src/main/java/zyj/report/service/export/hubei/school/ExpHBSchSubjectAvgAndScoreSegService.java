@@ -62,7 +62,7 @@ public class ExpHBSchSubjectAvgAndScoreSegService extends BaseRptService {
 
         List<Field> fields = new ArrayList<>();
 
-        MultiField root = new MultiField(excelName);
+        MultiField root = new MultiField(params.get("subjectName") + excelName);
         //step1:加载固定标题
         for (String t : new String[]{"班级,CLS_NAME","应考人数,CANDIDATES_NUM","均分,AVG_SCORE","排名,AVG_SCH_ORDER","优秀人数,LEVEL_GD_NUM","排名,LEVEL_GD_RANK","及格人数,LEVEL_PS_NUM","排名,LEVEL_FN_RANK" }) {
             String[] args = t.split(",");
@@ -118,7 +118,7 @@ public class ExpHBSchSubjectAvgAndScoreSegService extends BaseRptService {
         List<Map<String, Object>> result = CollectionsUtil.leftjoinMapByKey(clsSubjectInfo, result3, "CLS_ID");
         CollectionsUtil.orderByStringValue(result, "CLS_NAME");
 
-        Sheet sheet = new Sheet("","全级");
+        Sheet sheet = new Sheet("",excelName);
         sheet.setFields(fields);
         sheet.getData().addAll(result);
 

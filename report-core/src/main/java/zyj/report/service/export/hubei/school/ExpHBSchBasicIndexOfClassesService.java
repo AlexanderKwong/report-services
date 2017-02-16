@@ -53,7 +53,7 @@ public class ExpHBSchBasicIndexOfClassesService extends BaseRptService{
 
         List<Field> fields = new ArrayList<>();
 
-        MultiField root = new MultiField(excelName);
+        MultiField root = new MultiField(params.get("subjectName") + excelName);
 
         //step1:加载固定标题
         for (String t : new String[]{"班级,CLS_NAME","应考人数,CANDIDATES_NUM","平均分,AVG_SCORE","全距,DISTANCE","最高分,TOP_SCORE","最低分,UP_SCORE","优秀人数,LEVEL_GD_NUM","优秀率,LEVEL_GD_RATE","良好人数,LEVEL_FN_NUM","良好率,LEVEL_FN_RATE","及格人数,LEVEL_PS_NUM","及格率,LEVEL_PS_RATE","低分人数,LEVEL_FL_NUM","低分率,LEVEL_FL_RATE","标准差,STU_SCORE_SD","众数,MODELS"}){

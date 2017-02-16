@@ -13,10 +13,7 @@ import zyj.report.service.model.Sheet;
 import zyj.report.service.model.SingleField;
 import zyj.report.service.model.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author 邝晓林
@@ -26,7 +23,7 @@ import java.util.Map;
 @Service
 public class ExpHBSchScoreStatisticsService extends BaseRptService {
 
-    private static String excelName = "成绩统计表（含各班）";
+    private static String excelName = "成绩统计表";
 
     @Value("${hubei.subject.score.step}")
     int step;
@@ -43,7 +40,7 @@ public class ExpHBSchScoreStatisticsService extends BaseRptService {
         List<Sheet> sheets = getSheet(fields, params);
 
         // 初始化 excel
-        Excel excel = new Excel(excelName+".xls", params.get("pathFile").toString(), sheets);
+        Excel excel = new Excel(excelName+"（含各班）.xls", params.get("pathFile").toString(), sheets);
 
         // 导出 excel 文件
         ExportUtil.createExcel(excel);
@@ -56,7 +53,7 @@ public class ExpHBSchScoreStatisticsService extends BaseRptService {
 
         List<Field> fields = new ArrayList<>();
 
-        MultiField root = new MultiField("成绩统计表");
+        MultiField root = new MultiField(params.get("subjectName")+excelName);
 
         //step1:加载固定标题
         for (String t : new String[]{"班级,CLS_NAME","实考人数,TAKE_EXAM_NUM","缺考人数,ABSENT_EXAM_STU_NUM","均分,AVG_SCORE","离均差,SCORE_AVG_DEV","标准差,STU_SCORE_SD","最高分,TOP_SCORE","最低分,UP_SCORE"}){
@@ -66,14 +63,12 @@ public class ExpHBSchScoreStatisticsService extends BaseRptService {
 
         //step2:加载动态标题1
             //拿到总分
-        Map condition = new HashMap(params);
-        condition.put("level","city");
-        List<Map<String, Object>> citySubject =  rptExpSubjectMapper.findRptExpSubject(condition);
-        double full = Double.parseDouble(citySubject.get(0).get("FULL_SCORE").toString());
-        int top80line = (int) (full * 0.8);
-        int top70line = (int) (full * 0.7);
-        int top60line = (int) (full * 0.6);
-        int top40line = (int) (full * 0.4);
+        List<Map<String, Object>> schSubject =  rptExpSubjectMapper.findRptExpSubject(params);
+        double max = Double.parseDouble(schSubject.get(0).get("TOP_SCORE").toString());
+        int top80line = (int) (max * 0.8);
+        int top70line = (int) (max * 0.7);
+        int top60line = (int) (max * 0.6);
+        int top40line = (int) (max * 0.4);
         params.put("top80", (int)top80line);
         params.put("top70", (int)top70line);
         params.put("top60", (int)top60line);
@@ -96,11 +91,10 @@ public class ExpHBSchScoreStatisticsService extends BaseRptService {
         root.add(top60);
         root.add(less40);
 
-
         //step3:加载动态标题2
         MultiField fsd = new MultiField("分数分段（下确界）  人数分布（累计表）");
         List scoreList = new ArrayList<Integer>();
-        double lower = full-(((int)full)%step==0?step:((int)full)%step);
+        double lower = max-(((int)max)%step==0?step:((int)max)%step);
         while((int)lower>=0){
             scoreList.add((int)lower);
             fsd.add(new SingleField(">=" + (int)lower, "HE" + (int)lower));
@@ -177,11 +171,28 @@ public class ExpHBSchScoreStatisticsService extends BaseRptService {
         schRow.put("TOP%60",  CalToolUtil.decimalFormat2((0.0+he60)*100/num));
         schRow.put("TOP%70",  CalToolUtil.decimalFormat2((0.0+he70)*100/num));
         schRow.put("TOP%80",  CalToolUtil.decimalFormat2((0.0 + he80) *100/num));
+        schRow.put("SCORE_AVG_DEV","--");
 
-        Sheet sheet = new Sheet("","成绩统计");
+        //增加百分比
+        Map schPercentageRow = new HashMap(schRow);
+        Iterator<Map.Entry> i = schPercentageRow.entrySet().iterator();
+        while (i.hasNext()){
+            Map.Entry e = i.next();
+            String key = e.getKey().toString();
+            if (key.startsWith("HE")){
+                schPercentageRow.put(key, CalToolUtil.decimalFormat2(Float.parseFloat(e.getValue().toString())*100/num));
+            }else{
+                schPercentageRow.put(key, "--");
+            }
+        }
+        schPercentageRow.put("CLS_NAME", "全校%");
+
+
+        Sheet sheet = new Sheet("",excelName);
         sheet.setFields(fields);
         sheet.getData().addAll(clsFSD);
         sheet.getData().add(schRow);
+        sheet.getData().add(schPercentageRow);
 
         sheets.add(sheet);
         return sheets;

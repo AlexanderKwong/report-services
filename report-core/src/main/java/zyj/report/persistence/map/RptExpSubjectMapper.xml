@@ -744,7 +744,7 @@
 			<foreach collection="scoreList" index="index" item="score"
 					 open="" separator="," close=" ">
 				<!--sum(decode(trunc(sign_total/${score}),0,0,1)) as HE${score} -->
-				sum(case when sign_total>= replace('${score}','_','.') then 1 end) as HE${score}
+				sum(case when sign_total>= replace('${score}','_','.') then 1 else 0 end) as HE${score}
 			</foreach>
 		</if>
 		<if test="scoreList2!=null"><!-- 中山报表指标 -->
@@ -1135,9 +1135,9 @@ group by subject,PAPER_ID
 			<if test="classesId != null">
 				and cls_id = classesId
 			</if>
-			<!--<if test="type != null">
+			<if test="type != null and type != 3">
 				and cls_type = #{type}
-			</if>-->
+			</if>
 		</where>
 		group by exambatch_id, exambatch_name, batchid, paper_id, paper_name
 		<if test="GroupBy != null">

@@ -50,7 +50,7 @@ public class ExpHBSchPaperDifficultyService extends BaseRptService {
 
         List<Field> fields = new ArrayList<>();
 
-        MultiField root = new MultiField(excelName);
+        MultiField root = new MultiField(params.get("subjectName") + excelName);
 
         String subject_name = params.get("subjectName").toString();
         //step1:加载固定标题

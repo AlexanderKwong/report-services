@@ -55,7 +55,7 @@ public class ExpHBSchQuesAvgScoresOfClassesService extends BaseRptService{
 
         List<Field> fields = new ArrayList<>();
 
-        MultiField root = new MultiField(excelName);
+        MultiField root = new MultiField(params.get("subjectName") + excelName);
 
         //step1:加载固定标题
         for (String t : new String[]{"题目名称,QUESTION_NO"}) {

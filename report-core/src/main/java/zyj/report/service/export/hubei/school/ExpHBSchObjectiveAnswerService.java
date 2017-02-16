@@ -51,7 +51,7 @@ public class ExpHBSchObjectiveAnswerService extends BaseRptService{
 
         List<Field> fields = new ArrayList<>();
 
-        MultiField root = new MultiField(excelName);
+        MultiField root = new MultiField(params.get("subjectName") + excelName);
 
         //step1:加载固定标题
         for (String t : new String[]{"考号,SEQUENCE","姓名,NAME","班级,CLSNAME"}){
@@ -87,7 +87,7 @@ public class ExpHBSchObjectiveAnswerService extends BaseRptService{
         List<Map<String, Object>> result = rptExpQuestionMapper.qryStudentQuestionScore(params);
         if (result.isEmpty()) throw new ReportExportException("没有查到源数据，请核查！");
 
-        Sheet sheet = new Sheet("","全级");
+        Sheet sheet = new Sheet("",excelName);
         sheet.setFields(fields);
         sheet.getData().addAll(result);
 

@@ -53,6 +53,7 @@ public class ExpHBSchStuQuesScoresOfClassesService extends ExpHBSchStuQuestionSc
 
         CollectionsUtil.orderByStringValue(classes, "CLS_NAME");
 
+        String subjectName = params.get("subjectName").toString();
         classes.forEach(c -> {
 
             String clsName = c.get("CLS_NAME").toString();
@@ -61,7 +62,7 @@ public class ExpHBSchStuQuesScoresOfClassesService extends ExpHBSchStuQuestionSc
             Sheet sheetFormatted = new Sheet(clsId, clsName);
 
             //设置标题
-            MultiField root = rootToFormat.copy(String.format(excelName, "（"+clsName+"）"));
+            MultiField root = rootToFormat.copy(subjectName + String.format(excelName, "（"+clsName+"）"));
 
             List<Field> fieldsFormatted = new ArrayList<Field>();
             fieldsFormatted.add(root);

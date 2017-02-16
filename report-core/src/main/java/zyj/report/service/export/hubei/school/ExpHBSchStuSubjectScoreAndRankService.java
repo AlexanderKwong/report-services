@@ -56,10 +56,11 @@ public class ExpHBSchStuSubjectScoreAndRankService extends BaseRptService{
 
         List<Field> fields = new ArrayList<>();
 
-        MultiField root = new MultiField(excelName);
+        String subjectName = params.get("subjectName").toString();
+
+        MultiField root = new MultiField( excelName);
 
         //step1:加载固定标题
-        String subjectName = params.get("subjectName").toString();
         for (String t : new String[]{"考号,SEQUENCE","姓名,NAME","班级,CLS_NAME","文理,TYPE_NAME","%s分数,%s_SCORE","标准分,STANDARD_SCORE","%s班名,%s_RANK_CLS","%s校名,%s_RANK_SCH"}){
             String[] args = t.split(",");
             root.add(new SingleField(String.format(args[0],subjectName) , String.format(args[1],subjectName)));
@@ -108,7 +109,7 @@ public class ExpHBSchStuSubjectScoreAndRankService extends BaseRptService{
 
         CollectionsUtil.orderByStringValue(result, "SEQUENCE");
 
-        Sheet sheet = new Sheet("","全级");
+        Sheet sheet = new Sheet("",excelName);
         sheet.setFields(fields);
         sheet.getData().addAll(result);
 

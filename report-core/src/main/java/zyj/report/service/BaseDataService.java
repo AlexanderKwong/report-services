@@ -249,7 +249,21 @@ public class BaseDataService {
 			}
 			params.put("orderList", orderList);
 			List<Map<String,Object>>  beanList = rptExpQuestionMapper.qryStudentQuestionScore(params);
-			return beanList;
+
+			/*******/
+			//查询小题
+			List<Map> subQuestions = rptExpQuestionMapper.qryQuestionSub(params);//按小题号排序
+			if (subQuestions.isEmpty()) return beanList;
+
+			List<String> subOrderList = new ArrayList<>();
+			for(Map<String,Object> map : subQuestions){
+				subOrderList.add(map.get("QUESTION_ORDER").toString().replace(".", "_"));
+			}
+			params.put("orderList", subOrderList);
+			List<Map<String, Object>>stuSubQuestion = rptExpQuestionMapper.qryStudentQuestionSubScore(params);
+
+			return CollectionsUtil.leftjoinMapByKeys(beanList, stuSubQuestion, new String[]{"AREA_ID","SCH_ID","CLS_ID","USER_ID"});
+			/*******/
 		}
 	}
 

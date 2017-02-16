@@ -3,7 +3,6 @@ package zyj.report.service.export.hubei.school;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import zyj.report.common.CalToolUtil;
 import zyj.report.common.ExportUtil;
 import zyj.report.common.constant.EnmSegmentType;
 import zyj.report.common.constant.EnmSubjectType;
@@ -71,7 +70,7 @@ public class ExpHBSchTotalScoreSegmentHorService extends BaseRptService {
 		MultiField root = new MultiField(excelName);
 
 		//step1:加载固定标题
-		for (String t : new String[]{"班级,CLS_NAME", "应考人数,TAKE_EXAM_NUM", "均分,AVG_SCORE", "排名,RANK", "最高分,TOP_SCORE"}) {
+		for (String t : new String[]{"班级,CLS_NAME", "应考人数,TAKE_EXAM_NUM", "均分,AVG_SCORE", "排名,SCHOOL_RANK", "最高分,TOP_SCORE"}) {
 			String[] args = t.split(",");
 			root.add(new SingleField(args[0], args[1]));
 		}
@@ -148,7 +147,7 @@ public class ExpHBSchTotalScoreSegmentHorService extends BaseRptService {
 		//数据集1
 		List<Map<String, Object>> clsSubjectInfo = rptExpAllscoreMapper.qryClassAllScoreInfo(params);
 
-		CalToolUtil.sortByIndexValueAndResetRank(clsSubjectInfo,"RANK");
+		CollectionsUtil.rank(clsSubjectInfo,"AVG_SCORE","SCHOOL_RANK");
 
 		//数据集2
 		Segment segment = (Segment) data.get("segment");

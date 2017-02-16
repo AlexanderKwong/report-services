@@ -233,6 +233,29 @@ public class CollectionsUtil {
 		}
 	}
 
+	/**
+	 * 按Map.get(key)的int值来倒序排序
+	 *
+	 * @param d
+	 * @param key
+	 */
+	@SuppressWarnings("unchecked")
+	public static void orderByDoubleValueDesc(List<Map<String, Object>> d, final String key) {
+		if (d != null) {
+			Collections.sort(d, new Comparator<Object>() {
+				public int compare(Object o1, Object o2) {
+					Map<String, Object> m1 = (Map<String, Object>) o1;
+					Map<String, Object> m2 = (Map<String, Object>) o2;
+					Float k1 = Float.valueOf(m1.get(key).toString());
+					Float k2 = Float.valueOf(m2.get(key).toString());
+					Float result = k2 - k1;
+					// 扩大一个位数，也就是精确到 小数第一位 进行四舍五入 来对比
+					return Math.round(result*10);
+				}
+			});
+		}
+	}
+
 	public static int indexOf(Object[] f, Object o) {
 		if (o != null) {
 			for (int i = 0; i < f.length; i++) {
@@ -246,13 +269,13 @@ public class CollectionsUtil {
 
 	public static void rank(List<Map<String, Object>> d, final String key, final String rankKey) {
 
-		orderByIntValueDesc(d, key);
+		orderByDoubleValueDesc(d, key);
 
-		Integer previousValue = null;
+		Float previousValue = null;
 		int rankValue = 0;
 		int sameValue = 0;
 		for (Map<String, Object> m : d) {
-			Integer value = Integer.parseInt(m.get(key).toString());
+			Float value = Float.valueOf(m.get(key).toString());
 			if (value != null && value.equals(previousValue)) {
 				m.put(rankKey, rankValue);
 				sameValue++;
@@ -264,4 +287,7 @@ public class CollectionsUtil {
 			previousValue = value;
 		}
 	}
+
+
+
 }

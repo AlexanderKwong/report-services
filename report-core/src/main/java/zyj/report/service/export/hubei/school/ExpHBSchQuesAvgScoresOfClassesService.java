@@ -81,7 +81,7 @@ public class ExpHBSchQuesAvgScoresOfClassesService extends BaseRptService{
      *
      * @param fields
      */
-    private List<Sheet> getSheet(List<Field> fields, Map<String, Object> params) throws ReportExportException {
+    protected List<Sheet> getSheet(List<Field> fields, Map<String, Object> params) throws ReportExportException {
 
         List<Sheet> sheets = new ArrayList<>();
 

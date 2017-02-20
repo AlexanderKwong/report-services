@@ -20,15 +20,15 @@ public class MulClassSegmentRptTitle implements RptTitle {
 		List<Field> fields = new ArrayList<>();
 		MultiField root = new MultiField(excelName);
 
-		MultiField sum =new MultiField("汇总");
-		root.add(new MultiField("分数段","SCORE_SEG"));
 
+		root.add(new SingleField("分数段", "SCORE_SEG"));
+
+		MultiField sum = new MultiField("汇总");
 		//step1:加载固定标题
-		for (String t : new String[]{ "人数,FREQUENCY", "累计,ACC_FREQUENCY"}) {
+		for (String t : new String[]{"人数,FREQUENCY", "累计,ACC_FREQUENCY"}) {
 			String[] args = t.split(",");
 			sum.add(new SingleField(args[0], args[1]));
 		}
-
 		root.add(sum);
 
 		//step2:加载扩展标题
@@ -37,8 +37,8 @@ public class MulClassSegmentRptTitle implements RptTitle {
 
 		exFields.forEach(m -> {
 			MultiField multiField = new MultiField(m.get("CLS_NAME").toString());
-			multiField.add(new SingleField("人数",m.get("CLS_ID").toString()+"_FREQUENCY"));
-			multiField.add(new SingleField("累计",m.get("CLS_ID").toString()+"_ACC_FREQUENCY"));
+			multiField.add(new SingleField("人数", m.get("CLS_ID").toString() + "_FREQUENCY"));
+			multiField.add(new SingleField("累计", m.get("CLS_ID").toString() + "_ACC_FREQUENCY"));
 			root.add(multiField);
 		});
 
@@ -46,7 +46,6 @@ public class MulClassSegmentRptTitle implements RptTitle {
 
 		return fields;
 	}
-
 
 	@Override
 	public List<Field> getTitle(String excelName) {

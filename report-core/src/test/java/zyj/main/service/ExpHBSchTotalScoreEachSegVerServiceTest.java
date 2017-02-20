@@ -8,17 +8,22 @@ import zyj.report.common.ExportUtil;
 import java.util.HashMap;
 import java.util.Map;
 
-
-public class ExpHBSchEachQuestionScoreServiceTest extends BaseExportTest{
+/**
+ * @author CXinZhi 测试总分排名
+ * @Description
+ * @date 2017/2/15
+ */
+public class ExpHBSchTotalScoreEachSegVerServiceTest extends BaseExportTest{
 
     @Before
     public void setUp(){
+
         Map<String,Object> subject = new HashMap<>();
-        subject.put("SUBJECT","WL");
-        subject.put("SUBJECT_NAME","物理");
-        subject.put("PAPER_ID","3dab5722-18cc-49ca-84a2-a0744ae85ec9");
+        subject.put("SUBJECT","SW");
+        subject.put("SUBJECT_NAME","生物");
+        subject.put("PAPER_ID","70624e01-0980-4149-911f-5fa48725e4d3");
         subject.put("TYPE",0);
-        setParmter("expHBSchEachQuestionScoreService",
+        setParmter("expHBSchTotalScoreEachSegVerService",
                 "386840d9-bf0c-4086-a762-5ca129521950",
                 "350800",
                 subject,

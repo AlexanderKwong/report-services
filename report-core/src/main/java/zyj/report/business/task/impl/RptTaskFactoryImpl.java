@@ -765,7 +765,7 @@ public class RptTaskFactoryImpl implements RptTaskFactory {
 				rpttaskseriesOfSchSub.add(new RptTaskBase(r, "expHBSchScoreSegmentOfClassesService", "school",
 						subjectTeacherMaster+"/"+subjectName, subObj, schoolId));
 				// 学校报表/科组长/科目 -- 各题平均得分（含各班）
-				rpttaskseriesOfSchSub.add(new RptTaskBase(r, "ExpHBSchQuesAvgScoresWithSubQuesOfClassesService", "school",
+				rpttaskseriesOfSchSub.add(new RptTaskBase(r, "expHBSchQuesAvgScoresWithSubQuesOfClassesService", "school",
 						subjectTeacherMaster+"/"+subjectName, subObj, schoolId));
 				// 学校报表/科组长/科目 -- 学生选择题答案
 				rpttaskseriesOfSchSub.add(new RptTaskBase(r, "expHBSchObjectiveAnswerService", "school",

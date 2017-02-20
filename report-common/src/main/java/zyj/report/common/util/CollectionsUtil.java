@@ -234,7 +234,7 @@ public class CollectionsUtil {
 	}
 
 	/**
-	 * 按Map.get(key)的int值来倒序排序
+	 * 按Map.get(key)的DOUBLE值来倒序排序
 	 *
 	 * @param d
 	 * @param key

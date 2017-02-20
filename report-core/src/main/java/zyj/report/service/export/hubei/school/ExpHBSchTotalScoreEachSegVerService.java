@@ -73,7 +73,7 @@ public class ExpHBSchTotalScoreEachSegVerService extends BaseRptService {
 	/**
 	 * 初始化 sheet
 	 */
-	public List<Sheet> getSheets(RptTemplate rptTemplate) {
+	public List<Sheet> getSheets(RptTemplate rptTemplate) throws Exception {
 
 		List<Sheet> sheets = new ArrayList<>();
 
@@ -102,7 +102,7 @@ public class ExpHBSchTotalScoreEachSegVerService extends BaseRptService {
 	 * @param rptTemplate
 	 * @return
 	 */
-	public Sheet getSheet(EnmSubjectType type, RptTemplate rptTemplate, List<Map<String, Object>> classList) {
+	public Sheet getSheet(EnmSubjectType type, RptTemplate rptTemplate, List<Map<String, Object>> classList) throws Exception {
 
 		Sheet sheet = new Sheet(type.getCode() + "", getWenLiSheetName(type,excelName));
 
@@ -133,7 +133,10 @@ public class ExpHBSchTotalScoreEachSegVerService extends BaseRptService {
 	 * @return
 	 */
 	public List<Map<String, Object>> getSegmentData(List<Map<String, Object>> data, Integer step, EnmSegmentType
-			type) {
+			type) throws Exception {
+
+		if(data.size()==0)
+			throw new Exception("总分各分数段人数_横报表 分数段没有数据源");
 
 		//拿到总分
 		Float maxScore = Float.parseFloat(data.get(0).get("ALL_TOTAL").toString());
@@ -168,6 +171,5 @@ public class ExpHBSchTotalScoreEachSegVerService extends BaseRptService {
 
 		}).collect(Collectors.toList());
 	}
-
 
 }

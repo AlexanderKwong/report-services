@@ -210,7 +210,7 @@
         <if test="orderList2 != null"><!-- 湖北版需求-->
         <foreach collection="orderList2" index="index" item="question_order"
                  open=" " separator="," close=",">
-            to_char(wm_concat(case when question_order= #{question_order} then answer end)) as Q${question_order}
+            <![CDATA[  to_char(wm_concat(decode( question_order,#{question_order},decode(answer, '<', '空白','>', '多涂', '*', '可疑', answer),''))) as Q${question_order}]]>
         </foreach>
         </if>
 		sch_id,cls_id,area_id,name, <!--nvl(tmp_sequence,sequence) as sequence--> decode(tmp_sequence,'null',sequence,tmp_sequence) as sequence

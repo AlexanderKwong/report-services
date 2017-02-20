@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import zyj.report.business.task.SubjectInfo;
 import zyj.report.common.ExportUtil;
 import zyj.report.common.constant.EnmSubjectType;
+import zyj.report.common.util.CollectionsUtil;
 import zyj.report.service.BaseDataService;
 import zyj.report.service.export.BaseRptService;
 import zyj.report.service.model.*;
@@ -77,6 +78,8 @@ public class ExpHBSchTotalScoreRankService extends BaseRptService {
 		List<Map<String, Object>> data = baseDataService.getStudentSubjectsAndAllscore(p().getExamBatchId(),
 				p().getSchoolId(), p().getLevel(), p().getStuType()).stream().filter(m -> Integer.parseInt(m.get
 				("TYPE").toString()) == type.getCode()).collect(Collectors.toList());
+
+		CollectionsUtil.orderByDoubleValueDesc(data, "ALL_SCORE");
 
 		sheet.setData(data);
 

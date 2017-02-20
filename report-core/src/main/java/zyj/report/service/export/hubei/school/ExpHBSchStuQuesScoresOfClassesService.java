@@ -78,7 +78,7 @@ public class ExpHBSchStuQuesScoresOfClassesService extends ExpHBSchStuQuestionSc
 
         sheets.forEach(sheet -> {
             List<Map<String, Object>> dataFormatted = dataFormattedMapping.get(sheet.getId());
-            CollectionsUtil.orderByStringValue(dataFormatted, "SEQUENCE");
+            CollectionsUtil.orderByIntValue(dataFormatted, String.format("%s_RANK_SCH", params.get("subjectName")));
             sheet.getData().addAll(dataFormatted);
         });
 

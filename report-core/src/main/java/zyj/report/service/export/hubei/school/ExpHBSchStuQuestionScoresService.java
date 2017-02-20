@@ -140,7 +140,7 @@ public class ExpHBSchStuQuestionScoresService extends BaseRptService{
             if (type == 1) m.put("TYPE_NAME","文科");
             else if (type == 2) m.put("TYPE_NAME","理科");
         });
-        zyj.report.common.CalToolUtil.sortByIndexValue(result, String.format("%s_RANK_SCH", params.get("subjectName")));
+        CollectionsUtil.orderByIntValue(result, String.format("%s_RANK_SCH", params.get("subjectName")));
 
         Sheet sheet = new Sheet("",excelName);
         sheet.setFields(fields);

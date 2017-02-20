@@ -64,7 +64,7 @@ public class ExpHBSchSubjectAvgAndScoreSegService extends BaseRptService {
 
         MultiField root = new MultiField(params.get("subjectName") + excelName);
         //step1:加载固定标题
-        for (String t : new String[]{"班级,CLS_NAME","应考人数,CANDIDATES_NUM","均分,AVG_SCORE","排名,AVG_SCH_ORDER","优秀人数,LEVEL_GD_NUM","排名,LEVEL_GD_RANK","及格人数,LEVEL_PS_NUM","排名,LEVEL_FN_RANK" }) {
+        for (String t : new String[]{"班级,CLS_NAME","应考人数,CANDIDATES_NUM","均分,AVG_SCORE","排名,CLS_RANK","优秀人数,LEVEL_GD_NUM","排名,LEVEL_GD_RANK","及格人数,LEVEL_PS_NUM","排名,LEVEL_PS_RANK" }) {
             String[] args = t.split(",");
             root.add(new SingleField(args[0], args[1]));
         }
@@ -103,8 +103,8 @@ public class ExpHBSchSubjectAvgAndScoreSegService extends BaseRptService {
         condition.put("level","classes");
         List<Map<String, Object>> clsSubjectInfo =  rptExpSubjectMapper.findRptExpSubject(condition);
         CollectionsUtil.rank(clsSubjectInfo, "LEVEL_GD_NUM", "LEVEL_GD_RANK");
-        CollectionsUtil.rank(clsSubjectInfo, "LEVEL_FN_NUM", "LEVEL_FN_RANK");
-
+        CollectionsUtil.rank(clsSubjectInfo, "LEVEL_PS_NUM", "LEVEL_PS_RANK");
+        CollectionsUtil.rank(clsSubjectInfo, "AVG_SCORE", "CLS_RANK");
 
         //数据集2
         Segment segment = (Segment)params.get("segment");

@@ -240,6 +240,29 @@ public class CollectionsUtil {
 	 * @param key
 	 */
 	@SuppressWarnings("unchecked")
+	public static void orderByDoubleValue(List<Map<String, Object>> d, final String key) {
+		if (d != null) {
+			Collections.sort(d, new Comparator<Object>() {
+				public int compare(Object o1, Object o2) {
+					Map<String, Object> m1 = (Map<String, Object>) o1;
+					Map<String, Object> m2 = (Map<String, Object>) o2;
+					Float k1 = Float.valueOf(m1.get(key).toString());
+					Float k2 = Float.valueOf(m2.get(key).toString());
+					Float result = k1 - k2;
+					// 扩大一个位数，也就是精确到 小数第一位 进行四舍五入 来对比
+					return Math.round(result*10);
+				}
+			});
+		}
+	}
+
+	/**
+	 * 按Map.get(key)的int值来倒序排序
+	 *
+	 * @param d
+	 * @param key
+	 */
+	@SuppressWarnings("unchecked")
 	public static void orderByDoubleValueDesc(List<Map<String, Object>> d, final String key) {
 		if (d != null) {
 			Collections.sort(d, new Comparator<Object>() {

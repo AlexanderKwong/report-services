@@ -302,7 +302,7 @@ GROUP BY subject,paperScore,user_id)a)group by stu_other_avg,stu_other_num,subje
         question_no,
         qst_tipy,
         sum(case
-        when is_rihgt = '1' then
+        when std_score=qst_score then
         1
         else
         0
@@ -320,7 +320,7 @@ GROUP BY subject,paperScore,user_id)a)group by stu_other_avg,stu_other_num,subje
         0
         end) as wrong_num,
         sum(case
-        when answer is null then
+        when answer = '<' then
         1
         else
         0

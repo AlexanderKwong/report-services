@@ -76,6 +76,9 @@ public class ExpHBSchEachQuestionScoreService extends BaseRptService {
 		Map condition = new HashMap(params);
 		condition.put("level", "classes");
 
+		//科目全卷数据
+		List<Map<String, Object>> subject =  getPaperSheetData(condition);
+
 		// 题目数据
 		List<Map<String, Object>> questions = rptExpQuestionMapper.findRptExpQuestion(condition);
 
@@ -89,11 +92,13 @@ public class ExpHBSchEachQuestionScoreService extends BaseRptService {
 		List<Map<String, Object>> subQuestions = rptExpQuestionMapper.qryQuestionSubScore(condition);
 
 		List<Map<String, Object>> objectiveNullRightMissWrongs = rptExpQuestionMapper.qryObjectiveNullRightMissWrong(condition);
-		if (questions.isEmpty() || questionItems.isEmpty() || objectiveNullRightMissWrongs.isEmpty()) {
+		if (questions.isEmpty() || questionItems.isEmpty() || objectiveNullRightMissWrongs.isEmpty() || subject.isEmpty()) {
 			throw new ReportExportException("没有查到源数据，请核查！");
 		}
 
 		Map<String, List<Map<String, Object>>> questionPartition = CollectionsUtil.partitionBy(questions, new String[]{"CLS_ID"});
+
+		Map<String, List<Map<String, Object>>> subjectPartition = CollectionsUtil.partitionBy(subject, new String[]{"CLS_ID"});
 
 		// 子题目数据 各个班级
 		Map<String, List<Map<String, Object>>> subQuestionPartition = CollectionsUtil.partitionBy(subQuestions, new String[]{"CLS_ID"});
@@ -101,6 +106,8 @@ public class ExpHBSchEachQuestionScoreService extends BaseRptService {
 		Map<String, List<Map<String, Object>>> questionItemPartition = CollectionsUtil.partitionBy(questionItems, new String[]{"CLS_ID"});
 
 		Map<String, List<Map<String, Object>>> objectivePartition = CollectionsUtil.partitionBy(objectiveNullRightMissWrongs, new String[]{"CLS_ID"});
+
+
 
 		for (Map<String, Object> model : classList) {
 			String clsId = model.get("CLS_ID").toString();
@@ -153,7 +160,7 @@ public class ExpHBSchEachQuestionScoreService extends BaseRptService {
 					("QST_TIPY").toString()) == 4).collect(Collectors.toList())));
 
 			// 添加试卷整体分析
-			sheet.getSheets().add(getPaperSheet(params));
+			sheet.getSheets().add(getPaperSheet(subjectPartition.get(clsId)));
 
 			sheets.add(sheet);
 
@@ -265,13 +272,13 @@ public class ExpHBSchEachQuestionScoreService extends BaseRptService {
 	}
 
 	/**
-	 * 获取全卷的sheet
+	 * 获取全卷的sheet的数据DATA
 	 *
-	 * @param params
+	 * @param condition
 	 * @return
 	 * @throws ReportExportException
 	 */
-	private Sheet getPaperSheet(Map<String, Object> params) throws ReportExportException {
+	private List<Map<String,Object>> getPaperSheetData(Map<String, Object> condition) throws ReportExportException {
 
 		List<Field> fields = new ArrayList<>();
 
@@ -281,6 +288,9 @@ public class ExpHBSchEachQuestionScoreService extends BaseRptService {
 		addRegularFields(root, new String[]{"最高分,TOP_SCORE", "最低分,UP_SCORE", "全距,DISTANCE", "均分,AVG_SCORE", "优秀人数,LEVEL_GD_NUM", "及格人数,LEVEL_PS_NUM", "众数,MODELS", "区分度,STU_SCORE_DIFFERENT", "难度,STU_SCORE_DIFFICUT", "信度,STU_SCORE_RELIABILITY", "标准差,STU_SCORE_SD"});
 
 		fields.add(root);
+
+		Map params = new HashMap(condition);
+		params.put("level", "classes");
 
 		List<Map<String, Object>> data = rptExpSubjectMapper.findRptExpSubject(params);
 
@@ -317,6 +327,27 @@ public class ExpHBSchEachQuestionScoreService extends BaseRptService {
 		};
 
 		data.forEach(doAll);
+
+		return data;
+	}
+
+	/**
+	 * 获取全卷的sheet
+	 *
+	 * @param data
+	 * @return
+	 * @throws ReportExportException
+	 */
+	private Sheet getPaperSheet(List<Map<String, Object>> data) throws ReportExportException {
+
+		List<Field> fields = new ArrayList<>();
+
+		MultiField root = new MultiField("试卷整体分析（全卷）");
+
+		//step1:加载固定标题
+		addRegularFields(root, new String[]{"最高分,TOP_SCORE", "最低分,UP_SCORE", "全距,DISTANCE", "均分,AVG_SCORE", "优秀人数,LEVEL_GD_NUM", "及格人数,LEVEL_PS_NUM", "众数,MODELS", "区分度,STU_SCORE_DIFFERENT", "难度,STU_SCORE_DIFFICUT", "信度,STU_SCORE_RELIABILITY", "标准差,STU_SCORE_SD"});
+
+		fields.add(root);
 
 		Sheet sheet = new Sheet("paper", "全卷");
 		sheet.getData().addAll(data);

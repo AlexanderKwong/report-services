@@ -55,7 +55,7 @@ public class ExpHBSchQuesAvgScoresWithSubQuesOfClassesService extends ExpHBSchQu
         result.addAll(result1);
 
         //排序
-        CollectionsUtil.orderByDoubleValueDesc(result,"QUESTION_ORDER");
+        CollectionsUtil.orderByDoubleValue(result,"QUESTION_ORDER");
 
         return sheets;
     }

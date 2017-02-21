@@ -14,9 +14,9 @@ public class ExpHBSchEachQuestionScoreServiceTest extends BaseExportTest{
     @Before
     public void setUp(){
         Map<String,Object> subject = new HashMap<>();
-        subject.put("SUBJECT","WL");
-        subject.put("SUBJECT_NAME","物理");
-        subject.put("PAPER_ID","3dab5722-18cc-49ca-84a2-a0744ae85ec9");
+        subject.put("SUBJECT","YW");
+        subject.put("SUBJECT_NAME","语文");
+        subject.put("PAPER_ID","9ad63e8e-14ec-4dc9-8db5-86e572429208");
         subject.put("TYPE",0);
         setParmter("expHBSchEachQuestionScoreService",
                 "386840d9-bf0c-4086-a762-5ca129521950",

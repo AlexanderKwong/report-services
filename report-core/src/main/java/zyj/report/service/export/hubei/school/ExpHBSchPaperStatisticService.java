@@ -88,10 +88,13 @@ public class ExpHBSchPaperStatisticService extends BaseRptService {
 		List<Map<String, Object>> subQuestion = subQuestions.stream().map(m -> {
 			Map<String, Object> map = new HashMap<>();
 			String[] nos = m.get("QUESTION_NO").toString().split("_");
+			map.put("QUESTION_ORDER", m.get("QUESTION_ORDER"));
 			map.put("QUESTION_NO", nos[0]);
-			map.put("SUB_NO", nos[1]);
+			map.put("SUB_NO", nos[nos.length-1]);
 			map.put("AVG_SCORE", m.get("AVG_SCORE"));
 			map.put("QST_SCORE", m.get("QST_SCORE"));
+			map.put("DIFFICULTY_NUM", m.get("DIFFICULTY_NUM"));
+			map.put("STAND_POOR", m.get("STAND_POOR"));
 			map.put("QST_TIPY", EnmQuestionType.SUBJECTIVITY.getCode());
 			return map;
 		}).collect(Collectors.toList());
@@ -106,7 +109,7 @@ public class ExpHBSchPaperStatisticService extends BaseRptService {
 
 		CollectionsUtil.orderByStringValue(subQuestion, "SUB_NO");
 		question.addAll(subQuestion);
-		CollectionsUtil.orderByStringValue(question, "QUESTION_NO");
+		CollectionsUtil.orderByDoubleValue(question, "QUESTION_ORDER");
 
 		sheets.add(getSubjectiveSheet(params, question.stream().filter(m -> Integer.valueOf(m.get("QST_TIPY").toString()) == 4).collect(Collectors.toList())));
 

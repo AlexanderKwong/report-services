@@ -120,20 +120,20 @@ public class ExpHBSchEachQuestionScoreService extends BaseRptService {
 			List<Map<String, Object>> subQuestion = new ArrayList<>();
 
 			if (subQuestionPartition.size() > 0) {
-				subQuestionPartition.get(clsId).stream().map(m -> {
+				subQuestion = subQuestionPartition.get(clsId).stream().map(m -> {
 					Map<String, Object> map = new HashMap<>();
-
 					String[] nos = m.get("QUESTION_NO").toString().split("_");
+					map.put("QUESTION_ORDER", m.get("QUESTION_ORDER"));
 					map.put("QUESTION_NO", nos[0]);
-					map.put("SUB_NO", nos[1]);
+					map.put("SUB_NO", nos[nos.length-1]);
 					map.put("AVG_SCORE", m.get("AVG_SCORE"));
 					map.put("QST_SCORE", m.get("QST_SCORE"));
+					map.put("DIFFICULTY_NUM", m.get("DIFFICULTY_NUM"));
+					map.put("STAND_POOR", m.get("STAND_POOR"));
 					map.put("QST_TIPY", EnmQuestionType.SUBJECTIVITY.getCode());
-
 					return map;
 				}).collect(Collectors.toList());
 			}
-
 
 			// 获取班级 所有班级 题目选项
 			List<Map<String, Object>> questionItem = questionItemPartition.get(clsId);
@@ -146,14 +146,14 @@ public class ExpHBSchEachQuestionScoreService extends BaseRptService {
 				continue;
 			}
 
-			CollectionsUtil.orderByStringValue(question, "QUESTION_NO");
+			CollectionsUtil.orderByDoubleValue(question, "QUESTION_ORDER");
 			CollectionsUtil.orderByStringValue(subQuestion, "SUB_NO");
 
 			// 添加客观题数据
 			sheet.getSheets().add(getObjectiveSheet(params, question.stream().filter(m -> Integer.valueOf(m.get("QST_TIPY").toString()) != 4).collect(Collectors.toList()), questionItem.stream().filter(m -> Integer.valueOf(m.get("QST_TIPY").toString()) != 4).collect(Collectors.toList()), objectiveNullRightMissWrong));
 
 			question.addAll(subQuestion);
-			CollectionsUtil.orderByStringValue(question, "QUESTION_NO");
+			CollectionsUtil.orderByDoubleValue(question, "QUESTION_ORDER");
 
 			// 添加主观提数据
 			sheet.getSheets().add(getSubjectiveSheet(params, question.stream().filter(m -> Integer.valueOf(m.get
@@ -182,7 +182,7 @@ public class ExpHBSchEachQuestionScoreService extends BaseRptService {
 
 		List<Field> fields = new ArrayList<>();
 
-		MultiField root = new MultiField("试卷整体分析（客观题）");
+		MultiField root = new MultiField("客观题");
 
 		//step1:加载固定标题
 		addRegularFields(root, new String[]{"题目名称,QUESTION_NO", "平均分,AVG_SCORE", "难度,DIFFICULTY_NUM", "区分度,DIS_DEGREE", "标准差,STAND_POOR", "空白人数,NULL_NUM", "漏涂人数,MISS_NUM", "错涂人数,WRONG_NUM", "正确人数,RIGHT_NUM"});
@@ -257,7 +257,7 @@ public class ExpHBSchEachQuestionScoreService extends BaseRptService {
 
 		List<Field> fields = new ArrayList<>();
 
-		MultiField root = new MultiField("试卷整体分析（主观题）");
+		MultiField root = new MultiField("主观题");
 
 		//step1:加载固定标题
 		addRegularFields(root, new String[]{"题目名称,QUESTION_NO", "小题,SUB_NO", "满分,QST_SCORE", "均分,AVG_SCORE", "难度,DIFFICULTY_NUM", "区分度,DIS_DEGREE", "标准差,STAND_POOR"});
@@ -282,7 +282,7 @@ public class ExpHBSchEachQuestionScoreService extends BaseRptService {
 
 		List<Field> fields = new ArrayList<>();
 
-		MultiField root = new MultiField("试卷整体分析（全卷）");
+		MultiField root = new MultiField("全卷");
 
 		//step1:加载固定标题
 		addRegularFields(root, new String[]{"最高分,TOP_SCORE", "最低分,UP_SCORE", "全距,DISTANCE", "均分,AVG_SCORE", "优秀人数,LEVEL_GD_NUM", "及格人数,LEVEL_PS_NUM", "众数,MODELS", "区分度,STU_SCORE_DIFFERENT", "难度,STU_SCORE_DIFFICUT", "信度,STU_SCORE_RELIABILITY", "标准差,STU_SCORE_SD"});

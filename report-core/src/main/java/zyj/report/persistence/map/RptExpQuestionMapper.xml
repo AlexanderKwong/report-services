@@ -391,7 +391,7 @@ GROUP BY subject,paperScore,user_id)a)group by stu_other_avg,stu_other_num,subje
     </select>
 
     <select id="qryQuestionSubScore" resultType="java.util.HashMap" >
-        select round(avg(stu_score),2) as avg_score,  round(avg(stu_score)/question_score,4) as score_rank,
+        select round(avg(stu_score),2) as avg_score,  round(avg(stu_score)/question_score,4) as score_rank,round(avg(stu_score)/question_score,2) DIFFICULTY_NUM,round(stddev(stu_score),2) STAND_POOR,
         question_score as qst_score,exambatch_id, paper_id, subject,
         question_order,question_no,question_score,parent_question_id, parent_question_order
         <if test="GroupBy != null">

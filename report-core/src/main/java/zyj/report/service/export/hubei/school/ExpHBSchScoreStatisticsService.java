@@ -154,6 +154,7 @@ public class ExpHBSchScoreStatisticsService extends BaseRptService {
             cls.putAll(clsStuNumInfo);
             //离均差
             double schAvg = Double.parseDouble(cls.get("AVG_SCORE").toString());
+
             cls.put("SCORE_AVG_DEV", CalToolUtil.decimalFormat2(schAvg-avg));
         }
         Map schRow = schFSD.get(0);

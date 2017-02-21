@@ -28,7 +28,7 @@ public class ExpHBSchStudentScoreServiceTest extends BaseExportTest{
                 null,
                 "school",
                 1,
-                "abfa5b06-362f-4d34-9d94-ff82b09be3e1");
+                "45979051-eb43-4a14-a8b5-cb027727587d");
     }
 
     @Test

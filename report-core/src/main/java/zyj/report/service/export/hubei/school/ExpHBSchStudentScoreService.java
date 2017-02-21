@@ -122,7 +122,7 @@ public class ExpHBSchStudentScoreService extends BaseRptService {
 			sheet.getFields().addAll(getFields(model, String
 					.format(excelName, model.get("CLS_NAME").toString())));
 
-			conditions.put("classesId", p().getClassesId());
+			conditions.put("classesId", model.get("CLS_ID"));
 			conditions.put("level", "classes");
 			List<Map<String, Object>> schAllscore = rptExpAllscoreMapper.findRptExpAllscore(conditions);
 

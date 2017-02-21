@@ -521,15 +521,16 @@ public class CalToolUtil {
 			DecimalFormat formater = new DecimalFormat();
 			formater.setMaximumFractionDigits(2);
 			formater.setGroupingSize(0);
-			formater.setRoundingMode(RoundingMode.FLOOR);
+			formater.setRoundingMode(RoundingMode.HALF_UP);
 			return formater.format(a);
 	}
+
 	public static String decimalFormat4(double a){
 		//格式化小数，保留两位
 			DecimalFormat formater = new DecimalFormat();
 			formater.setMaximumFractionDigits(4);
 			formater.setGroupingSize(0);
-			formater.setRoundingMode(RoundingMode.FLOOR);
+			formater.setRoundingMode(RoundingMode.HALF_UP);
 			return formater.format(a);
 	}
 	

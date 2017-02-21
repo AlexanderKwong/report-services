@@ -3,8 +3,10 @@ package zyj.report.service.export.hubei.school;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import zyj.report.business.task.SubjectInfo;
+import zyj.report.common.CalToolUtil;
 import zyj.report.common.ExportUtil;
 import zyj.report.persistence.client.JyjRptExtMapper;
+import zyj.report.persistence.client.RptExpAllscoreMapper;
 import zyj.report.service.BaseDataService;
 import zyj.report.service.export.BaseRptService;
 import zyj.report.service.model.*;
@@ -13,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -28,6 +31,9 @@ public class ExpHBSchStudentScoreService extends BaseRptService {
 
 	@Autowired
 	BaseDataService baseDataService;
+
+	@Autowired
+	RptExpAllscoreMapper rptExpAllscoreMapper;
 
 	private static String excelName = "学生各科成绩和总分（%s）";
 
@@ -77,7 +83,7 @@ public class ExpHBSchStudentScoreService extends BaseRptService {
 		});
 
 		root.add(new SingleField("总分分数", "ALL_SCORE"));
-		root.add(new SingleField("标准分", "ALL_RANK"));
+		root.add(new SingleField("标准分", "STANDARD_SCORE"));
 		root.add(new SingleField("总分班名", "ALL_RANK_CLS"));
 		root.add(new SingleField("总分校名", "ALL_RANK_SCH"));
 
@@ -117,8 +123,23 @@ public class ExpHBSchStudentScoreService extends BaseRptService {
 					.format(excelName, model.get("CLS_NAME").toString())));
 
 			conditions.put("classesId", p().getClassesId());
+			conditions.put("level", "classes");
+			List<Map<String, Object>> schAllscore = rptExpAllscoreMapper.findRptExpAllscore(conditions);
+
+			//获取平均分和标准差，用于计算标准分
+			Float avgScore = Float.parseFloat(schAllscore.get(0).get("AVG_SCORE").toString());
+			Float stdDev = Float.parseFloat(schAllscore.get(0).get("STU_SCORE_SD").toString());
+
+			//定义标准分算子
+			Function<Map<String, Object>, Map<String, Object>> calcStdDev = m -> {
+				Float stuScore = Float.parseFloat(m.get("ALL_SCORE").toString());
+				String stdScore = CalToolUtil.decimalFormat2((stuScore - avgScore) * 100 / stdDev + 500);
+				m.put("STANDARD_SCORE", stdScore);
+				return m;
+			};
+
 			List<Map<String, Object>> data = baseDataService.getStudentSubjectsAndAllscore(p().getExamBatchId(),
-					model.get("CLS_ID").toString(), "classes", p().getStuType());
+					model.get("CLS_ID").toString(), "classes", p().getStuType()).stream().map(calcStdDev).collect(Collectors.toList());;
 
 			zyj.report.common.CalToolUtil.sortByIndexValue2(data, "ALL_RANK");
 

@@ -21,6 +21,7 @@ import org.springframework.data.redis.core.query.SortQueryBuilder;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import redis.clients.jedis.exceptions.JedisException;
 import zyj.report.common.util.SerializeUtil;
 import zyj.report.service.redis.RedisService;
 
@@ -215,6 +216,11 @@ public class RedisServiceImpl implements RedisService {
         });
     }
 
+    /**
+     * 设置kv的每个key作为key, ((Map)value).getKey() 作为 fieldName ,((Map)value).getValue()作为fieldValue
+     * @param kv
+     * @param <T>
+     */
     public <T extends Serializable > void hmsetWithPipline(Map<String,Map<String,T>> kv){
         RedisSerializer keySerializer = redisTemplate.getKeySerializer();
         RedisSerializer hashKeySerializer =  redisTemplate.getHashKeySerializer();
@@ -250,51 +256,68 @@ public class RedisServiceImpl implements RedisService {
         });
     }
 
+    /**
+     * 获取多个key的某一field
+     * @param field
+     * @param keys
+     * @return
+     */
     public List<Map<String, String>>  hgetWithPipline(String field,String... keys ){
         RedisSerializer keySerializer = redisTemplate.getKeySerializer();
         RedisSerializer hashKeySerializer =  redisTemplate.getHashKeySerializer();
         RedisSerializer hashValueSerializer =  redisTemplate.getHashValueSerializer();
-       List<Object> result =  redisTemplate.executePipelined(new RedisCallback<Map<String, String>>() {
+        try{
+            List<Object> result =  redisTemplate.executePipelined(new RedisCallback<Map<String, String>>() {
 
-            @Override
-            public Map<String, String> doInRedis(RedisConnection redisConnection) throws DataAccessException {
-                for (String key : keys) {
-                    redisConnection.hGet(keySerializer.serialize(key), hashKeySerializer.serialize(field));
+                @Override
+                public Map<String, String> doInRedis(RedisConnection redisConnection) throws DataAccessException {
+                    for (String key : keys) {
+                        redisConnection.hGet(keySerializer.serialize(key), hashKeySerializer.serialize(field));
+                    }
+                    return null;
                 }
-                return null;
-            }
-        }, hashValueSerializer);
-        return result.stream().filter(o-> !Objects.isNull(o)).map(o->(HashMap<String, String>)o).collect(Collectors.toList());
+            }, hashValueSerializer);
+            return result.stream().filter(o-> !Objects.isNull(o)).map(o->(HashMap<String, String>)o).collect(Collectors.toList());
+        }catch (JedisException e){
+            e.printStackTrace();
+            return null;
+        }
+
     }
 
-  /*  public  Map<String,Map<String,String>>  hgetallWithPipline(String... keys ){
+    public <T extends Serializable > void saddWithPipline(Map<String, List<String>> kv ){
         RedisSerializer keySerializer = redisTemplate.getKeySerializer();
         RedisSerializer hashKeySerializer =  redisTemplate.getHashKeySerializer();
         RedisSerializer hashValueSerializer =  redisTemplate.getHashValueSerializer();
+        redisTemplate.execute(new RedisCallback() {
 
-        return redisTemplate.execute(new RedisCallback<Map<String,Map<String,String>>>() {
+            public Long doInRedis(RedisConnection connection) throws DataAccessException {
 
-            public Map<String,Map<String,String>> doInRedis(RedisConnection connection) throws DataAccessException {
                 connection.openPipeline();
                 boolean pipelinedClosed = false;
-                try{
-                    Map<String,Map<String,String>> result = new HashMap<String,Map<String,String>>();
-                    for (String key : keys){
-//                        byte[] bytes = connection.hGet(key.getBytes(), field.getBytes());
-                        Map<byte[], byte[]>  bytes = connection.hGetAll(Objects.isNull(keySerializer)?rawHashKey(key):keySerializer.serialize(key));
-//                        result.put(key,(HashMap) (Objects.isNull(hashValueSerializer) ?  SerializeUtil.unserialize(bytes) : hashValueSerializer.deserialize(bytes)) );
+                try {
+
+                    for (Map.Entry<String, List<String>> entry : kv.entrySet()) {
+                        final ArrayList<byte[]> values = new ArrayList(entry.getValue().size());
+                        Iterator var = entry.getValue().iterator();
+
+                        while (var.hasNext()) {
+                            String v = (String) var.next();
+                            values.add(keySerializer.serialize(v));
+                        }
+                        connection.sAdd(entry.getKey().getBytes(), values.toArray(new byte[values.size()][]));
                     }
                     connection.closePipeline();
                     pipelinedClosed = true;
-                    return result;
-                }finally {
-                    if(!pipelinedClosed) {
+                } finally {
+                    if (!pipelinedClosed) {
                         connection.closePipeline();
                     }
                 }
+                return 1L;
             }
         });
-    }*/
+    }
 
     public <T> List<T> sortAndGet(String sortKey, String by, String... getPatterns){
 //        SortQuery<String> query = SortQueryBuilder.sort("test-user-1").noSort().get("#").get("test-map-*->uid").get("test-map-*->content").build();
@@ -310,6 +333,7 @@ public class RedisServiceImpl implements RedisService {
         SortQuery<String> query = tmp.build();
         return ((List<T> )redisTemplate.sort(query,redisTemplate.getHashValueSerializer())).stream().filter(o->!Objects.isNull(o)).collect(Collectors.toList());
     }
+
 
     public Object hmget(String key , String field){
         return redisTemplate.opsForHash().get(key, field);

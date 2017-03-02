@@ -116,6 +116,8 @@ public interface RedisService {
 
     public List<Map<String, String>>  hgetWithPipline(String field,String... keys );
 
+    public <T extends Serializable > void saddWithPipline(Map<String, List<String>> kv );
+
     public Object hmget(String key , String field);
 
     public void hmset(String key, String field, Object object);

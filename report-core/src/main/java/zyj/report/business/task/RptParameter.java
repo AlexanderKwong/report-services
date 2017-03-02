@@ -18,5 +18,18 @@ public abstract class RptParameter {
 
 	public abstract int getRptType();
 
-
+	public String getVersionName(){
+		switch (getRptType()){
+			case TONGYONG:
+				return "通用版";
+			case XIAOGAN:
+				return "孝感版";
+			case ZHONGSHAN:
+				return "中山版";
+			case HUBEI:
+				return "湖北版";
+			default:
+				return "";
+		}
+	}
 }

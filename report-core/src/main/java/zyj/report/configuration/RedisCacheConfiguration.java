@@ -46,7 +46,8 @@ public class RedisCacheConfiguration extends CachingConfigurerSupport {
         jedisPoolConfig.setMaxTotal(env.getRequiredProperty("jedispool.maxTotal", Integer.class));
         jedisPoolConfig.setTestOnBorrow(env.getRequiredProperty("jedispool.testOnBorrow", Boolean.class));
         jedisPoolConfig.setTestOnReturn(env.getRequiredProperty("jedispool.testOnReturn", Boolean.class));
-
+        jedisPoolConfig.setTestWhileIdle(env.getRequiredProperty("jedispool.testWhileIdle", Boolean.class));
+        jedisPoolConfig.setTestOnCreate(env.getRequiredProperty("jedispool.testOnCreate", Boolean.class));
         // Defaults
         redisConnectionFactory.setHostName(env.getProperty("jedispool.hostName"));
         redisConnectionFactory.setPort(env.getRequiredProperty("jedispool.port", Integer.class));

@@ -8,7 +8,7 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
     <!-- 定义日志的根目录 -->
      <property name="LOG_HOME" value="log" />
     <!-- 定义日志文件名称 -->
-    <property name="appName" value="test"></property>
+    <property name="appName" value="report-services"></property>
     <!-- ch.qos.logback.core.ConsoleAppender 表示控制台输出 -->
     <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
         <Encoding>UTF-8</Encoding>
@@ -61,7 +61,7 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
         <discriminator class="zyj.report.common.logging.ThreadNameBasedDiscriminator"/>
         <sift>
             <appender class="ch.qos.logback.core.FileAppender">
-                <file>${LOG_HOME}/${threadName}.log</file>
+                <file>${LOG_HOME}/client.log</file>
                 <layout class="ch.qos.logback.classic.PatternLayout">
                     <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} -[ %-5level ] - %msg%n</pattern>
                 </layout>

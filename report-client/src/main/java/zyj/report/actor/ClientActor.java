@@ -173,7 +173,7 @@ public class ClientActor extends UntypedActor {
 
     private void merge(String srcPath, String fileName) throws IOException {
         long mills = System.currentTimeMillis();
-        String destPath = srcPath+"/merge_"+fileName;
+        String destPath = srcPath+"/"+fileName;
         logger.debug("源路径为： "+srcPath);
         logger.debug("目标路径为： "+destPath);
         File f = new File(srcPath);
@@ -195,14 +195,31 @@ public class ClientActor extends UntypedActor {
             ZipUtil.unZip(file.getAbsolutePath(), destPath + "/");
         }
         String[]filenames =  new File(destPath).list();
+        /*++++++++20170302 取中文名+++++++++++++*/
+        String examName = null;
+        /*++++++++++++++++++++++++++++++++*/
+
         for (String string : filenames) {
             logger.debug(string);
+            if (examName == null ) examName = string;
+            else if (examName != null && !examName.equals(string)) logger.error("存在不同Job的文件，无法合并。");
         }
         String fname = srcPath+"/" + fileName;
-        ZipUtil.zipDir(destPath, fname+".zip");
-        FileUtil.rmvDir(destPath);
+//        ZipUtil.zipDir(destPath, fname+".zip");
+        //20170302 修改，合并时保留有批次中文名的一级
+        ZipUtil.zipDir(destPath +"/" + examName, destPath +"/" + examName + ".zip");
+
+//        FileUtil.rmvDir(destPath);
         //todo 这里应该将其它子节点传过来的包删掉 测试阶段先不删，留着
+        FileUtil.rmvDir(destPath +"/" + examName);
+        for (File file2Del : files)
+            FileUtil.rmvFile(file2Del);
+
         long cost  = System.currentTimeMillis() - mills;
         logger.debug("success!耗时 ： " + cost);
     }
+
+/*    public static void main (String [] args) throws IOException {
+        merge("D:\\testxls\\zskcs_beta6","examrpt_386840d9-bf0c-4086-a762-5ca129521950_0_1_[all]");
+    }*/
 }

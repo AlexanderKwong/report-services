@@ -162,8 +162,8 @@ public class JyjRptExtService {
 		Map cityParams = new HashMap(gradParam);
 		String cityCode = city.get("CITYCODE").toString();
 		cityParams.put("cityCode", cityCode);
-		String fullName = "" + city.get("NAME") + ' ' + examName;
-		String rootPath = parameter.getPathFile() + "/" + fullName + " 报表";
+//		String fullName = "" + city.get("NAME") + ' ' + examName;
+		String rootPath = parameter.getPathFile() + "/" + examName + " " + /*parameter.getVersionName() + */"报表";
 		//添加市维度的报表任务
 		RptParameterBase cityParameter = new RptParameterBase(parameter);
 		cityParameter.setPathFile(rootPath);

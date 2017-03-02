@@ -342,7 +342,7 @@ public class ExpHBSchEachQuestionScoreService extends BaseRptService {
 
 		List<Field> fields = new ArrayList<>();
 
-		MultiField root = new MultiField("试卷整体分析（全卷）");
+		MultiField root = new MultiField("全卷");
 
 		//step1:加载固定标题
 		addRegularFields(root, new String[]{"最高分,TOP_SCORE", "最低分,UP_SCORE", "全距,DISTANCE", "均分,AVG_SCORE", "优秀人数,LEVEL_GD_NUM", "及格人数,LEVEL_PS_NUM", "众数,MODELS", "区分度,STU_SCORE_DIFFERENT", "难度,STU_SCORE_DIFFICUT", "信度,STU_SCORE_RELIABILITY", "标准差,STU_SCORE_SD"});

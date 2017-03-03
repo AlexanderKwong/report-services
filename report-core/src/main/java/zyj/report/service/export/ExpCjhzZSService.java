@@ -80,7 +80,7 @@ public class ExpCjhzZSService extends BaseRptService {
 		addFinalField(title,level);
 //产生查询条件List
 		List<SubjectInfo> subjectList = subjects_cur.stream()
-				.map(subject -> new SubjectInfo(subject.get("PAPER_ID").toString(), subject.get("SUBJECT").toString(), subject.get("SUBJECT_NAME").toString(),(Integer)subject.get("TYPE")))
+				.map(subject -> new SubjectInfo(subject.get("PAPER_ID").toString(), subject.get("SUBJECT").toString(), subject.get("SUBJECT_NAME").toString(),Integer.parseInt(subject.get("TYPE").toString())))
 				.sorted((subject1,subject2)->{
 					return CalToolUtil.indexOf(CalToolUtil.getSubjectOrder(),subject1.getSubject())- CalToolUtil.indexOf(CalToolUtil.getSubjectOrder(),subject2.getSubject());
 				})

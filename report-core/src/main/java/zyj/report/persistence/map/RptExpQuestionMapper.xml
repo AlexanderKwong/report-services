@@ -31,7 +31,7 @@
     </where>
   </sql>
   <sql id="Question_Column_List" >
-    EXAMBATCH_ID,PAPER_ID,SUBJECT,QUESTION_ORDER,QUESTION_NO,QST_TIPY,QST_SCORE,DIFFICULTY,TAKE_EXAM_NUM,AVG_SCORE,TOP_SCORE,UP_SCORE,FULL_RANK,STAND_POOR,DIS_DEGREE,DIFFICULTY_NUM,SCORE_RANK,<!--decode(STANDARD_ANSWER,'null','',STANDARD_ANSWER)-->STANDARD_ANSWER AS STANDARD_ANSWER,CITY_CODE,NULL_ANSWER_RATE,MULTI_CHOICE_RATE,ZERO_SCORE_RATE,CV
+    EXAMBATCH_ID,PAPER_ID,SUBJECT,QUESTION_ORDER,QUESTION_NO,QST_TIPY,QST_SCORE,DIFFICULTY,TAKE_EXAM_NUM,AVG_SCORE,TOP_SCORE,UP_SCORE,FULL_RANK,STAND_POOR,DIS_DEGREE,DIFFICULTY_NUM,SCORE_RANK,decode(STANDARD_ANSWER,'null','',STANDARD_ANSWER)<!-- STANDARD_ANSWER--> AS STANDARD_ANSWER,CITY_CODE,NULL_ANSWER_RATE,MULTI_CHOICE_RATE,ZERO_SCORE_RATE,CV
   </sql>
   <sql id="School_Subject_Column_List" >
 	SCH_ID,AREA_ID 
@@ -213,7 +213,8 @@
             <![CDATA[  to_char(wm_concat(decode( question_order,#{question_order},decode(answer, '<', '空白','>', '多涂', '*', '可疑', answer),''))) as Q${question_order}]]>
         </foreach>
         </if>
-		sch_id,cls_id,area_id,name, <!--nvl(tmp_sequence,sequence) as sequence--> decode(tmp_sequence,'null',sequence,tmp_sequence) as sequence
+		sch_id,cls_id,area_id,name, <!--nvl(tmp_sequence,sequence) as sequence--> <!-- decode(tmp_sequence,'null',sequence,tmp_sequence) as sequence -->
+        decode(tmp_sequence,'null',sequence, NULL, sequence, tmp_sequence) as sequence
         ,schoolname as schname,classname as clsname,areaname as areaname
 		from RPT_EXP_STUDENT_QUESTION
 		where exambatch_id = #{exambatchId} and subject like #{subject} and paper_id = #{paperId}

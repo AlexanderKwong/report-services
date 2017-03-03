@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import zyj.report.business.task.RptTask;
 import zyj.report.business.task.RptTaskQueue;
+import zyj.report.business.task.impl.CleanTask;
 import zyj.report.business.task.impl.EOFTask;
 import zyj.report.business.task.impl.RptTaskWait;
 import zyj.report.exception.report.ReportTaskDispatchException;
@@ -57,6 +58,7 @@ public class DispatcherActor extends UntypedActor {
 
     @Override
     public void preStart() {
+        getSender().tell(new CleanTask(jobId),getSelf());
         logger.info(String.format("Job [%s] 就绪，其中子任务队列大小为 %d", jobId, rptTaskRptTaskQueue.size()));
         start = System.currentTimeMillis();
     }

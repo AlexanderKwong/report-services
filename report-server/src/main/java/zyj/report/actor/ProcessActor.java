@@ -119,6 +119,7 @@ public class ProcessActor  extends UntypedActor {
                 taskRouter.tell(task, getSelf());
             }else if (task.getState()== Task.STATE.SUCCEED){
                 logger.info(String.format("Job [%s] 准备上传",jobId));
+                taskProgress.setJobRootPath(task.getRptpath());
                 taskRouter.tell(new UploadTask(taskProgress.getJobId(), task.getRptpath(), taskProgress.getTotal()), getSelf());
             }else if (task.getState()== Task.STATE.FAILED){
                 ActorRef actorRef = taskProgress.getSender();
@@ -140,8 +141,13 @@ public class ProcessActor  extends UntypedActor {
         }
         if (o instanceof CleanTask){
             CleanTask task = (CleanTask)o;
-            tasksTracingMap.remove(task.getJobId());
+            TaskProgress taskProgress = tasksTracingMap.get(task.getJobId());
+            if (taskProgress != null){
+                task.setRptpath(taskProgress.getJobRootPath());
+                tasksTracingMap.remove(task.getJobId());
+            }
             taskRouter.tell(task);
+
         }
     }
 

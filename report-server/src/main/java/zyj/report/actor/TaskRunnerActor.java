@@ -102,6 +102,12 @@ public class TaskRunnerActor extends UntypedActor {
             }else if (o instanceof CleanTask){
                 //TODO 这里应调用cleanTask的run()来清理本机生成的该批次的zip文件，测试阶段暂时不清理
                 CleanTask task = (CleanTask)o;
+                try {
+                    task.run();
+                }catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
                 logger.info(String.format("Job [%s] 清除数据完毕。.",task.getJobId()));
             }
         }

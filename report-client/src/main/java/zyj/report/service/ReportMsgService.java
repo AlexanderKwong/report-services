@@ -70,10 +70,10 @@ public class ReportMsgService {
         JSONObject jsonObject = JSONObject.fromString(data);
         JSONArray paperexamidsJSON = jsonObject.getJSONArray("paperExamIds");
         List<String> paperexamids = new ArrayList<>();
-        for (Iterator i = paperexamidsJSON.iterator(); i.hasNext(); ) {
+        /*for (Iterator i = paperexamidsJSON.iterator(); i.hasNext(); ) {
             paperexamids.add(i.next().toString());
-        }
-
+        }*/
+        paperexamids.add("all");
         String paperId = jsonObject.getString("paperId");
         int stuType = jsonObject.getInt("studentType");
         int rptType = jsonObject.getInt("reportType");

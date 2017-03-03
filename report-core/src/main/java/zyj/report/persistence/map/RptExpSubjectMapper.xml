@@ -317,8 +317,8 @@
 		ess.name as name,
 		ess.full_score,
 		ess.sign_total,
-		nvl(ess.tmp_sequence,ess.sequence) as sequence
-		<!--decode(ess.tmp_sequence,'null',ess.sequence,ess.tmp_sequence) as sequence -->
+		<!-- nvl(ess.tmp_sequence,ess.sequence) as sequence -->
+		decode(ess.tmp_sequence,'null',ess.sequence,NULL ,ess.sequence,ess.tmp_sequence) as sequence
 		from RPT_EXP_STUDENT_SUBJECT ess
 		<where>
 			<if test="exambatchId != null">
@@ -354,8 +354,8 @@
 	<!-- 获取指定场次下学生科目信息-->
 	<select id="qryStudentSubjectScore1" resultType="java.util.HashMap">
 		select a.* from(
-		select distinct   <!-- decode(ess.tmp_sequence,'null',ess.sequence,ess.tmp_sequence) as sequence-->
-		nvl(ess.tmp_sequence,ess.sequence) as sequence , subject,sign_total,CITY_RANK
+		select distinct   decode(ess.tmp_sequence,'null',ess.sequence,NULL, ess.sequence , ess.tmp_sequence) as sequence
+		/*nvl(ess.tmp_sequence,ess.sequence) as sequence*/ , subject,sign_total,CITY_RANK
 		,user_id,name,ess.sch_id,ess.cls_id from RPT_EXP_STUDENT_SUBJECT ess
 		where exambatch_id =#{exambatchId}
 		<if test="areaId!= null">
@@ -375,8 +375,8 @@
 	<select id="qryStudentSubjectScore2" resultType="java.util.HashMap">
 		<![CDATA[		select user_id,(case when sign(sum(case when type =1 then -1 when type =2 then 1 else 0 end))>0 then 2  when sign(sum(case when type =1 then -1 when type =2 then 1 else 0 end))<0 then 1  else 0 end) as type ]]>
 		,name,sequence as sequence0,
-		decode(tmp_sequence,'null',sequence,tmp_sequence) /* nvl(tmp_sequence,11) */ as
-		sequence,sch_id,schoolname as sch_name,cls_id ,classname as cls_name,area_id,areaname as area_name
+		/*decode(tmp_sequence,'null',sequence,tmp_sequence)*/ /* nvl(tmp_sequence,11) */
+		decode(tmp_sequence,'null',sequence, NULL, sequence, tmp_sequence) as sequence,sch_id,schoolname as sch_name,cls_id ,classname as cls_name,area_id,areaname as area_name
 		<foreach collection="subjectList" index="index" item="subjectInfo" open=" ," separator="," close="  ">
 			sum(case when subject= #{subjectInfo.subject} and paper_id = #{subjectInfo.paperId} then
 			sign_total end ) as ${subjectInfo.subjectName}_SCORE

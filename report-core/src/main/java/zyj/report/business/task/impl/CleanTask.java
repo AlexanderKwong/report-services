@@ -4,6 +4,7 @@ import zyj.report.business.Task;
 import zyj.report.common.util.ConfigUtil;
 import zyj.report.common.util.FileUtil;
 
+import java.io.File;
 import java.util.Properties;
 
 /**
@@ -57,13 +58,19 @@ public class CleanTask implements Task {
 
     @Override
     public void run() throws Exception {
-        //打包的名字为原来的文件夹名 加上终端名
-        Properties p = ConfigUtil.readPath("config/pathConf.properties");
-        String hostname = p.getProperty("hostname", "");
-        String newPath = rptpath +"_" + hostname + ".zip";
-        FileUtil.zipDir(rptpath, newPath);
-        FileUtil.rmvDir(rptpath);
-        setRptpath(newPath);
+        if (getRptpath() != null){
+            FileUtil.rmvDir(getRptpath());
+        }else {//没有传路径的话，就清除默认生成路径下的所有含有jobId的文件
+            Properties p = ConfigUtil.readPath("config/pathConf.properties");
+            String defaultPath = p.getProperty("rpt.path", "");
+            File defaultDir = new File(defaultPath);
+            if (defaultDir.exists() && defaultDir.isDirectory()){
+                for (File f : defaultDir.listFiles()){
+                    if (f.getName().contains(getJobId()))
+                        FileUtil.rmvFile(f);
+                }
+            }
+        }
     }
 
     @Override

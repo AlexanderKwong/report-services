@@ -87,7 +87,7 @@ public class ExpXueShengChengJiService extends BaseRptService {
 		addFinalField(title, level);
 //产生查询条件List
 		List<SubjectInfo> subjectList = subjects_cur.stream()
-				.map(subject -> new SubjectInfo(subject.get("PAPER_ID").toString(), subject.get("SUBJECT").toString(), subject.get("SUBJECT_NAME").toString(),(Integer)subject.get("TYPE")))
+				.map(subject -> new SubjectInfo(subject.get("PAPER_ID").toString(), subject.get("SUBJECT").toString(), subject.get("SUBJECT_NAME").toString(),Integer.parseInt(subject.get("TYPE").toString())))
 				.sorted((subject1, subject2) -> {
 					return zyj.report.common.CalToolUtil.indexOf(zyj.report.common.CalToolUtil.getSubjectOrder(), subject1.getSubject()) - zyj.report.common.CalToolUtil.indexOf(zyj.report.common.CalToolUtil.getSubjectOrder(), subject2.getSubject());
 				})
